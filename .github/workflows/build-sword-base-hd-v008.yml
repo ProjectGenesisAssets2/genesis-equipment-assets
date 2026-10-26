@@ -1,0 +1,45 @@
+name: Genesis Equipment Pipeline Diagnostic - Neutral Sword V008 (NOT APPROVED)
+on:
+  push:
+    paths:
+      - 'scripts/build_sword_base_hd_v008.py'
+      - '.github/workflows/build-sword-base-hd-v008.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-hd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify model reference and Python syntax
+        run: |
+          python3 -m py_compile scripts/build_sword_base_hd_v008.py
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --max-time 180 \
+            https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz \
+            -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-lts
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-lts --strip-components=1
+          /tmp/blender-lts/blender --version | grep -F 'Blender 4.5.13'
+      - name: Create HD modular sword and original separate-mesh GLB
+        run: |
+          mkdir -p output_sword_hd
+          /tmp/blender-lts/blender -b -t 2 --python scripts/build_sword_base_hd_v008.py
+          test -s output_sword_hd/Espada_Concept_Base_HD_V008.blend
+          test -s output_sword_hd/Espada_Concept_Base_HD_V008.glb
+          test -s output_sword_hd/Espada_Concept_Base_HD_V008_AUDIT.json
+          test -s output_sword_hd/Espada_Concept_Base_HD_V008_FRONTAL.png
+          test -s output_sword_hd/Espada_Concept_Base_HD_V008_TRES_CUARTOS.png
+          test -s output_sword_hd/Espada_Concept_Base_HD_V008_DETALLES.png
+      - name: Save noncanonical diagnostic previews for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-espada-base-hd-modular-v008
+          path: output_sword_hd/
+          retention-days: 2
+          if-no-files-found: warn
