@@ -11,7 +11,7 @@ import math
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Matrix
 
 
 EXPECTED_SHA256 = "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b"
@@ -89,7 +89,7 @@ def main():
         matrix = ob.matrix_world.copy()
         ob.parent = parent
         ob.matrix_world = matrix
-    parent.matrix_world = rotate @ bpy.context.scene.cursor.matrix.translation(-center)
+    parent.matrix_world = rotate @ Matrix.Translation(-center)
     # Bring the sword low to the tabletop without changing any local mesh coordinates.
     low, high = world_bounds(mesh_objects)
     parent.location.z += -low.z + 0.005
