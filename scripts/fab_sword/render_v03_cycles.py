@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 
 import bpy
@@ -59,7 +60,8 @@ def main():
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--report", type=Path, required=True)
     p.add_argument("--samples", type=int, default=80)
-    args = p.parse_args()
+    argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+    args = p.parse_args(argv)
     source = args.input.resolve()
     sha = hashlib.sha256(source.read_bytes()).hexdigest()
     if sha != EXPECTED_SHA256:
