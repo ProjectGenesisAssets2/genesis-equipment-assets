@@ -1,0 +1,81 @@
+name: Genesis | REAL Cycles | Fab iron sword V03
+on:
+  push:
+    branches:
+      - feature/fab-iron-sword-audit
+    paths:
+      - '.github/workflows/render-fab-sword-cycles-v03.yml'
+      - 'scripts/fab_sword/render_v03_cycles.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-real-sword:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GENESIS_SWORD_V03_SOURCE_URL: ${{ secrets.GENESIS_SWORD_V03_SOURCE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate real-render script
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v03_cycles.py
+      - name: Check licensed V03 input availability
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${GENESIS_SWORD_V03_SOURCE_URL:-}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "### REAL Cycles render: source unavailable" >> "$GITHUB_STEP_SUMMARY"
+            echo "The exact 21 MB V03 source GLB is NOT in this public repository." >> "$GITHUB_STEP_SUMMARY"
+            echo "Configure repo secret GENESIS_SWORD_V03_SOURCE_URL to a controlled download URL; do not expose the Fab GLB publicly." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+      - name: Retrieve original V03 source privately (never commit)
+        if: steps.source.outputs.available == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-private-input
+          curl --fail --silent --show-error --location --retry 2 --max-time 240 \
+            "$GENESIS_SWORD_V03_SOURCE_URL" \
+            -o /tmp/genesis-private-input/Genesis_Sword_Iron_V03_V175_Colores.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-private-input/Genesis_Sword_Iron_V03_V175_Colores.glb' | sha256sum --check --status
+      - name: Install official Blender 4.5.13 LTS
+        if: steps.source.outputs.available == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --max-time 220 \
+            https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz \
+            -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-lts
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-lts --strip-components=1
+          /tmp/blender-lts/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render exact V03 GLB with Cycles CPU and imported PBR textures
+        if: steps.source.outputs.available == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p render-output
+          /tmp/blender-lts/blender -b -t 2 --python-exit-code 1 \
+            --python scripts/fab_sword/render_v03_cycles.py -- \
+            --input /tmp/genesis-private-input/Genesis_Sword_Iron_V03_V175_Colores.glb \
+            --output render-output/Genesis_Sword_V03_REAL_CYCLES.png \
+            --report render-output/Genesis_Sword_V03_REAL_CYCLES_audit.json \
+            --samples 96
+          test -s render-output/Genesis_Sword_V03_REAL_CYCLES.png
+          test -s render-output/Genesis_Sword_V03_REAL_CYCLES_audit.json
+          echo "### Real Cycles render produced from hash-verified V03" >> "$GITHUB_STEP_SUMMARY"
+          echo "See PNG and audit in this run's artifact. No AI image was used." >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve only render PNG and audit — never standalone GLB
+        if: steps.source.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-real-cycles-fab-sword-v03
+          path: render-output/
+          retention-days: 2
+          if-no-files-found: error
