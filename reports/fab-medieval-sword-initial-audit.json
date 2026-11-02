@@ -1,0 +1,74 @@
+{
+  "source": {
+    "name": "free_medieval_sword.glb",
+    "source_url": "https://www.fab.com/listings/3ac3603a-f91b-413b-82b3-341d91cfaba3",
+    "author": "Joan Lahoz",
+    "sha256": "493b3b9080b3b209de66186e0265c3b68d2fcfdbfe7c8b214425e197b3086b32",
+    "file_bytes": 6679212,
+    "format": "glTF binary",
+    "version": 2,
+    "generator": "fab-model-conversion"
+  },
+  "mesh": {
+    "mesh_count": 1,
+    "vertices": 1406,
+    "triangles": 2150,
+    "disconnected_components": 24,
+    "material_count": 1,
+    "scene_nodes": 4
+  },
+  "bounds": {
+    "min": [
+      -0.3444870114,
+      -1,
+      -0.0613871999
+    ],
+    "max": [
+      0.3444870114,
+      1,
+      0.0613871999
+    ],
+    "extents": [
+      0.6889740228,
+      2,
+      0.1227743998
+    ],
+    "units": "original glTF units, real-world scale unverified"
+  },
+  "textures": [
+    {
+      "role": "baseColor",
+      "format": "JPEG",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1452531
+    },
+    {
+      "role": "metallicRoughness",
+      "format": "PNG",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1111225
+    },
+    {
+      "role": "normal",
+      "format": "PNG",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 4019854
+    }
+  ],
+  "geometry_regions": {
+    "blade": "Toward +Y, approximate bounds x +/-0.073, y -0.423 to +1.0. Four primary blade-face components and narrow side pieces.",
+    "guard": "Around y -0.49 to -0.41, wings extend to x +/-0.344.",
+    "grip": "Mainly y -0.82 to -0.50.",
+    "pommel": "Around y -1.0 to -0.85."
+  },
+  "observations": [
+    "Single material shared by blade, guard, grip and pommel; iron blade requires face/material isolation, not just changing whole-object PBR.",
+    "Preserve blade geometry and use one fixed visual model across all rarities.",
+    "The 24 components are topology-level disconnected sets within a single glTF mesh, not separate imported objects.",
+    "Model has not yet been modified, re-exported, or tested in PlayCanvas."
+  ],
+  "legal": "No source GLB or textures published to this public GitHub repository; verify license rights before distributing them as standalone assets."
+}
