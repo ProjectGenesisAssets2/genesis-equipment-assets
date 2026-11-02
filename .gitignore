@@ -1,0 +1,9 @@
+assets/external/fab-medieval-sword/*.glb
+assets/external/fab-medieval-sword/*.gltf
+assets/external/fab-medieval-sword/*.bin
+assets/external/fab-medieval-sword/*.blend
+assets/external/fab-medieval-sword/*.png
+assets/external/fab-medieval-sword/*.jpg
+assets/external/fab-medieval-sword/*.jpeg
+__pycache__/
+*.pyc
