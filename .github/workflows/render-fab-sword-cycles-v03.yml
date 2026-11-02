@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/render-fab-sword-cycles-v03.yml'
       - 'scripts/fab_sword/render_v03_cycles.py'
+      - 'render-input/Genesis_Sword_Iron_V03_V175_Colores.glb'
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,29 +22,35 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m py_compile scripts/fab_sword/render_v03_cycles.py
-      - name: Check licensed V03 input availability
+      - name: Check for exact V03 source in public repository or managed URL
         id: source
         shell: bash
         run: |
           set -euo pipefail
+          if [ -s "render-input/Genesis_Sword_Iron_V03_V175_Colores.glb" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "local=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "local=false" >> "$GITHUB_OUTPUT"
           if [ -z "${GENESIS_SWORD_V03_SOURCE_URL:-}" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "### REAL Cycles render: source unavailable" >> "$GITHUB_STEP_SUMMARY"
-            echo "The exact 21 MB V03 source GLB is NOT in this public repository." >> "$GITHUB_STEP_SUMMARY"
-            echo "Configure repo secret GENESIS_SWORD_V03_SOURCE_URL to a controlled download URL; do not expose the Fab GLB publicly." >> "$GITHUB_STEP_SUMMARY"
+            echo "V03 file absent: supply render-input/Genesis_Sword_Iron_V03_V175_Colores.glb or repository secret URL." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           echo "available=true" >> "$GITHUB_OUTPUT"
-      - name: Retrieve original V03 source privately (never commit)
+      - name: Stage SHA-256-verified input
         if: steps.source.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/genesis-private-input
-          curl --fail --silent --show-error --location --retry 2 --max-time 240 \
-            "$GENESIS_SWORD_V03_SOURCE_URL" \
-            -o /tmp/genesis-private-input/Genesis_Sword_Iron_V03_V175_Colores.glb
-          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-private-input/Genesis_Sword_Iron_V03_V175_Colores.glb' | sha256sum --check --status
+          mkdir -p /tmp/genesis-source
+          if [ "${{ steps.source.outputs.local }}" = "true" ]; then
+            cp render-input/Genesis_Sword_Iron_V03_V175_Colores.glb /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb
+          else
+            curl -fsSL --retry 2 --max-time 240 "$GENESIS_SWORD_V03_SOURCE_URL" -o /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb
+          fi
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb' | sha256sum --check
       - name: Install official Blender 4.5.13 LTS
         if: steps.source.outputs.available == 'true'
         shell: bash
@@ -63,7 +70,7 @@ jobs:
           mkdir -p render-output
           /tmp/blender-lts/blender -b -t 2 --python-exit-code 1 \
             --python scripts/fab_sword/render_v03_cycles.py -- \
-            --input /tmp/genesis-private-input/Genesis_Sword_Iron_V03_V175_Colores.glb \
+            --input /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb \
             --output render-output/Genesis_Sword_V03_REAL_CYCLES.png \
             --report render-output/Genesis_Sword_V03_REAL_CYCLES_audit.json \
             --samples 96
