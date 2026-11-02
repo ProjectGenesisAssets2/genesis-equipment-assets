@@ -7,6 +7,8 @@ on:
       - '.github/workflows/render-fab-sword-cycles-v03.yml'
       - 'scripts/fab_sword/render_v03_cycles.py'
       - 'render-input/Genesis_Sword_Iron_V03_V175_Colores.glb'
+      - 'render-input/v03-blob-manifest.json'
+      - 'scripts/fab_sword/hydrate_git_blobs_v03.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -33,6 +35,12 @@ jobs:
             exit 0
           fi
           echo "local=false" >> "$GITHUB_OUTPUT"
+          if [ -s "render-input/v03-blob-manifest.json" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "blobs=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "blobs=false" >> "$GITHUB_OUTPUT"
           if [ -z "${GENESIS_SWORD_V03_SOURCE_URL:-}" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
             echo "V03 file absent: supply render-input/Genesis_Sword_Iron_V03_V175_Colores.glb or repository secret URL." >> "$GITHUB_STEP_SUMMARY"
@@ -41,12 +49,18 @@ jobs:
           echo "available=true" >> "$GITHUB_OUTPUT"
       - name: Stage SHA-256-verified input
         if: steps.source.outputs.available == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/genesis-source
           if [ "${{ steps.source.outputs.local }}" = "true" ]; then
             cp render-input/Genesis_Sword_Iron_V03_V175_Colores.glb /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb
+          elif [ "${{ steps.source.outputs.blobs }}" = "true" ]; then
+            python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+              --manifest render-input/v03-blob-manifest.json \
+              --output /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb
           else
             curl -fsSL --retry 2 --max-time 240 "$GENESIS_SWORD_V03_SOURCE_URL" -o /tmp/genesis-source/Genesis_Sword_Iron_V03_V175_Colores.glb
           fi
