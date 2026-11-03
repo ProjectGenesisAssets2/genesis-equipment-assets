@@ -1,0 +1,23 @@
+name: Inspect authenticated V03 geometry for inline preview
+on:
+  push:
+    branches: [feature/fab-iron-sword-audit]
+    paths:
+      - scripts/fab_sword/extract_inline_preview_v03.py
+      - .github/workflows/inline-original-v03.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hydrate original V03 into temporary runner workspace
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v03.glb
+      - name: Summarize actual geometry
+        run: python3 scripts/fab_sword/extract_inline_preview_v03.py /tmp/genesis-v03.glb
+      - if: always()
+        run: rm -f /tmp/genesis-v03.glb
