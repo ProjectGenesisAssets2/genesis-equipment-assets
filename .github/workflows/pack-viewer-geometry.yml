@@ -1,0 +1,21 @@
+name: Build compact exact-source offline viewer payload
+on:
+  push:
+    branches: ['feature/genesis-sword-provisional-webgl-20261103']
+    paths: ['tools/genesis-glb-viewer/pack_geometry.py','.github/workflows/pack-viewer-geometry.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  pack:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/genesis-glb-viewer/pack_geometry.py
+      - name: Commit verified GLB geometry payload
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/genesis-glb-viewer/sword-payload-gzip.b64 tools/genesis-glb-viewer/sword-payload-meta.json
+          git commit -m "assets: embed SHA verified GLB geometry for in-chat viewer"
+          git push origin HEAD:feature/genesis-sword-provisional-webgl-20261103
