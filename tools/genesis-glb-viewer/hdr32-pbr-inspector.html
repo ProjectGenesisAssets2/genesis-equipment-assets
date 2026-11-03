@@ -1,0 +1,98 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genesis GLB HDR32 Inspector</title>
+<style>
+body{background:#0d121a;color:#e7d8bc;font-family:system-ui;margin:0}main{max-width:950px;margin:auto;padding:12px}
+#frame{height:min(75vh,650px);min-height:320px;position:relative;background:radial-gradient(ellipse,#34414c,#101720);border:1px solid #77603c;border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}nav{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}button,label{background:#34291d;color:#e7c38e;border:1px solid #826940;border-radius:8px;padding:9px;font:13px system-ui;cursor:pointer}
+#status{position:absolute;top:9px;left:9px;right:9px;background:#101720e0;padding:9px;border-radius:7px;font-size:12px;pointer-events:none}
+input{display:none}p{font-size:12px;color:#b2a68e}h2{font-size:18px}
+</style><main><h2>Project Genesis · GLB HDR32 Inspector</h2>
+<div id="frame"><canvas></canvas><div id="status">Elegí un archivo GLB para inspeccionarlo</div></div>
+<nav><label>Elegir GLB<input id="file" type="file" accept=".glb,model/gltf-binary"></label><button id="front">Frente</button><button id="side">Perfil</button><button id="spin">Pausar giro</button><button id="zin">Zoom +</button><button id="zout">Zoom −</button><button id="reset">Centrar</button></nav>
+<p>Abre el GLB localmente; no sube el archivo a Internet. Entorno de estudio procedural HDR de 32 bits flotantes, no un EXR fotográfico. No sustituye la aprobación visual en Blender.</p></main>
+<script>
+(()=>{
+'use strict';
+const canvas=document.querySelector('canvas'),status=document.getElementById('status');
+let gl=canvas.getContext('webgl2',{alpha:true,antialias:true}),vertices=[],yaw=.35,pitch=.12,zoom=1,spin=true,drag=false,px=0,py=0,frame=0,prog,buffer,texture;
+const state={loaded:false,triangles:0,renderer:gl?'WebGL2':'unsupported',hdr32:false,error:null};window.GenesisGLBInspector=state;
+if(!gl){status.textContent='WebGL2 no disponible en este navegador';return}
+function sh(type,code){let o=gl.createShader(type);gl.shaderSource(o,code);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(o));return o}
+const vert=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 p;layout(location=1) in vec3 n;layout(location=2) in vec4 base;
+uniform float yaw,pitch,zoom,aspect;
+out vec3 N;out vec3 P;out vec4 C;
+void main(){float ca=cos(yaw),sa=sin(yaw),cp=cos(pitch),sp=sin(pitch);
+mat3 ry=mat3(ca,0.,-sa,0.,1.,0.,sa,0.,ca);
+mat3 rx=mat3(1.,0.,0.,0.,cp,sp,0.,-sp,cp);
+mat3 m=rx*ry;vec3 q=m*p;N=normalize(m*n);P=q;C=base;
+gl_Position=vec4(q.x*zoom/aspect,q.y*zoom,-q.z*.3,1.);}`;
+const frag=`#version 300 es
+precision highp float;in vec3 N;in vec3 P;in vec4 C;out vec4 outColor;uniform sampler2D hdr;
+vec3 env(vec3 d){d=normalize(d);vec2 uv=vec2(.5+atan(d.z,d.x)/6.2831853,.5+asin(clamp(d.y,-1.,1.))/3.14159265);return texture(hdr,uv).rgb;}
+void main(){vec3 n=normalize(N),v=normalize(vec3(0.,0.,3.)-P),r=reflect(-v,n);
+float metal=clamp(C.a,0.,1.),f=pow(1.-max(0.,dot(n,v)),5.);
+vec3 F=mix(vec3(.04),C.rgb,metal);F+= (vec3(1.)-F)*f;
+vec3 c=env(r)*F*1.1+env(n)*C.rgb*(1.-metal)*.55;
+c=(c*(2.51*c+.03))/(c*(2.43*c+.59)+.14);
+outColor=vec4(pow(clamp(c,0.,1.),vec3(1./2.2)),1.);}`;
+try{
+prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,vert));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,frag));gl.linkProgram(prog);if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(prog));gl.useProgram(prog);
+gl.enable(gl.DEPTH_TEST);
+texture=gl.createTexture();gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
+const w=96,h=48,data=new Float32Array(w*h*4);
+for(let y=0;y<h;y++)for(let x=0;x<w;x++){let u=x/w,v=y/h;let s=Math.exp(-Math.pow((u-.28)/.035,8)-Math.pow((v-.66)/.12,8))*24;let t=Math.exp(-Math.pow((u-.72)/.04,8)-Math.pow((v-.65)/.17,8))*12;let i=(y*w+x)*4;data[i]=.22+s+t*.7;data[i+1]=.24+s*.95+t*.83;data[i+2]=.27+s*.84+t;data[i+3]=1}
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,w,h,0,gl.RGBA,gl.FLOAT,data);
+if(gl.getError()!==gl.NO_ERROR)throw Error('RGBA32F texture unsupported');
+state.hdr32=true;
+buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+for(const [idx,n,ofs] of [[0,3,0],[1,3,12],[2,4,24]]){gl.enableVertexAttribArray(idx);gl.vertexAttribPointer(idx,n,gl.FLOAT,false,40,ofs)}
+gl.uniform1i(gl.getUniformLocation(prog,'hdr'),0);
+status.textContent='HDR32 listo · elegí un GLB';
+}catch(e){state.error=String(e);status.textContent='Error HDR32: '+e.message;return}
+function accessor(a,j,b){const view=j.bufferViews[a.bufferView],start=(view.byteOffset||0)+(a.byteOffset||0),n={SCALAR:1,VEC3:3}[a.type],size={5126:4,5125:4,5123:2,5121:1}[a.componentType],stride=view.byteStride||n*size,d=new DataView(b);const q=[];
+for(let i=0;i<a.count;i++){const row=[];for(let k=0;k<n;k++){const off=start+i*stride+k*size;row.push(a.componentType===5126?d.getFloat32(off,true):a.componentType===5125?d.getUint32(off,true):a.componentType===5123?d.getUint16(off,true):d.getUint8(off))}q.push(n===1?row[0]:row)}return q}
+const ident=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+function multiply(a,b){const c=Array(16).fill(0);for(let i=0;i<4;i++)for(let k=0;k<4;k++)for(let m=0;m<4;m++)c[i*4+k]+=a[m*4+k]*b[i*4+m];return c}
+function local(n){if(n.matrix)return n.matrix;const [x,y,z,w]=n.rotation||[0,0,0,1],s=n.scale||[1,1,1],t=n.translation||[0,0,0];
+return [(1-2*(y*y+z*z))*s[0],2*(x*y+z*w)*s[0],2*(x*z-y*w)*s[0],0,2*(x*y-z*w)*s[1],(1-2*(x*x+z*z))*s[1],2*(y*z+x*w)*s[1],0,2*(x*z+y*w)*s[2],2*(y*z-x*w)*s[2],(1-2*(x*x+y*y))*s[2],0,...t,1]}
+function pos(m,p){return [m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12],m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13],m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14]]}
+function parse(array){
+let d=new DataView(array),i=12,j=null,b=null;if(d.getUint32(0,true)!==0x46546c67)throw Error('No es un GLB');
+while(i+8<=array.byteLength){let len=d.getUint32(i,true),tag=d.getUint32(i+4,true);i+=8;if(tag===0x4e4f534a)j=JSON.parse(new TextDecoder().decode(new Uint8Array(array,i,len)));if(tag===0x004e4942)b=array.slice(i,i+len);i+=len}
+if(!j||!b)throw Error('GLB incompleto');let pts=[],items=[],cache=new Map();
+const A=id=>{if(!cache.has(id))cache.set(id,accessor(j.accessors[id],j,b));return cache.get(id)};
+function visit(id,parent){
+let node=j.nodes[id],m=multiply(parent,local(node));
+if(node.mesh!==undefined)for(const prim of j.meshes[node.mesh].primitives){
+if(prim.mode!==undefined&&prim.mode!==4)continue;
+const p=A(prim.attributes.POSITION).map(q=>pos(m,q)),ind=prim.indices===undefined?p.map((_,i)=>i):A(prim.indices);
+const color=j.materials?.[prim.material]?.pbrMetallicRoughness?.baseColorFactor||[.55,.55,.55,1],metal=j.materials?.[prim.material]?.pbrMetallicRoughness?.metallicFactor??.5;
+pts.push(...p);
+for(let k=0;k+2<ind.length;k+=3){
+const va=p[ind[k]],vb=p[ind[k+1]],vc=p[ind[k+2]],u=vb.map((q,i)=>q-va[i]),v=vc.map((q,i)=>q-va[i]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+let len=Math.hypot(...n)||1;n.forEach(q=>{});for(const q of [va,vb,vc])items.push({p:q,n:n.map(x=>x/len),c:[...color.slice(0,3),metal]});
+}}
+for(const child of node.children||[])visit(child,m)}
+let roots=j.scenes?.[j.scene||0]?.nodes||j.nodes.map((_,i)=>i).filter(i=>!j.nodes.some(n=>(n.children||[]).includes(i)));for(const id of roots)visit(id,ident);
+if(!pts.length)throw Error('GLB sin triángulos');const low=[0,1,2].map(k=>Math.min(...pts.map(p=>p[k]))),high=[0,1,2].map(k=>Math.max(...pts.map(p=>p[k]))),center=low.map((v,i)=>(v+high[i])/2),span=Math.max(...high.map((v,i)=>v-low[i]));
+vertices=[];for(const o of items)vertices.push(...o.p.map((v,i)=>(v-center[i])/span*1.55),...o.n,...o.c);
+state.triangles=items.length/3;state.loaded=true;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
+status.textContent='GLB real: '+state.triangles.toLocaleString('es-AR')+' triángulos · HDR32 · Material PBR base';
+}
+document.getElementById('file').addEventListener('change',async e=>{try{let f=e.target.files?.[0];if(f)parse(await f.arrayBuffer())}catch(err){state.error=String(err);status.textContent='Error GLB: '+err.message}});
+function frame(){if(!canvas.isConnected)return;requestAnimationFrame(frame);let r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width*dpr)),h=Math.max(2,Math.round(r.height*dpr));
+if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+gl.uniform1f(gl.getUniformLocation(prog,'yaw'),yaw);gl.uniform1f(gl.getUniformLocation(prog,'pitch'),pitch);gl.uniform1f(gl.getUniformLocation(prog,'zoom'),zoom*1.55);gl.uniform1f(gl.getUniformLocation(prog,'aspect'),w/h);
+gl.drawArrays(gl.TRIANGLES,0,vertices.length/10);if(spin&&!drag)yaw+=.0035}
+canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-px)*.012;pitch=Math.max(-1.2,Math.min(1.2,pitch+(e.clientY-py)*.009));px=e.clientX;py=e.clientY});
+canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
+for(const [id,fn] of Object.entries({front:()=>yaw=0,side:()=>yaw=Math.PI/2,zin:()=>zoom=Math.min(2.4,zoom*1.2),zout:()=>zoom=Math.max(.6,zoom/1.2),reset:()=>{yaw=.35;pitch=.12;zoom=1},spin:()=>{spin=!spin;document.getElementById('spin').textContent=spin?'Pausar giro':'Activar giro'}}))document.getElementById(id).onclick=fn;
+requestAnimationFrame(frame);
+})();
+</script>
