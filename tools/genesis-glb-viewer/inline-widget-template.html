@@ -15,7 +15,10 @@ window.GENESIS_INLINE_QA={ok:false,triangles:0,error:null};
 async function init(){
 try{
 if(typeof DecompressionStream==='undefined')throw Error('Este navegador no permite descomprimir gzip local');
-const gz=Uint8Array.from(atob(PAYLOAD),c=>c.charCodeAt(0));
+const clean=PAYLOAD.replace(/[^A-Za-z0-9+/=]/g,'');
+if(clean.length!==PAYLOAD.length)throw Error('Embedded GLB text damaged: '+(PAYLOAD.length-clean.length)+' invalid characters');
+if(clean.length%4===1)throw Error('Embedded GLB base64 length invalid');
+const gz=Uint8Array.from(atob(clean),c=>c.charCodeAt(0));
 const buffer=await new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
 let dv=new DataView(buffer),at=0;
 for(let k=0;k<8;k++){
