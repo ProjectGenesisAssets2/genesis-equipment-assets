@@ -1,0 +1,27 @@
+name: Test reusable HDR32 GLB inspector
+on:
+  push:
+    branches: ['feature/genesis-sword-provisional-webgl-20261103']
+    paths: ['tools/genesis-glb-viewer/hdr32-pbr-inspector.html','tools/genesis-glb-viewer/test-hdr32.cjs','.github/workflows/test-hdr32-inspector.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --prefix /tmp/pg-hdr32 playwright@1.56.1
+          /tmp/pg-hdr32/node_modules/.bin/playwright install --with-deps chromium
+      - run: NODE_PATH=/tmp/pg-hdr32/node_modules node tools/genesis-glb-viewer/test-hdr32.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: genesis-hdr32-glb-viewer-qa
+          path: /tmp/genesis-hdr32-viewer-qa.png
+          if-no-files-found: ignore
