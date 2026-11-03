@@ -1,0 +1,20 @@
+name: Build exact-source compact inline sword LOD
+on:
+  push:
+    branches: ['feature/genesis-sword-provisional-webgl-20261103']
+    paths: ['tools/genesis-glb-viewer/pack_inline_lod.py','.github/workflows/build-inline-lod.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  pack:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/genesis-glb-viewer/pack_inline_lod.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/genesis-glb-viewer/inline-lod-data.json
+          git commit -m "viewer: publish source GLB-derived preview geometry" || true
+          git push origin HEAD:feature/genesis-sword-provisional-webgl-20261103
