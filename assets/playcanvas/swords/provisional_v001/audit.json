@@ -1,0 +1,18 @@
+{
+  "model": "GENESIS_SWORD_PROVISIONAL_V001",
+  "origin": "original_geometry_generated_for_Project_Genesis",
+  "fab_asset_used": false,
+  "purpose": "temporary visual only, same sword for all item rarity",
+  "source": "scripts/create_provisional_sword.py",
+  "materials": [
+    "Genesis_Provisional_HandForged_Iron",
+    "Genesis_Provisional_Iron_Edge",
+    "Genesis_Provisional_Dark_Iron",
+    "Genesis_Provisional_Brown_Leather",
+    "Genesis_Provisional_Subdued_Brass"
+  ],
+  "mesh_count": 16,
+  "bytes": 166580,
+  "sha256": "210d41cc2bc96d03862029d983af9ffcf71d093fd2e662ecb85a479db928d4ad",
+  "blade_present": true
+}
