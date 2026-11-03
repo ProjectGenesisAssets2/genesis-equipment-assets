@@ -1,0 +1,27 @@
+name: Genesis standalone GLB viewer smoke test
+on:
+  push:
+    branches: ['feature/genesis-sword-provisional-webgl-20261103']
+    paths: ['tools/genesis-glb-viewer/**','.github/workflows/test-genesis-glb-viewer.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --prefix /tmp/genesis-viewer playwright@1.56.1
+          /tmp/genesis-viewer/node_modules/.bin/playwright install --with-deps chromium
+      - run: NODE_PATH=/tmp/genesis-viewer/node_modules node tools/genesis-glb-viewer/test.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: genesis-viewer-offline-test
+          path: /tmp/genesis-glb-viewer-proof.png
+          retention-days: 14
