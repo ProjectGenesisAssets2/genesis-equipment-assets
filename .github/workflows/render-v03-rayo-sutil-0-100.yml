@@ -7,7 +7,7 @@ on:
       - '.github/workflows/render-v03-rayo-sutil-0-100.yml'
   workflow_dispatch:
 concurrency:
-  group: genesis-rayo-v03-${{ github.ref }}
+  group: genesis-rayo-v03-nondeps-${{ github.ref }}
   cancel-in-progress: true
 permissions:
   contents: write
