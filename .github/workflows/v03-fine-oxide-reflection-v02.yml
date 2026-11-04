@@ -1,0 +1,46 @@
+name: Project Genesis V03 — V175 calibrated iron patina V02 Cycles HDRI32
+on:
+  push:
+    branches: [experiment/v03-v175-fine-oxide-ridge-20261104]
+    paths: ['scripts/fab_sword/v03_fine_oxide_reflection_v02.py','.github/workflows/v03-fine-oxide-reflection-v02.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cycles-experiment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble exact licensed source only inside GitHub Actions runner
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Download physically real Studio Small 09 4K EXR HDRI
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          test $(stat -c %s /tmp/studio_small_09_4k.exr) -gt 1000000
+          sha256sum /tmp/studio_small_09_4k.exr
+      - name: Install Blender 4.5.13 LTS from official release
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-4-5
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-4-5 --strip-components=1
+          /tmp/blender-4-5/blender --version | head -2
+      - name: Render baseline, fine patina variants, front, three-quarter and reverse
+        run: |
+          mkdir -p /tmp/v03-iron-calibration-v02
+          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/v03_fine_oxide_reflection_v02.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/v03-iron-calibration-v02 --samples 96
+          for f in 01_G_original_reference 02_I_hierro_v175_082 03_J_hierro_v175_072 04_K_hierro_forged_076 05_J_tres_cuartos 06_J_cara_posterior; do test -s "/tmp/v03-iron-calibration-v02/$f.png"; done
+          test -s /tmp/v03-iron-calibration-v02/render_audit.json
+      - name: Preserve renders and technical audit only (original source remains private)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-FineIron-V02-ToneCycles-HDRI32
+          path: /tmp/v03-iron-calibration-v02/
+          retention-days: 7
+      - if: always()
+        run: rm -f /tmp/genesis-original-v03.glb
