@@ -20,17 +20,20 @@ const {PNG}=require('pngjs');
  if(!init || init.loaded!==true || init.triangles!==2150||init.meshes!==2||init.proceduralShader!==true||init.bladeOnly!==true||init.intensityRange?.[0]!==0||init.intensityRange?.[1]!==100)
   throw Error('GENESIS_SOURCE_OR_SHADER_AUDIT_FAILED '+JSON.stringify(init));
  if(!init.bloom)throw Error('CAMERAFRAME_HDR_BLOOM_WAS_NOT_ACTIVATED');
- const root='rayo-premium-v01-output';fs.mkdirSync(root,{recursive:true});
+ const root='rayo-v04-output';fs.mkdirSync(root,{recursive:true});
  const frames=Number(process.env.FRAMES||32);
  let last;
  for(let frame=0;frame<frames;frame++){
-  last=await page.evaluate(async x=>window.__genesisStep(x.frame,x.frames),{frame,frames});
+  const rampIntensity=Math.round(frame/Math.max(1,frames-1)*100);
+  last=await page.evaluate(async x=>window.__genesisStep(x.frame,x.frames,x.intensity),{frame,frames,intensity:rampIntensity});
+  if(!Number.isFinite(last.time)||last.intensity!==rampIntensity)throw Error('INVALID_RAMP_FRAME_'+frame+' '+JSON.stringify(last));
   await page.screenshot({path:path.join(root,'frame_'+String(frame).padStart(3,'0')+'.png'),timeout:60000});
   if(frame%8===0)console.log('GENESIS_RAYO_PREMIUM_FRAME',frame,'of',frames);
  }
  const intensityComparison=[];
  for(const intensity of [0,25,50,75,100]){
-   const sample=await page.evaluate(async n=>window.__genesisStep(16,frames,n),intensity);
+   const sample=await page.evaluate(async ({n,frames})=>window.__genesisStep(16,frames,n),{n:intensity,frames});
+   if(!Number.isFinite(sample.time))throw Error('INVALID_GLSL_TIME_'+intensity);
    if(sample.intensity!==intensity)throw Error('INTENSITY_SWEEP_MISMATCH_'+intensity);
    intensityComparison.push(sample);
    await page.screenshot({path:path.join(root,'Intensity_'+String(intensity).padStart(3,'0')+'.png'),timeout:60000});
@@ -50,17 +53,19 @@ const {PNG}=require('pngjs');
    transparentBackground0:luminance(p0,600,205),
    transparentBackground100:luminance(p100,600,205),
    sourceBladeVisible0:luminance(p0,640,205),
-   changedPixels0to100:changedPixels
+   changedPixels0to100:changedPixels,
+   rampStartIntensity:0,rampEndIntensity:100,
+   sampleTime:p100.width?16*2.75/frames:null
  };
  console.log('GENESIS_RAYO_VISUAL_PIXEL_CHECKS',JSON.stringify(visualChecks));
  if(visualChecks.transparentBackground0<15||visualChecks.transparentBackground100<15)
   throw Error('OPAQUE_BLACK_VFX_RECTANGLE_DETECTED '+JSON.stringify(visualChecks));
  if(visualChecks.sourceBladeVisible0<18)
   throw Error('V175_BLADE_HIDDEN_AT_ZERO '+JSON.stringify(visualChecks));
- if(changedPixels<10)
+ if(changedPixels<35)
   throw Error('NO_VISIBLE_INTENSITY_CHANGE '+JSON.stringify(visualChecks));
  const audit={
-   schema:'Genesis_Rayo_GLSL_CameraFrame_Cinematic_V001',
+   schema:'Genesis_Rayo_V004_0to100_FiniteTime_VisualCheck',
    status:'experiment-not-approved',
    verified_original_sha256:'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b',
    source:init,realPlayCanvasWebGL2:true,
@@ -71,7 +76,7 @@ const {PNG}=require('pngjs');
    fps:12,frames,displayResolution:[1280,720],
    animation:last,intensityComparison,visualChecks,errors};
  fs.writeFileSync(path.join(root,'audit.json'),JSON.stringify(audit,null,2));
- console.log('GENESIS_RAYO_V03_CONTAINED_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
+ console.log('GENESIS_RAYO_V04_VISUAL_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
  await browser.close();
  if(errors.length)throw Error('GENESIS_CONSOLE_ERRORS '+JSON.stringify(errors.slice(0,6)));
 })().catch(e=>{console.error('GENESIS_RAYO_PREMIUM_FAILED',e.stack||e);process.exit(1)});
