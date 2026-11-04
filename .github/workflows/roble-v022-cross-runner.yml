@@ -1,0 +1,81 @@
+name: Genesis Roble V022 | cross-org Cycles HDRI32 isolated render
+on:
+  push:
+    branches: [experiment/roble-v022-hdri32-cross-runner]
+    paths:
+      - '.github/workflows/roble-v022-cross-runner.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  oak:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/roble-v022-hdri32-cross-runner
+      - name: Fetch original approved V021 boards and V021 oak log from public asset organization
+        run: |
+          set -euo pipefail
+          mkdir -p input output/oak_v022/models tools
+          base="https://raw.githubusercontent.com/ProjectgenesisAssets/genesis-workshop-assets/experiment/roble-v021-natural-endgrain-hdri32/evaluation/dry-oak-wood/v021_candidate/models"
+          curl -fLsS --retry 4 "$base/ProjectGenesis_Roble_Tronco_V021.glb" -o input/ProjectGenesis_Roble_Tronco_V021.glb
+          curl -fLsS --retry 4 "$base/ProjectGenesis_Roble_Tablas_V021.glb" -o input/ProjectGenesis_Roble_Tablas_V021.glb
+          echo '08da7f3e9b345be1908a1b1318f128929243087f101c5e881ffa85f0edb36b8d  input/ProjectGenesis_Roble_Tronco_V021.glb' | sha256sum -c -
+          echo '05b05f54f68c5e5f1a1f8af8bfb82f0684ca1c4b0727e37e97c14ace070ddba1  input/ProjectGenesis_Roble_Tablas_V021.glb' | sha256sum -c -
+          scripts="https://raw.githubusercontent.com/ProjectgenesisAssets/genesis-workshop-assets/experiment/roble-v022-tronco-color-hdri32/tools"
+          curl -fLsS --retry 4 "$scripts/roble_v022_color_patch.py" -o tools/roble_v022_color_patch.py
+          curl -fLsS --retry 4 "$scripts/render_roble_v022_hdri32.py" -o tools/render_roble_v022_hdri32.py
+          python3 -m py_compile tools/roble_v022_color_patch.py tools/render_roble_v022_hdri32.py
+      - name: Install image processing dependencies for albedo-only correction
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-pil python3-numpy
+      - name: Patch only unapproved oak log albedo; preserve approved V021 boards by SHA
+        run: |
+          set -euo pipefail
+          python3 tools/roble_v022_color_patch.py
+      - name: Blender 4.5.13 and authentic Radiance HDRI
+        run: |
+          set -euo pipefail
+          curl -fLsS --retry 4 https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz -o /tmp/blender-4.5.13.tar.xz
+          mkdir -p /tmp/blender45
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/blender45 --strip-components=1
+          /tmp/blender45/blender --version | head -3
+          curl -fLsS --retry 4 https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/studio_small_09_2k.hdr -o input/studio_small_09_2k.hdr
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("input/studio_small_09_2k.hdr")
+          assert p.stat().st_size>250000 and b"RADIANCE" in p.read_bytes()[:32]
+          PY
+      - name: Actual Cycles rendering with locked HDRI and camera, V021 vs V022
+        run: |
+          set -o pipefail
+          /tmp/blender45/blender -b -t 4 --python-exit-code 1 --python tools/render_roble_v022_hdri32.py 2>&1 | tee output/oak_v022/blender_log.txt
+      - name: Validate images, GLB, hashes, and float EXR32
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, json,hashlib
+          root=pathlib.Path('output/oak_v022')
+          c=json.loads((root/'color_report.json').read_text())
+          r=json.loads((root/'render_report.json').read_text())
+          assert c['geometry_unchanged'] and c['roughness_unchanged'] and c['bark_pbr_unchanged']
+          assert r['candidate_log_geometry_identical_to_v021']
+          assert r['board_source_untouched'] and len(r['render_views'])==6
+          assert len(c['albedo_changes'])==2
+          for stem in r['render_views']:
+              a=root/'renders'/(stem+'.png');b=root/'renders'/(stem+'.exr')
+              assert a.stat().st_size>40000 and a.read_bytes()[:8]==b"\x89PNG\r\n\x1a\n"
+              assert b.stat().st_size>100000 and b.read_bytes()[:4]==b"\x76\x2f\x31\x01"
+          print('GENESIS_V022_CROSS_ORG_VERIFIED', c['new_log_sha256'])
+          PY
+      - name: Preserve log and renders for user review, NO game integration
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-roble-v022-CrossOrg-HDRI32
+          path: output/oak_v022/
+          if-no-files-found: warn
+          retention-days: 14
