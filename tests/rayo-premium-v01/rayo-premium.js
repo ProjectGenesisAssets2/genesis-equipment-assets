@@ -93,17 +93,17 @@ void main(void){
  float branch=lineEnergy(x-branchPath,.0028)*
               segment(y,.60,.045)*blade*spurAmount*beat*.28;
  core+=branch;
- float strength=power*(.30+.40*power)*glimmer;
+ float strength=power*(.70+.70*power)*(.42+.58*beat);
  vec3 electricBlue=vec3(.36,1.00,2.00)*shimmer
                   +vec3(.90,1.55,2.40)*core;
  vec3 result=electricBlue*strength;
- float opacity=clamp((core*.76+shimmer*.30)*power,0.,.55);
+ float opacity=clamp((core*.90+shimmer*.34)*(.30+.70*power),0.,.65);
  gl_FragColor=vec4(result,opacity);
 }
 
 `;
 const material=new pc.ShaderMaterial({
- uniqueName:'Genesis_Rayo_ContainedBlade_0to100_V003',
+ uniqueName:'Genesis_Rayo_ContainedBlade_0to100_V004',
  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
  vertexGLSL,fragmentGLSL
 });
@@ -134,7 +134,7 @@ function loadSword(){
     mats.push(mi.material?.name||'?');
   }}});
   window.__genesisReady={source:'original_v03',loaded:true,meshes,triangles:tris,bloom:bloomOK,
-     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:2,sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:35,bladeOnly:true};
+     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:2,sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:35,bladeOnly:true,intensityAnimation:'0-to-100-in-32-frames'};
   document.getElementById('status').textContent='';
   console.log('GENESIS_RAYO_PREMIUM_READY',JSON.stringify(window.__genesisReady));
  });
@@ -144,13 +144,15 @@ window.__genesisSetIntensity=(v)=>{let n=Math.max(0,Math.min(100,Math.round(Numb
 window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  if(!window.__genesisReady)throw Error('GLB_NOT_LOADED');
  window.__genesisCaptureMode=true;
- if(forcedIntensity!==undefined)window.__genesisSetIntensity(forcedIntensity);
- const time=frame*2.75/frames;
- const intensity=Math.max(0,Math.min(100,Number(forcedIntensity??window.__genesisIntensity??35)));
+ const rampIntensity=forcedIntensity===undefined?Math.round(100*frame/Math.max(1,frames-1)):forcedIntensity;
+ window.__genesisSetIntensity(rampIntensity);
+ const time=Number(frame)*2.75/Number(frames);
+ const intensity=Math.max(0,Math.min(100,Number(rampIntensity)));
  material.setParameter('uTime',time);
  material.setParameter('uIntensity',intensity);
  pulseLight.light.intensity=.30*(intensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(time*5.1+1.0)),5));
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ if(!Number.isFinite(time))throw Error('INVALID_SHADER_TIME');
  return {frame,time,intensity,triangles:window.__genesisReady.triangles,bloom:bloomOK};
 };
 document.getElementById('intensitySlider').addEventListener('input',e=>window.__genesisSetIntensity(e.target.value));
