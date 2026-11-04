@@ -1,5 +1,6 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
+const {PNG}=require('pngjs');
 (async()=>{
  const browser=await chromium.launch({headless:true,args:[
    '--enable-webgl','--use-angle=swiftshader','--ignore-gpu-blocklist','--enable-unsafe-swiftshader'
@@ -34,6 +35,30 @@ const fs=require('fs'),path=require('path');
    intensityComparison.push(sample);
    await page.screenshot({path:path.join(root,'Intensity_'+String(intensity).padStart(3,'0')+'.png'),timeout:60000});
  }
+
+ const p0=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_000.png')));
+ const p100=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_100.png')));
+ function luminance(png,x,y){
+   const i=(y*png.width+x)*4;
+   return .2126*png.data[i]+.7152*png.data[i+1]+.0722*png.data[i+2];
+ }
+ let changedPixels=0;
+ for(let y=45;y<310;y++)for(let x=620;x<663;x++){
+   if(Math.abs(luminance(p100,x,y)-luminance(p0,x,y))>7)changedPixels++;
+ }
+ const visualChecks={
+   transparentBackground0:luminance(p0,600,205),
+   transparentBackground100:luminance(p100,600,205),
+   sourceBladeVisible0:luminance(p0,640,205),
+   changedPixels0to100:changedPixels
+ };
+ console.log('GENESIS_RAYO_VISUAL_PIXEL_CHECKS',JSON.stringify(visualChecks));
+ if(visualChecks.transparentBackground0<15||visualChecks.transparentBackground100<15)
+  throw Error('OPAQUE_BLACK_VFX_RECTANGLE_DETECTED '+JSON.stringify(visualChecks));
+ if(visualChecks.sourceBladeVisible0<18)
+  throw Error('V175_BLADE_HIDDEN_AT_ZERO '+JSON.stringify(visualChecks));
+ if(changedPixels<10)
+  throw Error('NO_VISIBLE_INTENSITY_CHANGE '+JSON.stringify(visualChecks));
  const audit={
    schema:'Genesis_Rayo_GLSL_CameraFrame_Cinematic_V001',
    status:'experiment-not-approved',
@@ -44,7 +69,7 @@ const fs=require('fs'),path=require('path');
    extraVfxGeometry:'one quad, two triangles, procedural shader',
    noStaticMasks:true,noSpheresOrTubes:true,
    fps:12,frames,displayResolution:[1280,720],
-   animation:last,intensityComparison,errors};
+   animation:last,intensityComparison,visualChecks,errors};
  fs.writeFileSync(path.join(root,'audit.json'),JSON.stringify(audit,null,2));
  console.log('GENESIS_RAYO_V03_CONTAINED_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
  await browser.close();
