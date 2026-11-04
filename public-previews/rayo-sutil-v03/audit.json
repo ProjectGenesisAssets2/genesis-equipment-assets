@@ -1,0 +1,85 @@
+{
+  "schema": "Genesis_Rayo_GLSL_CameraFrame_Cinematic_V001",
+  "status": "experiment-not-approved",
+  "verified_original_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source": {
+    "source": "original_v03",
+    "loaded": true,
+    "meshes": 2,
+    "triangles": 2150,
+    "bloom": true,
+    "vfxMaterial": "Untitled",
+    "proceduralShader": true,
+    "uvMasks": false,
+    "effectsMeshTriangles": 2,
+    "sourceGlbEdited": false,
+    "materials": [
+      "DefaultMaterial",
+      "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+    ],
+    "intensityRange": [
+      0,
+      100
+    ],
+    "defaultIntensity": 35,
+    "bladeOnly": true
+  },
+  "realPlayCanvasWebGL2": true,
+  "generatedBy": "Chromium WebGL2 PlayCanvas ShaderMaterial GLSL, camera bloom and real PBR GLB",
+  "noGeometryChanges": true,
+  "sourceImageTexturesNotChanged": true,
+  "extraVfxGeometry": "one quad, two triangles, procedural shader",
+  "noStaticMasks": true,
+  "noSpheresOrTubes": true,
+  "fps": 12,
+  "frames": 32,
+  "displayResolution": [
+    1280,
+    720
+  ],
+  "animation": {
+    "frame": 31,
+    "time": 2.6640625,
+    "intensity": 35,
+    "triangles": 2150,
+    "bloom": true
+  },
+  "intensityComparison": [
+    {
+      "frame": 16,
+      "time": null,
+      "intensity": 0,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": null,
+      "intensity": 25,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": null,
+      "intensity": 50,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": null,
+      "intensity": 75,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": null,
+      "intensity": 100,
+      "triangles": 2150,
+      "bloom": true
+    }
+  ],
+  "errors": []
+}
