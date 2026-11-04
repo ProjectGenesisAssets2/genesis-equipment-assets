@@ -1,0 +1,29 @@
+{
+  "engine": "PlayCanvas WebGL2",
+  "source": "original Genesis V03",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "original_geometry": {
+    "loaded": true,
+    "meshes": 2,
+    "triangles": 2150,
+    "shader": "ShaderMaterial GLSL procedural",
+    "bloom": "CameraFrame HDR bloom .020",
+    "hdri": {
+      "environment": "Poly Haven Studio Small 09",
+      "format": "Radiance RGBE HDR high dynamic range",
+      "size": [
+        1024,
+        512
+      ],
+      "atlas": true
+    },
+    "glb_unchanged": true
+  },
+  "frames": 48,
+  "fps": 24,
+  "emissive": "GPU ShaderMaterial procedural GLSL, no baked masks",
+  "bloom": "CameraFrame HDR bloom .020",
+  "original_glb_modified": false,
+  "art_reference": "image-gen-8.png, Rayo blue sword approved visual reference",
+  "browser_errors": []
+}
