@@ -1,0 +1,68 @@
+name: Verify authentic V03 viewer in Firefox and Microsoft Edge
+on:
+  push:
+    branches: [feature/fab-iron-sword-audit]
+    paths: ['.github/workflows/test-v03-firefox-edge.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browsers:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - browser: firefox
+            install: firefox
+          - browser: edge
+            install: msedge
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright and target browser
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install "${{ matrix.install }}" --with-deps
+      - name: Verify exact V03 GLB in ${{ matrix.browser }}
+        env:
+          TARGET_BROWSER: ${{ matrix.browser }}
+        run: |
+          cat > /tmp/serve.cjs <<'EOF'
+          const fs=require('fs'),http=require('http');
+          http.createServer((req,res)=>{
+            res.setHeader('Content-Type','text/html');
+            fs.createReadStream('tests/v03-original-chat-viewer.html').pipe(res)
+          }).listen(8765,'127.0.0.1');
+          EOF
+          node /tmp/serve.cjs &
+          cat > check-v03-browser.cjs <<'EOF'
+          const {chromium,firefox}=require('playwright');
+          (async()=>{
+            const target=process.env.TARGET_BROWSER;
+            const browser=target==='firefox'
+              ? await firefox.launch({headless:true})
+              : await chromium.launch({headless:true,channel:'msedge',args:['--enable-webgl','--use-angle=swiftshader']});
+            const page=await browser.newPage({viewport:{width:740,height:530}});
+            page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
+            page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE_ERROR',m.text())});
+            page.on('requestfailed',r=>console.log('REQUEST_FAILED',r.url(),r.failure()?.errorText));
+            await page.goto('http://127.0.0.1:8765',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>window.__genesisResult!==undefined,{timeout:120000});
+            const result=await page.evaluate(()=>window.__genesisResult);
+            console.log('GENESIS_'+target.toUpperCase()+'_RESULT',JSON.stringify(result));
+            if(!result.loaded||!result.verified||result.triangles!==2150||result.normalMaps<1){
+              throw Error('ORIGINAL_V03_FAILURE '+JSON.stringify(result));
+            }
+            await page.screenshot({path:'/tmp/v03-'+target+'-real.png'});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node check-v03-browser.cjs
+      - name: Upload proof screenshot only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-real-${{ matrix.browser }}
+          path: /tmp/v03-${{ matrix.browser }}-real.png
+          retention-days: 2
