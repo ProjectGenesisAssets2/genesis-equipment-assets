@@ -1,0 +1,65 @@
+name: Genesis sword V03 — dual-channel VFX masks and real Cycles render
+on:
+  push:
+    branches: [experiment/v03-dual-channel-masks-vfx-20261104]
+    paths:
+      - 'scripts/fab_sword/generate_v03_channel_masks.py'
+      - 'scripts/fab_sword/render_v03_dual_channel_masks.py'
+      - '.github/workflows/v03-dual-channel-masks-vfx.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-dual-channels:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python and image-mask generator
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate exact-UV eight channel grayscale masks
+        run: |
+          python3 -m pip install --no-cache-dir numpy pillow
+          mkdir -p /tmp/genesis-mask-data
+          python3 scripts/fab_sword/generate_v03_channel_masks.py --output-dir /tmp/genesis-mask-data --size 1536
+          for canal in Base Luz Sombra Fuego Hielo Naturaleza Tierra Rayo; do test -s "/tmp/genesis-mask-data/Genesis_Mask_${canal}_V001.png"; done
+      - name: Recover original licensed V03 sword in temporary runner
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: 4K genuine 32-bit EXR illumination
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          test $(stat -c %s /tmp/studio_small_09_4k.exr) -gt 1000000
+          sha256sum /tmp/studio_small_09_4k.exr
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-4-5
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-4-5 --strip-components=1
+          /tmp/blender-4-5/blender --version | head -2
+      - name: Render actual sword with Fire plus Lightning and Ice plus Shadow at 25/80 levels
+        run: |
+          mkdir -p /tmp/genesis-vfx-previews
+          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v03_dual_channel_masks.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --masks /tmp/genesis-mask-data --output-dir /tmp/genesis-vfx-previews --samples 80
+          for image in 01_Fuego25_Rayo80 02_Fuego80_Rayo25 03_Hielo80_Sombra25 04_Hielo25_Sombra80; do test -s "/tmp/genesis-vfx-previews/$image.png"; done
+          test -s /tmp/genesis-vfx-previews/vfx_audit.json
+      - name: Package previews and eight mask tests (not licensed source GLB)
+        if: success()
+        run: |
+          mkdir -p /tmp/genesis-vfx-artifact/masks /tmp/genesis-vfx-artifact/renders
+          cp /tmp/genesis-mask-data/* /tmp/genesis-vfx-artifact/masks/
+          cp /tmp/genesis-vfx-previews/* /tmp/genesis-vfx-artifact/renders/
+      - name: Upload masks, renders, audit
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-DualChannel-VFX-Masks-HDRI32-Cycles
+          path: /tmp/genesis-vfx-artifact/
+          retention-days: 7
+      - if: always()
+        run: rm -f /tmp/genesis-original-v03.glb
