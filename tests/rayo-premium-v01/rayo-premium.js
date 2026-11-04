@@ -79,7 +79,7 @@ void main(){
  for(int i=0;i<5;i++){
    float fi=float(i);
    float anchor=(fi-2.0)*.043;
-   float edgeBias=(fi==0||fi==4)?.084:0.0;
+   float edgeBias=(fi<.5 || fi>3.5)?.084:0.0;
    float path=.5+anchor+edgeBias*(fi<2.? -1.:1.)
       +fractalBolt(y,fi*9.87+13.2,t)*(.70+.22*power);
    float dist=abs(x-path);
