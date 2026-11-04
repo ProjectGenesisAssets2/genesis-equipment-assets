@@ -10,7 +10,7 @@ app.setCanvasResolution(pc.RESOLUTION_FIXED,1280,720);
 app.start();
 app.scene.ambientLight=new pc.Color(.29,.31,.38);
 app.scene.toneMapping=pc.TONEMAP_ACES;
-app.scene.exposure=1.28;
+app.scene.exposure=.94;
 const camera=new pc.Entity('V03_PREMIUM_CAMERA');
 camera.addComponent('camera',{fov:34,nearClip:.02,farClip:45,clearColor:new pc.Color(.013,.016,.025)});
 camera.setPosition(.10,.0,3.60);camera.lookAt(0,0,0);app.root.addChild(camera);
@@ -29,11 +29,43 @@ try{
  const frame=new pc.CameraFrame(app,camera.camera);
  frame.rendering.toneMapping=pc.TONEMAP_ACES;
  frame.rendering.samples=4;
- frame.bloom.intensity=.020;
+ frame.bloom.intensity=.029;
  frame.bloom.blurLevel=8;
  frame.update();
  bloomInfo='CameraFrame HDR bloom .020';
 }catch(e){console.warn('GENESIS_PREMIUM_BLOOM_UNAVAILABLE',String(e))}
+// Dark presentation background: preserves real 32-bit HDR environment lighting
+// for the metal, without rendering the photographic studio behind the sword.
+function addBackground(){
+ const vertex=`
+attribute vec3 aPosition;attribute vec2 aUv0;
+uniform mat4 matrix_model;uniform mat4 matrix_viewProjection;
+varying vec2 vUv;
+void main(){vUv=aUv0;gl_Position=matrix_viewProjection*matrix_model*vec4(aPosition,1.);}
+`;
+ const fragment=`
+precision mediump float;varying vec2 vUv;
+void main(){
+ vec2 p=vUv-.5;
+ float elliptical=length(p*vec2(1.28,1.6));
+ float glow=exp(-elliptical*elliptical*6.4);
+ vec3 color=mix(vec3(.009,.013,.024),vec3(.039,.054,.081),glow);
+ gl_FragColor=vec4(color,1.);
+}
+`;
+ const mat=new pc.ShaderMaterial({uniqueName:'GenesisStudioBackdropV003',
+   attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
+   vertexGLSL:vertex,fragmentGLSL:fragment});
+ mat.cull=pc.CULLFACE_NONE;mat.depthWrite=true;mat.depthTest=true;mat.update();
+ const m=new pc.Mesh(device);
+ m.setPositions([-16,-12,-2,16,-12,-2,16,12,-2,-16,12,-2]);
+ m.setUvs(0,[0,0,1,0,1,1,0,1]);
+ m.setIndices([0,1,2,0,2,3]);m.update();
+ const e=new pc.Entity('DARK_STUDIO_BACKGROUND_NO_IMPACT_ON_IBL');
+ e.addComponent('render',{meshInstances:[new pc.MeshInstance(m,mat)],castShadows:false,receiveShadows:false});
+ app.root.addChild(e);
+}
+addBackground();
 const vertexGLSL=`
 attribute vec3 aPosition;
 attribute vec2 aUv0;
@@ -113,7 +145,9 @@ void main(void){
  float sparks=(1.-smoothstep(.01,.22,length(offset)))*step(.982,rnd);
  sparks*=smoothstep(.25,.55,abs(x))*(1.-smoothstep(.8,1.,abs(x)))*blade;
  float intense=clamp(uIntensity,0.,1.);
- float blueMist=exp(-pow(max(abs(x)-.17,0.)/.49,1.36))*(.55+.45*sin(y*17.-motion*3.9)*sin(y*27.+motion*7.1));
+ float guardPulse=exp(-pow((y+.975)/.025,2.0))*(1.0-smoothstep(.68,.94,abs(x)))*(.42+.58*sin(x*17.+motion*4.7)*sin(x*8.-motion*3.1));
+ guardPulse*=.38;
+ float blueMist=exp(-pow(max(abs(x)-.13,0.)/.45,1.36))*(.55+.45*sin(y*17.-motion*3.9)*sin(y*27.+motion*7.1));
  blueMist*=blade*.21;
  core=(core+branch*.76+nerve*.45)*height;
  outer=(outer+fringe)*blade;
@@ -122,8 +156,8 @@ void main(void){
  vec3 deep=vec3(.005,.04,.35);
  float blueGlow=outer*2.4 + core*.30;
  float whiteHot=core*.9+sparks*2.;
- vec3 color=deep*(outer*2.7+blueMist*.22)+blue*(blueGlow+core*.62+blueMist*.32)+white*(whiteHot);
- float alpha=clamp((core*.78+outer*.33+sparks+blueMist*.18)*(.60+.80*intense),0.,.78);
+ vec3 color=deep*(outer*2.7+blueMist*.22)+blue*(blueGlow+core*.62+blueMist*.32+guardPulse*.50)+white*(whiteHot+guardPulse*.12);
+ float alpha=clamp((core*.78+outer*.33+sparks+blueMist*.18+guardPulse*.14)*(.60+.80*intense),0.,.78);
  color*=1.1+2.1*intense;
  gl_FragColor=vec4(color*height+blue*sparks*1.1,alpha);
 }
@@ -136,7 +170,7 @@ mat.setParameter('uTime',0);mat.setParameter('uIntensity',.8);
 mat.update();
 function overlayMesh(){
  const m=new pc.Mesh(device);
- const x=.295,y0=-.52,y1=1.08,z=.102;
+ const x=.33,y0=-.56,y1=1.08,z=.102;
  m.setPositions([-x,y0,z,x,y0,z,x,y1,z,-x,y1,z]);
  m.setNormals([0,0,1,0,0,1,0,0,1,0,0,1]);
  m.setUvs(0,[0,0,1,0,1,1,0,1]);
@@ -157,7 +191,7 @@ async function loadStudioHDRI(){
  const envAtlas=pc.EnvLighting.generateAtlas(lighting);
  lighting.destroy();
  app.scene.envAtlas=envAtlas;
- app.scene.skyboxIntensity=1.55;
+ app.scene.skyboxIntensity=.72;
  return {environment:'Poly Haven Studio Small 09',format:'Radiance RGBE HDR high dynamic range',size:[texture.width,texture.height],atlas:true};
 }
 let sourceTri=0,sourceMeshes=0;
