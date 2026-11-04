@@ -10,7 +10,7 @@ app.setCanvasResolution(pc.RESOLUTION_FIXED,1280,720);
 app.start();
 app.scene.ambientLight=new pc.Color(.29,.31,.38);
 app.scene.toneMapping=pc.TONEMAP_ACES;
-app.scene.exposure=1.10;
+app.scene.exposure=1.28;
 const camera=new pc.Entity('V03_PREMIUM_CAMERA');
 camera.addComponent('camera',{fov:34,nearClip:.02,farClip:45,clearColor:new pc.Color(.013,.016,.025)});
 camera.setPosition(.10,.0,3.60);camera.lookAt(0,0,0);app.root.addChild(camera);
@@ -76,7 +76,7 @@ void main(void){
  for(int k=0;k<4;k++){
   float seed=float(k);
   float side=mod(seed,2.0)<.5?-1.0:1.0;
-  float center=side*(.225+.068*sin(y*4.3+seed*2.8+motion*1.3));
+  float center=side*(.235+.125*sin(y*8.3+seed*2.8+motion*2.1));
   float line=wire(x,y,center,seed,.010+seed*.0015);
   float gap=sin(y*(13.1+seed*1.7)-motion*(5.9+seed)+seed*2.2);
   float gate=smoothstep(-.2,.25,gap);
@@ -87,14 +87,15 @@ void main(void){
  }
  // Branches flare out from the edges at irregular, evolving attachment points.
  float branch=0.0;
- for(int k=0;k<8;k++){
+ for(int k=0;k<14;k++){
   float n=float(k);
   float cy=-.76+mod(n*0.267+floor(motion*.87)*.033,1.62);
   float fy=y-cy;
-  float length=.135+.09*hash11(n*33.8);
+  float length=.155+.16*hash11(n*33.8);
   float window=smoothstep(0.,.023,fy)*(1.-smoothstep(length-.024,length,fy));
   float direction=mod(n,2.0)<.5?-1.0:1.0;
-  float o=direction*(.25+fy*(1.1+hash11(n*7.2)));
+  float o=direction*(.25+fy*(1.35+hash11(n*7.2)));
+  o+=sin(y*11.0+n*1.2+motion*2.0)*.052;
   o+=sin(fy*79.+n*8.+floor(motion*12.))*.014;
   float d=abs(x-o);
   branch+=exp(-pow(d/.009,1.24))*window*(.55+.45*hash11(floor(motion*11.)+n));
@@ -112,6 +113,8 @@ void main(void){
  float sparks=(1.-smoothstep(.01,.22,length(offset)))*step(.982,rnd);
  sparks*=smoothstep(.25,.55,abs(x))*(1.-smoothstep(.8,1.,abs(x)))*blade;
  float intense=clamp(uIntensity,0.,1.);
+ float blueMist=exp(-pow(max(abs(x)-.17,0.)/.49,1.36))*(.55+.45*sin(y*17.-motion*3.9)*sin(y*27.+motion*7.1));
+ blueMist*=blade*.21;
  core=(core+branch*.76+nerve*.45)*height;
  outer=(outer+fringe)*blade;
  vec3 white=vec3(.75,.92,1.0);
@@ -119,8 +122,8 @@ void main(void){
  vec3 deep=vec3(.005,.04,.35);
  float blueGlow=outer*2.4 + core*.30;
  float whiteHot=core*.9+sparks*2.;
- vec3 color=deep*outer*2.7+blue*(blueGlow+core*.62)+white*(whiteHot);
- float alpha=clamp((core*.78+outer*.33+sparks)*(.60+.80*intense),0.,.78);
+ vec3 color=deep*(outer*2.7+blueMist*.22)+blue*(blueGlow+core*.62+blueMist*.32)+white*(whiteHot);
+ float alpha=clamp((core*.78+outer*.33+sparks+blueMist*.18)*(.60+.80*intense),0.,.78);
  color*=1.1+2.1*intense;
  gl_FragColor=vec4(color*height+blue*sparks*1.1,alpha);
 }
@@ -133,7 +136,7 @@ mat.setParameter('uTime',0);mat.setParameter('uIntensity',.8);
 mat.update();
 function overlayMesh(){
  const m=new pc.Mesh(device);
- const x=.235,y0=-.52,y1=1.08,z=.102;
+ const x=.295,y0=-.52,y1=1.08,z=.102;
  m.setPositions([-x,y0,z,x,y0,z,x,y1,z,-x,y1,z]);
  m.setNormals([0,0,1,0,0,1,0,0,1,0,0,1]);
  m.setUvs(0,[0,0,1,0,1,1,0,1]);
@@ -144,8 +147,21 @@ function overlayMesh(){
  window.__rayoOverlay=entity;
 }
 overlayMesh();
+async function loadStudioHDRI(){
+ const texture=await new Promise((resolve,reject)=>{
+  app.assets.loadFromUrl('/tests/rayo-premium-v001/studio_small_09_1k.hdr','texture',(err,asset)=>{
+   if(err)reject(new Error(String(err)));else resolve(asset.resource);
+  });
+ });
+ const lighting=pc.EnvLighting.generateLightingSource(texture);
+ const envAtlas=pc.EnvLighting.generateAtlas(lighting);
+ lighting.destroy();
+ app.scene.envAtlas=envAtlas;
+ app.scene.skyboxIntensity=1.55;
+ return {environment:'Poly Haven Studio Small 09',format:'Radiance RGBE HDR high dynamic range',size:[texture.width,texture.height],atlas:true};
+}
 let sourceTri=0,sourceMeshes=0;
-app.assets.loadFromUrlAndFilename('/tests/rayo-premium-v001/source_original_v03.glb','original_v03.glb','container',(err,asset)=>{
+app.assets.loadFromUrlAndFilename('/tests/rayo-premium-v001/source_original_v03.glb','original_v03.glb','container',async(err,asset)=>{
  if(err){window.__rayoError=String(err);document.getElementById('status').textContent='ERROR '+err;return}
  const instance=asset.resource.instantiateRenderEntity();
  instance.name='GENESIS_ORIGINAL_V03_SOURCE_UNMODIFIED';
@@ -154,8 +170,11 @@ app.assets.loadFromUrlAndFilename('/tests/rayo-premium-v001/source_original_v03.
    for(const mi of child.render.meshInstances)sourceTri+=mi.mesh.primitive?.[0]?.count/3||0;
  }});
  if(sourceMeshes!==2 || sourceTri!==2150){window.__rayoError='Wrong source geometry '+sourceMeshes+' / '+sourceTri;return}
+ let studioHDRI;
+ try{studioHDRI=await loadStudioHDRI();}
+ catch(e){window.__rayoError='HDRI unavailable: '+String(e);console.error('GENESIS_HDRI_REQUIRED',e);return}
  document.getElementById('status').textContent='';
- window.__rayoReady={loaded:true,meshes:sourceMeshes,triangles:sourceTri,shader:'ShaderMaterial GLSL procedural',bloom:bloomInfo,glb_unchanged:true};
+ window.__rayoReady={loaded:true,meshes:sourceMeshes,triangles:sourceTri,shader:'ShaderMaterial GLSL procedural',bloom:bloomInfo,hdri:studioHDRI,glb_unchanged:true};
  console.log('GENESIS_RAYO_PREMIUM_READY',JSON.stringify(window.__rayoReady));
 });
 window.__rayoStep=async(frame,frames=48)=>{
