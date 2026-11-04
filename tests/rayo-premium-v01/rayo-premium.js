@@ -81,10 +81,10 @@ void main(void){
  float mainPath=.5+zig(y,1.0,t);
  float secondPath=.52+zig(y,2.9,t);
  float thirdPath=.477+zig(y,4.1,t);
- float core=lineEnergy(x-mainPath,.0030)*primary
-          +lineEnergy(x-secondPath,.0024)*second*.55
-          +lineEnergy(x-thirdPath,.0020)*third*.32;
- float shimmer=lineEnergy(x-mainPath,.015)*primary*.25
+ float core=lineEnergy(x-mainPath,.0080)*primary
+          +lineEnergy(x-secondPath,.0065)*second*.55
+          +lineEnergy(x-thirdPath,.0055)*third*.32;
+ float shimmer=lineEnergy(x-mainPath,.027)*primary*.25
           +lineEnergy(x-secondPath,.011)*second*.09
           +lineEnergy(x-thirdPath,.009)*third*.05;
  // Sparse 1-2 little branches at higher channel strength, no free-floating sparks.
@@ -93,11 +93,11 @@ void main(void){
  float branch=lineEnergy(x-branchPath,.0028)*
               segment(y,.60,.045)*blade*spurAmount*beat*.28;
  core+=branch;
- float strength=power*(.14+.38*power)*glimmer;
- vec3 electricBlue=vec3(.18,.53,1.0)*shimmer
-                  +vec3(.42,.78,1.30)*core;
+ float strength=power*(.30+.40*power)*glimmer;
+ vec3 electricBlue=vec3(.36,1.00,2.00)*shimmer
+                  +vec3(.90,1.55,2.40)*core;
  vec3 result=electricBlue*strength;
- float opacity=clamp((core*.45+shimmer*.18)*strength,0.,.46);
+ float opacity=clamp((core*.76+shimmer*.30)*power,0.,.55);
  gl_FragColor=vec4(result,opacity);
 }
 
@@ -107,7 +107,7 @@ const material=new pc.ShaderMaterial({
  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
  vertexGLSL,fragmentGLSL
 });
-material.blendType=pc.BLEND_ADDITIVE;
+material.blendType=pc.BLEND_ADDITIVEALPHA;
 material.cull=pc.CULLFACE_NONE;
 material.depthTest=false;
 material.depthWrite=false;
