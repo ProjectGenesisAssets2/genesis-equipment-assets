@@ -107,7 +107,7 @@ const material=new pc.ShaderMaterial({
  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
  vertexGLSL,fragmentGLSL
 });
-material.blendType=pc.BLEND_ADDITIVEALPHA;
+material.blendType=pc.BLEND_ADDITIVE;
 material.cull=pc.CULLFACE_NONE;
 material.depthTest=false;
 material.depthWrite=false;
@@ -143,6 +143,8 @@ window.__genesisIntensity=35;
 window.__genesisSetIntensity=(v)=>{let n=Math.max(0,Math.min(100,Math.round(Number(v)||0)));window.__genesisIntensity=n;document.getElementById('intensityValue').textContent=n;document.getElementById('intensitySlider').value=n;return n;};
 window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  if(!window.__genesisReady)throw Error('GLB_NOT_LOADED');
+ window.__genesisCaptureMode=true;
+ if(forcedIntensity!==undefined)window.__genesisSetIntensity(forcedIntensity);
  const time=frame*2.75/frames;
  const intensity=Math.max(0,Math.min(100,Number(forcedIntensity??window.__genesisIntensity??35)));
  material.setParameter('uTime',time);
@@ -152,5 +154,5 @@ window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  return {frame,time,intensity,triangles:window.__genesisReady.triangles,bloom:bloomOK};
 };
 document.getElementById('intensitySlider').addEventListener('input',e=>window.__genesisSetIntensity(e.target.value));
-app.on('update',dt=>{if(!window.__genesisReady)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.30*(window.__genesisIntensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
+app.on('update',dt=>{if(!window.__genesisReady||window.__genesisCaptureMode)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.30*(window.__genesisIntensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
 loadSword();
