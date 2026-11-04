@@ -1,0 +1,79 @@
+name: Project Genesis V03 animated dual channels - Cycles 32-bit HDRI
+on:
+  push:
+    branches: [experiment/v03-animated-dual-channel-20261104]
+    paths:
+      - 'scripts/fab_sword/animate_v03_dual_channel_cycles.py'
+      - '.github/workflows/v03-animated-dual-channel-cycles.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-animation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [fire_ray, ice_shadow]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover and verify exact authentic V03 original GLB
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v03.glb' | sha256sum -c
+      - name: Download original real Studio Small 09 4K EXR (float32)
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          test $(stat -c %s /tmp/studio_small_09_4k.exr) -gt 1000000
+      - name: Generate all eight independent original UV0 channel masks
+        run: |
+          python3 -m pip install --user --no-cache-dir numpy pillow
+          mkdir -p /tmp/genesis-masks
+          python3 scripts/fab_sword/generate_v03_channel_masks.py --output-dir /tmp/genesis-masks --size 1536
+          for canal in Base Luz Sombra Fuego Hielo Naturaleza Tierra Rayo; do
+            test -s "/tmp/genesis-masks/Genesis_Mask_${canal}_V001.png"
+          done
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender --strip-components=1
+          /tmp/blender/blender --version | head -2
+      - name: Render 18 truly animated frames of ${{ matrix.pair }} in Cycles
+        run: |
+          mkdir -p /tmp/genesis-animated-v03
+          /tmp/blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/animate_v03_dual_channel_cycles.py -- --input /tmp/genesis-v03.glb --hdri /tmp/studio_small_09_4k.exr --masks /tmp/genesis-masks --output-dir /tmp/genesis-animated-v03 --pair "${{ matrix.pair }}" --samples 18 --frames 18
+          test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/frame_000.png"
+          test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/frame_017.png"
+          test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation_audit.json"
+          test "$(find /tmp/genesis-animated-v03/${{ matrix.pair }} -name 'frame_*.png' | wc -l)" -eq 18
+      - name: Produce real GIF and MP4 animation from Cycles frames
+        run: |
+          cd /tmp/genesis-animated-v03/${{ matrix.pair }}
+          ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -movflags faststart animation.mp4
+          ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -vf 'palettegen=stats_mode=diff' /tmp/genesis_palette.png
+          ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -i /tmp/genesis_palette.png -lavfi 'paletteuse=dither=bayer:bayer_scale=3' -loop 0 animation.gif
+          test -s animation.mp4
+          test -s animation.gif
+          ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=noprint_wrappers=1 animation.mp4
+      - name: Only publish animations, evidence and a few proof frames (not the licensed GLB)
+        if: success()
+        run: |
+          mkdir -p /tmp/genesis-vfx-proof
+          cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.mp4" /tmp/genesis-vfx-proof/
+          cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.gif" /tmp/genesis-vfx-proof/
+          cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation_audit.json" /tmp/genesis-vfx-proof/
+          cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/frame_003.png" /tmp/genesis-vfx-proof/
+          cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/frame_012.png" /tmp/genesis-vfx-proof/
+      - name: Upload ${{ matrix.pair }} preview movies and verification
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v03-v175-animated-${{ matrix.pair }}-hdr32
+          path: /tmp/genesis-vfx-proof/
+          retention-days: 7
+      - if: always()
+        run: rm -f /tmp/genesis-v03.glb
