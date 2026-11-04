@@ -1,0 +1,67 @@
+{
+  "source": "exact original Fab sword V03 in PlayCanvas",
+  "platform": "PlayCanvas WebGL2",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "original_triangles": 2150,
+  "original_meshes": 2,
+  "frames_per_variant": 30,
+  "variants": [
+    {
+      "variant": "01_Fuego25_Rayo80",
+      "frame": 29,
+      "levels": {
+        "Fuego": 25,
+        "Rayo": 80,
+        "Hielo": 0,
+        "Sombra": 0
+      },
+      "engine": "PlayCanvas",
+      "triangles": 2150,
+      "sourceMeshes": 2
+    },
+    {
+      "variant": "02_Fuego80_Rayo25",
+      "frame": 29,
+      "levels": {
+        "Fuego": 80,
+        "Rayo": 25,
+        "Hielo": 0,
+        "Sombra": 0
+      },
+      "engine": "PlayCanvas",
+      "triangles": 2150,
+      "sourceMeshes": 2
+    },
+    {
+      "variant": "03_Hielo80_Sombra25",
+      "frame": 29,
+      "levels": {
+        "Fuego": 0,
+        "Rayo": 0,
+        "Hielo": 80,
+        "Sombra": 25
+      },
+      "engine": "PlayCanvas",
+      "triangles": 2150,
+      "sourceMeshes": 2
+    },
+    {
+      "variant": "04_Hielo25_Sombra80",
+      "frame": 29,
+      "levels": {
+        "Fuego": 0,
+        "Rayo": 0,
+        "Hielo": 25,
+        "Sombra": 80
+      },
+      "engine": "PlayCanvas",
+      "triangles": 2150,
+      "sourceMeshes": 2
+    }
+  ],
+  "glb_edited": false,
+  "texture_masks_used": false,
+  "particles": "procedural entities",
+  "lighting": "PC studio with dynamic colored lights",
+  "note": "PlayCanvas realtime lookdev. The video glow is postprocessed separately; no external 3D geometry files exported."
+}
