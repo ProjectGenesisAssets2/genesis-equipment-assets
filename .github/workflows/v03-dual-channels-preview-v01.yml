@@ -1,0 +1,45 @@
+name: Genesis V03 Dual Channels Fuego-Rayo Hielo-Sombra Blender Cycles HDRI32
+on:
+  push:
+    branches: [experiment/v03-dual-channel-vfx-20261104]
+    paths: ['scripts/fab_sword/v03_dual_channels_preview_v01.py','.github/workflows/v03-dual-channels-preview-v01.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-dual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hydrate unchanged original Fab sword V03 inside private runner
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v03-source.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v03-source.glb' | sha256sum -c
+      - name: Download authentic 4K EXR 32-bit Poly Haven Studio Small 09
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          test $(stat -c %s /tmp/studio_small_09_4k.exr) -gt 1000000
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-4-5
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-4-5 --strip-components=1
+          /tmp/blender-4-5/blender --version | head -2
+      - name: Render four combinations with normalized channel value intensity controls
+        run: |
+          mkdir -p /tmp/genesis-dual-channels
+          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/v03_dual_channels_preview_v01.py -- --input /tmp/genesis-v03-source.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/genesis-dual-channels --samples 72
+          for f in fire_ray_intensity_30 fire_ray_intensity_80 ice_shadow_intensity_30 ice_shadow_intensity_80; do test -s "/tmp/genesis-dual-channels/$f.png"; done
+          test -s /tmp/genesis-dual-channels/render_audit.json
+      - name: Upload only renders and audit (never licensed GLB)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-Dual-Channel-Previews-V01
+          path: /tmp/genesis-dual-channels/
+          retention-days: 7
+      - if: always()
+        run: rm -f /tmp/genesis-v03-source.glb
