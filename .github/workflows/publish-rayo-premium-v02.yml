@@ -1,0 +1,51 @@
+name: Publish Genesis V03 premium Rayo V02 GIF and MP4 to public experimental branch
+on:
+  push:
+    branches: [experiment/v03-rayo-premium-glsl-v02-brightcorona-20261104]
+    paths: ['.github/workflows/publish-rayo-premium-v02.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/v03-rayo-premium-glsl-v02-brightcorona-20261104
+          persist-credentials: true
+      - name: Download verified real PlayCanvas V02 artifact - original GLB never included
+        uses: actions/download-artifact@v4
+        with:
+          name: Genesis-V03-RayoPremium-RealPlayCanvas-HDRBloom-V002
+          run-id: 41898363440
+          github-token: ${{ github.token }}
+          path: public-previews/rayo-premium-glsl-v02/
+      - name: Verify two render files, original geometry, actual shader and HDR bloom
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('public-previews/rayo-premium-glsl-v02')
+          audit=json.loads((p/'audit.json').read_text())
+          assert audit['verified_original_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert audit['source']['triangles']==2150 and audit['source']['meshes']==2
+          assert audit['source']['bloom'] is True and audit['source']['proceduralShader'] is True
+          assert audit['source']['uvMasks'] is False
+          assert audit['errors']==[]
+          assert audit['frames']==32 and audit['realPlayCanvasWebGL2'] is True
+          assert (p/'Genesis_Rayo_Premium_PlayCanvas_V002.mp4').stat().st_size>100000
+          assert (p/'Genesis_Rayo_Premium_PlayCanvas_V002.gif').stat().st_size>300000
+          assert not list(p.glob('*.glb'))
+          print('GENESIS_RAYO_V002_PUBLIC_PREVIEW_VERIFIED',str(p))
+          PY
+      - name: Commit only preview video, animation and audit to experimental branch
+        run: |
+          git config user.name 'Genesis Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git add 'public-previews/rayo-premium-glsl-v02/'
+          if git diff --cached --quiet; then echo 'No changes'; exit 0; fi
+          git commit -m "preview: experimental Rayo V02 PlayCanvas GLSL Bloom real video"
+          git push origin HEAD:experiment/v03-rayo-premium-glsl-v02-brightcorona-20261104
