@@ -1,0 +1,55 @@
+name: Publish V03 PlayCanvas four PC VFX previews to public experimental branch
+on:
+  push:
+    branches: [experiment/v03-playcanvas-procedural-vfx-videos-20261104]
+    paths: ['.github/workflows/publish-v03-playcanvas-vfx-previews.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish-previews:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/v03-playcanvas-procedural-vfx-videos-20261104
+          persist-credentials: true
+      - name: Download already successful four PlayCanvas WebGL2 videos (not the licensed GLB)
+        uses: actions/download-artifact@v4
+        with:
+          name: Genesis-V03-PlayCanvas-PC-FourProceduralVFX-V001
+          run-id: 41877568928
+          github-token: ${{ github.token }}
+          path: public-previews/v03-playcanvas-vfx-v001/
+      - name: Validate four playable MP4 files and provenance
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('public-previews/v03-playcanvas-vfx-v001')
+          assert (p/'playcanvas_audit.json').exists()
+          j=json.loads((p/'playcanvas_audit.json').read_text())
+          assert j['original_triangles']==2150
+          assert j['original_meshes']==2
+          assert j['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert len(j['variants'])==4
+          for k in range(1,5):
+              name=p/f'variant_{k}.mp4'
+              assert name.stat().st_size>100000, name
+          assert (p/'Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4').stat().st_size>500000
+          assert (p/'Genesis_V03_4Combinaciones_Animated.gif').stat().st_size>500000
+          assert not list(p.rglob('*.glb')), 'Licensed source must not be public'
+          print('GENESIS_PUBLIC_VFX_FOUR_VIDEOS_VERIFIED',*[str((p/f'variant_{k}.mp4').stat().st_size) for k in range(1,5)])
+          PY
+          for k in 1 2 3 4; do ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "public-previews/v03-playcanvas-vfx-v001/variant_${k}.mp4"; done
+      - name: Commit only generated public preview media on experimental branch
+        run: |
+          git config user.name 'Genesis VFX Preview Bot'
+          git config user.email '41898282+genesis-vfx-preview[bot]@users.noreply.github.com'
+          git add 'public-previews/v03-playcanvas-vfx-v001/'
+          if git diff --cached --quiet; then echo 'No media changes'; exit 0; fi
+          git commit -m "preview: publish 4 original V03 PlayCanvas procedural effects MP4 videos"
+          git push origin HEAD:experiment/v03-playcanvas-procedural-vfx-videos-20261104
+          git ls-files 'public-previews/v03-playcanvas-vfx-v001/'
