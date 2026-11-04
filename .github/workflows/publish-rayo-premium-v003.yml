@@ -1,0 +1,52 @@
+name: Publish Rayo V003 PlayCanvas videos on experimental public branch
+on:
+  push:
+    branches: [experiment/v03-rayo-premium-shader-v003-hdri-composed-20261104]
+    paths:
+      - '.github/workflows/publish-rayo-premium-v003.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/v03-rayo-premium-shader-v003-hdri-composed-20261104
+      - name: Download only VERIFIED animation artifact from previous real WebGL render
+        uses: actions/download-artifact@v4
+        with:
+          name: Genesis-V03-Rayo-Premium-Shader-HDRI32-V003
+          run-id: 41898021558
+          github-token: ${{ github.token }}
+          path: public-previews/v03-rayo-shader-v003/
+      - name: Validate 48 original real WebGL frames, source hash, HDRI, no GLB in publication
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('public-previews/v03-rayo-shader-v003')
+          j=json.loads((p/'render_audit.json').read_text())
+          assert j['original_geometry']['triangles']==2150
+          assert j['original_geometry']['meshes']==2
+          assert j['original_geometry']['hdri']['atlas'] is True
+          assert j['original_geometry']['bloom'].startswith('CameraFrame HDR bloom')
+          assert j['frames']==48
+          assert j['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert j['browser_errors']==[]
+          assert (p/'Genesis_V03_Rayo_Premium_PC_Shader_V003.mp4').stat().st_size>100000
+          assert (p/'Genesis_V03_Rayo_Premium_PC_Shader_V003.gif').stat().st_size>100000
+          assert not list(p.rglob('*.glb'))
+          print('GENESIS_RAYO_PUBLIC_ARTIFACT_PROVENANCE_VALIDATED')
+          PY
+      - name: Commit only image and video previews on experiment branch
+        run: |
+          git config user.name 'Genesis VFX Preview Bot'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add 'public-previews/v03-rayo-shader-v003/'
+          if git diff --cached --quiet; then echo 'No changes'; exit 0; fi
+          git commit -m "preview: public original V03 Rayo GLSL HDRI32 video V003"
+          git push origin HEAD:experiment/v03-rayo-premium-shader-v003-hdri-composed-20261104
