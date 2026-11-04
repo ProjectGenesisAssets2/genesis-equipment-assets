@@ -11,7 +11,7 @@ const fs=require('fs'),path=require('path');
  page.on('console',m=>{if(m.type()==='error')console.log('BROWSER_ERROR',m.text()); else if(/GENESIS_PC_VFX_LOAD/.test(m.text()))console.log(m.text())});
  page.on('requestfailed',r=>console.log('LOAD_FAILED',r.url(),r.failure()?.errorText));
  await page.goto('http://127.0.0.1:8765/tests/pc-vfx-video/',{waitUntil:'domcontentloaded',timeout:120000});
- await page.waitForFunction(()=>window.__genesisReady || window.__genesisError,{timeout:120000});
+ await page.waitForFunction(()=>window.__genesisReady || window.__genesisError,null,{timeout:120000});
  const ready=await page.evaluate(()=>window.__genesisReady||window.__genesisError);
  console.log('GENESIS_PLAYCANVAS_REAL_V03_LOADED',JSON.stringify(ready));
  if(!ready || ready.loaded!==true ||ready.sourceMeshes===0){} // safeguard below
