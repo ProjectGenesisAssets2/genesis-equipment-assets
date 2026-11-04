@@ -8,11 +8,11 @@ const app=new pc.AppBase(canvas);app.init(appOptions);
 app.setCanvasResolution(pc.RESOLUTION_FIXED,1280,720);
 app.start();
 app.scene.ambientLight=new pc.Color(.40,.44,.53);
-app.scene.exposure=1.15;
+app.scene.exposure=1.25;
 app.scene.toneMapping=pc.TONEMAP_ACES;
 const camera=new pc.Entity('GENESIS_CINEMATIC_CAMERA');
 camera.addComponent('camera',{fov:34,nearClip:.01,farClip:50,clearColor:new pc.Color(.014,.017,.025)});
-camera.setPosition(0,.02,3.48);camera.lookAt(0,0,0);
+camera.setPosition(0,.02,3.36);camera.lookAt(0,0,0);
 app.root.addChild(camera);
 function directional(name,euler,color,intensity){
   const e=new pc.Entity(name);e.addComponent('light',{type:'directional',color:new pc.Color(...color),intensity,castShadows:false});
@@ -28,7 +28,7 @@ pulseLight.setPosition(.04,.40,.17);app.root.addChild(pulseLight);
 let bloomOK=false,framePost=null;
 try{
  framePost=new pc.CameraFrame(app,camera.camera);
- framePost.bloom.intensity=.055;
+ framePost.bloom.intensity=.065;
  framePost.bloom.blurLevel=7;
  framePost.rendering.renderTargetScale=1;
  framePost.update();
@@ -111,11 +111,11 @@ void main(){
  }
  // Faint continuous shimmer across the existing longitudinal ridge.
  float ridge=lp(x-.501,.021)*envelope*(.16+.10*sin(y*38.-t*14.));
- blue+=ridge;
+ blue+=ridge*1.5;
  // Edge corona follows the two physical blade edges but doesn't fill the blade.
  float edgeAbs=abs(x-.5);
  float edgeGlow=lp(edgeAbs-.080,.012)*envelope*(.44+.17*sin(y*35.+t*17.));
- blue+=edgeGlow*.35;outer+=edgeGlow*.18;
+ blue+=edgeGlow*.76;outer+=edgeGlow*.30;
  // Transient micro-ionization, positioned in the halo, not primitive spheres.
  for(int k=0;k<18;k++){
   float fk=float(k);
@@ -133,11 +133,11 @@ void main(){
  outer=clamp(outer,0.,1.8);
  float current=power*(.88+.12*flicker);
  vec3 energy=
-    vec3(.025,.20,1.32)*outer*.46+
-    vec3(.055,.50,2.0)*blue*.72+
-    vec3(.56,1.28,2.55)*core*.78+
-    vec3(1.2,1.68,2.3)*spark*.7;
- float glow=clamp(core*.48+blue*.20+outer*.10+spark*.35,0.,.91);
+    vec3(.035,.25,1.62)*outer*.72+
+    vec3(.075,.59,2.65)*blue*1.55+
+    vec3(.62,1.48,3.1)*core*1.55+
+    vec3(1.2,1.68,2.3)*spark*.90;
+ float glow=clamp(core*.82+blue*.35+outer*.18+spark*.55,0.,.96);
  float lowAmbient=lp(x-.50,.20)*envelope*.035*current;
  vec3 ambient=vec3(.025,.11,.38)*lowAmbient;
  gl_FragColor=vec4(energy*current+ambient,max(.0,glow)*current);
