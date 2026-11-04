@@ -37,6 +37,7 @@ jobs:
         env:
           FRAMES: '32'
         run: |
+          set -o pipefail
           node tests/rayo-premium-v01/record.cjs | tee /tmp/rayo-premium-v01.log
           test "$(find rayo-premium-v01-output -maxdepth 1 -name 'frame_*.png' | wc -l)" -eq 32
           test -s rayo-premium-v01-output/audit.json
