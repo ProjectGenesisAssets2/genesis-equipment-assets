@@ -1,0 +1,49 @@
+name: Verify in-chat candidate full original V03 loader
+on:
+  push:
+    branches: [feature/fab-iron-sword-audit]
+    paths: ['tests/v03-original-chat-viewer.html','.github/workflows/test-v03-original-chat-viewer.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Test unmodified GLB via GitHub blobs in Chromium
+        run: |
+          cat > /tmp/serve.cjs <<'EOF'
+          const fs=require('fs'),http=require('http');
+          http.createServer((req,res)=>{res.setHeader('Content-Type','text/html');fs.createReadStream('tests/v03-original-chat-viewer.html').pipe(res)}).listen(8765,'127.0.0.1');
+          EOF
+          node /tmp/serve.cjs &
+          cat > ./check-original.cjs <<'EOF'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const page=await browser.newPage({viewport:{width:740,height:530}});
+            page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
+            page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE_ERROR',m.text())});
+            await page.goto('http://127.0.0.1:8765',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>window.__genesisResult!==undefined,{timeout:120000});
+            const result=await page.evaluate(()=>window.__genesisResult);
+            console.log('V03_CHAT_VIEWER_RESULT',JSON.stringify(result));
+            if(!result.loaded||!result.verified||result.triangles!==2150||result.normalMaps<1)throw Error('V03 original glb or textures failed');
+            await page.screenshot({path:'/tmp/v03-original-live-browser.png'});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          EOF
+          node check-original.cjs
+      - name: Preserve viewer screenshot, never the source GLB
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-real-viewer-proof
+          path: /tmp/v03-original-live-browser.png
+          retention-days: 2
