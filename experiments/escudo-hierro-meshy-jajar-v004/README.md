@@ -9,3 +9,15 @@ V003 confirmó que +0,15 y −0,25 EV todavía producen demasiado metal plateado
 Run: https://github.com/gburdesedev/genesis-blender-render/actions/runs/41843397773
 
 Este repositorio público de la organización documenta las versiones; la prueba exacta V175 se ejecuta en el repo privado para no exponer el material fuente. Sin cambios en `main` ni en juego, y ninguna aprobación automática. La geometría original tiene **232.273 triángulos**, todavía sin optimización para WebGL.
+
+## Resultado verificado V004 — 2026-11-04
+
+GitHub Actions run 41843397773 **success**: Blender 4.5.13 LTS, Cycles 48 samples, HDRI Poly Haven 4K HDR/RGBE 32-bit, imagen 1100×1100. Fuente Meshy, HDRI y copia V175 coinciden con sus SHA-256. El render V004 quedó guardado en la rama privada experimental:
+
+https://github.com/gburdesedev/genesis-blender-render/blob/experiment/escudo-meshy-jajar-v004/review/escudo_hierro_meshy_v004/01_escudo_v004_frente_exposure_neg130.png
+
+Evaluación visual preliminar: **7,5/10** (mejor que V003). El hierro es más oscuro y creíble, con matices de oxidación; todavía se notan las separaciones de tablones de la geometría Meshy original. **NO APROBADO**. Falta render posterior V004, depurar agarres, retopología/LOD y GLB PlayCanvas, sin tocar la geometría maestra.
+
+GLB original conservado y comprobado: https://github.com/gburdesedev/genesis-blender-render/blob/experiment/escudo-meshy-jajar-v004/source_assets/meshy/jajar_019871b7/escudo_original.glb
+
+**Distribución/licencia:** verificar condición de licencia específica del modelo y términos de Meshy antes de publicar el original en el repositorio público.
