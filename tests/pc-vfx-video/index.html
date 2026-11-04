@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Genesis • V03 • PlayCanvas VFX procedural PC</title>
+<script type="importmap">{"imports":{"playcanvas":"/node_modules/playcanvas/build/playcanvas.mjs"}}</script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090e17}
+body{font-family:Georgia,serif;color:#e9dac0}
+#app{position:absolute;inset:0;width:100%;height:100%}
+.grain{position:absolute;pointer-events:none;inset:0;background:radial-gradient(ellipse at 50% 44%,transparent 13%,rgba(3,6,12,.52) 85%),linear-gradient(90deg,rgba(2,6,12,.75),transparent 24%,transparent 76%,rgba(2,6,12,.75));}
+.header{position:absolute;left:38px;top:22px;width:calc(100% - 76px);display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}
+.brand{letter-spacing:5px;font-size:24px;color:#e2c89c;text-shadow:0 2px 14px #000}
+.small{font:12px/1.5 Arial,sans-serif;letter-spacing:2.8px;color:#a4aaae}
+.line{height:1px;background:linear-gradient(90deg,rgba(181,148,97,.4),rgba(181,148,97,.04));margin-top:10px}
+#name{position:absolute;left:48px;top:248px;font-size:32px;letter-spacing:1px;max-width:330px;text-shadow:0 2px 17px #000}
+#subtitle{position:absolute;left:50px;top:297px;font:13px/1.7 Arial,sans-serif;letter-spacing:2px;max-width:285px;color:#b7bdca}
+.stat{position:absolute;right:44px;top:270px;text-align:right;font:12px/1.5 Arial,sans-serif;letter-spacing:1.8px;color:#c0bfd0}
+.stat strong{display:block;color:#e6dfcf;font-size:20px;letter-spacing:3px;padding-top:2px}
+.meter{margin:10px 0 20px auto;width:175px;height:3px;background:rgba(255,255,255,.16);border-radius:3px;overflow:hidden}
+.meter div{height:100%;width:25%;background:linear-gradient(90deg,#ad623e,#ffd67c)}
+.footer{position:absolute;bottom:24px;left:38px;right:38px;display:flex;justify-content:space-between;color:#a5a9b4;font:10px Arial,sans-serif;letter-spacing:2.5px;border-top:1px solid #6b604c66;padding-top:14px;pointer-events:none}
+#status{position:absolute;bottom:67px;left:45px;color:#d7e4ef;font:12px Arial,sans-serif}
+</style></head><body>
+<canvas id="app" width="1280" height="720"></canvas><div class="grain"></div>
+<div class="header"><div><div class="brand">PROJECT GENESIS</div><div class="small">ESTUDIO DE CANALES • PLAYCANVAS / WEBGL2</div><div class="line"></div></div><div class="small" style="text-align:right">HIERRO V175<br>ESPADA ORIGINAL V03</div></div>
+<div id="name">Fuego + Rayo</div><div id="subtitle">ENERGÍA ELEMENTAL<br>EN LA HOJA</div>
+<div class="stat"><span id="labelA">FUEGO</span><strong id="valueA">25 / 100</strong><div class="meter"><div id="barA"></div></div><span id="labelB">RAYO</span><strong id="valueB">80 / 100</strong><div class="meter"><div id="barB"></div></div></div>
+<div id="status">Cargando espada V03 original…</div>
+<div class="footer"><span>GEOMETRÍA Y PBR ORIGINALES</span><span>VFX PROCEDURALES • EMISSIVE • PARTÍCULAS • SIN MÁSCARAS</span></div>
+<script type="module" src="./vfx.js"></script></body></html>
