@@ -1,0 +1,36 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Genesis V03 — GLB original</title><style>html,body{margin:0;height:100%;background:#111923;color:#ddd;font:14px system-ui}canvas{display:block;width:100%;height:100%}#status{position:fixed;top:10px;left:10px;background:#111b;padding:10px;max-width:80vw;white-space:pre-wrap;z-index:3}</style></head><body><div id="status">Inicializando WebGL</div><script type="module">
+import * as THREE from '/node_modules/three/build/three.module.js';
+import {GLTFLoader} from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import {OrbitControls} from '/node_modules/three/examples/jsm/controls/OrbitControls.js';
+const status=document.querySelector('#status');
+try{
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#19232e');
+scene.add(new THREE.HemisphereLight(0xdceeff,0x3d2e22,2));
+const key=new THREE.DirectionalLight(0xffffff,4);key.position.set(2,3,4);scene.add(key);
+const rim=new THREE.DirectionalLight(0xb1d0ff,2);rim.position.set(-3,2,-2);scene.add(rim);
+const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.01,100);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+status.textContent='Descargando GLB original…';
+const ab=await (await fetch('/original-v03.glb',{cache:'no-store'})).arrayBuffer();
+if(ab.byteLength!==21283040)throw Error('Tamaño GLB inesperado: '+ab.byteLength);
+if(new DataView(ab).getUint32(0,true)!==0x46546c67)throw Error('Cabecera GLB incorrecta');
+status.textContent='GLB binario recibido; analizando escena y materiales…';
+const gltf=await new GLTFLoader().parseAsync(ab,'/');
+scene.add(gltf.scene);
+const box=new THREE.Box3().setFromObject(gltf.scene),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+if(box.isEmpty()||!Number.isFinite(size.y)||size.y<.1)throw Error('Bounding box inválida');
+const radius=Math.max(size.x,size.y,size.z);
+camera.position.copy(center).add(new THREE.Vector3(radius*.5,radius*.2,radius*2.2));camera.lookAt(center);
+controls.target.copy(center);controls.update();
+let meshes=0,triangles=0,materials=new Set(),mapped=0,normal=0,metallic=0,roughness=0;
+gltf.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const g=o.geometry;triangles+=g.index?g.index.count/3:g.attributes.position.count/3;const mm=Array.isArray(o.material)?o.material:[o.material];for(const m of mm){materials.add(m.uuid);if(m.map)mapped++;if(m.normalMap)normal++;if(m.metalnessMap)metallic++;if(m.roughnessMap)roughness++;}});
+const info={loaded:true,bytes:ab.byteLength,meshes,triangles,materials:materials.size,mapped,normal,metallic,roughness,bounds:[size.x,size.y,size.z],renderer:renderer.capabilities.isWebGL2?'WebGL2':'WebGL1'};
+window.__genesis=info;status.textContent='V03 GLB ORIGINAL CARGADO\n'+JSON.stringify(info,null,2);
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function frame(){requestAnimationFrame(frame);controls.update();renderer.render(scene,camera)}frame();
+}catch(e){window.__genesis={loaded:false,error:String(e),stack:e?.stack};status.textContent='ERROR GLB: '+(e?.stack||e);console.error(e)}
+</script></body></html>
