@@ -3,7 +3,7 @@
 
 The source GLB remains byte-identical. Render variants adjust only material-node connections in memory to compare the iron palette and ORIGINAL Fab metallic texture.
 """
-import argparse,hashlib,json,math,sys
+import argparse,hashlib,json,math,sys,struct,tempfile
 from pathlib import Path
 import bpy
 from mathutils import Matrix,Vector
@@ -59,6 +59,31 @@ def setup_world(path,strength=.92,rotation=0):
     tree.links.new(dark.outputs[0],mix.inputs[2])
     tree.links.new(mix.outputs[0],output.inputs['Surface'])
     return image
+
+
+def load_unused_embedded_iron_image(glb_path):
+    # Original V175 color is embedded in GLB but is unused by baked-palette V03.
+    payload=glb_path.read_bytes()
+    offset=12;metadata=None;binary=None
+    while offset<len(payload):
+        n,tag=struct.unpack_from('<II',payload,offset);offset+=8
+        part=payload[offset:offset+n];offset+=n
+        if tag==0x4E4F534A: metadata=json.loads(part)
+        if tag==0x004E4942: binary=part
+    if metadata is None or binary is None:raise RuntimeError('Invalid input GLB')
+    match=next((image for image in metadata['images'] if image.get('name')=='Genesis_V175_Hierro_Color_2K'),None)
+    if not match:raise RuntimeError('Missing original embedded V175 iron color')
+    view=metadata['bufferViews'][match['bufferView']]
+    payload_image=binary[view.get('byteOffset',0):view.get('byteOffset',0)+view['byteLength']]
+    tmp=tempfile.NamedTemporaryFile(suffix='.png',delete=False)
+    try:
+        tmp.write(payload_image);tmp.close()
+        image=bpy.data.images.load(tmp.name,check_existing=False)
+        image.name='Genesis_V175_Hierro_Color_2K_FROM_EXACT_GLB'
+        image.pack()
+        return image
+    finally:
+        Path(tmp.name).unlink(missing_ok=True)
 
 def render_one(scene,objects,target,outpath,label,view_dir):
     camera=bpy.data.objects.new('CAM_'+label,bpy.data.cameras.new('CAM_'+label))
@@ -153,8 +178,7 @@ def main():
         if n.type=='TEX_IMAGE' and n.image and 'Genesis_V175_Hierro_ORM_2K' in n.image.name),None)
     baked=next((n for n in blade.node_tree.nodes
         if n.type=='TEX_IMAGE' and n.image and 'Genesis_V175_APPROVED_PALETTE_BAKED_V03' in n.image.name),None)
-    original_raw_iron=next((n.image for n in blade.node_tree.nodes
-        if n.type=='TEX_IMAGE' and n.image and 'Genesis_V175_Hierro_Color_2K' in n.image.name),None)
+    original_raw_iron=load_unused_embedded_iron_image(a.input)
     if not all((original_metal_image,original_v175_orm,baked,original_raw_iron)):
         raise ValueError('Missing original Fab metallic, V175 ORM or baked/raw V175 colors')
     orig_metal_links=[(l.from_node.name,l.from_socket.name) for l in principled.inputs['Metallic'].links]
@@ -180,9 +204,10 @@ def main():
         raise RuntimeError('Original metallic layer not wired successfully')
     results.append(render_one(scene,meshes,target,a.output_dir/'B_OriginalMetal_V175Color.png','B_original_metal',v))
     # C: compare original V175 iron base color to experimental palette-baked V03.
+    original_baked_image=baked.image
     baked.image=original_raw_iron
     results.append(render_one(scene,meshes,target,a.output_dir/'C_OriginalMetal_RawV175IronColor.png','C_raw_iron',v))
-    baked.image=next(n.image for n in bpy.data.images if n.name=='Genesis_V175_APPROVED_PALETTE_BAKED_V03')
+    baked.image=original_baked_image
     report={'blender':bpy.app.version_string,'renderer':'Cycles','samples':a.samples,'source_sha256':sha,
        'geometry_triangles':tri,'meshes':len(meshes),'original_materials':list(mats),
        'pbr_source_textures':{n: [x.image.name for x in m.node_tree.nodes if x.type=='TEX_IMAGE' and x.image] for n,m in mats.items()},
