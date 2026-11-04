@@ -1,0 +1,45 @@
+name: Genesis V03 — V175 iron blade material comparison in Blender Cycles HDRI32
+on:
+  push:
+    branches: [feature/fab-iron-sword-audit]
+    paths: ['scripts/fab_sword/compare_v03_blade_iron.py','.github/workflows/compare-v03-iron-v175-hdri.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact original V03 sword
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/original-v03.glb' | sha256sum -c
+      - name: Obtain original Studio Small 09 EXR HDRI
+        run: |
+          curl -fSL --retry 3 --connect-timeout 20 --max-time 200 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          test $(stat -c %s /tmp/studio_small_09_4k.exr) -gt 1000000
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-4-5
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-4-5 --strip-components=1
+      - name: Render 3 exact-geometry iron material comparisons with matched lighting
+        run: |
+          mkdir -p /tmp/v03-iron-results
+          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/compare_v03_blade_iron.py -- --input /tmp/original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/v03-iron-results --samples 96
+          test -s /tmp/v03-iron-results/A_V175_Intact_LessLight.png
+          test -s /tmp/v03-iron-results/B_OriginalMetal_V175Color.png
+          test -s /tmp/v03-iron-results/C_OriginalMetal_RawV175IronColor.png
+      - name: Publish only renders and audit (no licensed GLB/textures)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-Iron-V175-Compare-Cycles
+          path: /tmp/v03-iron-results/
+          retention-days: 5
+      - if: always()
+        run: rm -f /tmp/original-v03.glb
