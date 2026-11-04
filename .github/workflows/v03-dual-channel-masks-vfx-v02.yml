@@ -45,7 +45,7 @@ jobs:
       - name: Render actual sword with Fire plus Lightning and Ice plus Shadow at 25/80 levels
         run: |
           mkdir -p /tmp/genesis-vfx-previews
-          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v03_dual_channel_masks.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --masks /tmp/genesis-mask-data --output-dir /tmp/genesis-vfx-previews --samples 80
+          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v03_dual_channel_masks_v02.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --masks /tmp/genesis-mask-data --output-dir /tmp/genesis-vfx-previews --samples 80
           for image in 01_Fuego25_Rayo80 02_Fuego80_Rayo25 03_Hielo80_Sombra25 04_Hielo25_Sombra80; do test -s "/tmp/genesis-vfx-previews/$image.png"; done
           test -s /tmp/genesis-vfx-previews/vfx_audit.json
       - name: Package previews and eight mask tests (not licensed source GLB)
