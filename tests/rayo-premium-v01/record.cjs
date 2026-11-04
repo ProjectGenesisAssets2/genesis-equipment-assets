@@ -16,7 +16,7 @@ const fs=require('fs'),path=require('path');
  await page.waitForFunction(()=>window.__genesisReady||window.__genesisError,null,{timeout:120000});
  const init=await page.evaluate(()=>window.__genesisReady||window.__genesisError);
  console.log('GENESIS_RAYO_V03_AUDIT',JSON.stringify(init));
- if(!init || init.loaded!==true || init.triangles!==2150||init.meshes!==2||init.proceduralShader!==true)
+ if(!init || init.loaded!==true || init.triangles!==2150||init.meshes!==2||init.proceduralShader!==true||init.bladeOnly!==true||init.intensityRange?.[0]!==0||init.intensityRange?.[1]!==100)
   throw Error('GENESIS_SOURCE_OR_SHADER_AUDIT_FAILED '+JSON.stringify(init));
  if(!init.bloom)throw Error('CAMERAFRAME_HDR_BLOOM_WAS_NOT_ACTIVATED');
  const root='rayo-premium-v01-output';fs.mkdirSync(root,{recursive:true});
@@ -26,6 +26,13 @@ const fs=require('fs'),path=require('path');
   last=await page.evaluate(async x=>window.__genesisStep(x.frame,x.frames),{frame,frames});
   await page.screenshot({path:path.join(root,'frame_'+String(frame).padStart(3,'0')+'.png'),timeout:60000});
   if(frame%8===0)console.log('GENESIS_RAYO_PREMIUM_FRAME',frame,'of',frames);
+ }
+ const intensityComparison=[];
+ for(const intensity of [0,25,50,75,100]){
+   const sample=await page.evaluate(async n=>window.__genesisStep(16,frames,n),intensity);
+   if(sample.intensity!==intensity)throw Error('INTENSITY_SWEEP_MISMATCH_'+intensity);
+   intensityComparison.push(sample);
+   await page.screenshot({path:path.join(root,'Intensity_'+String(intensity).padStart(3,'0')+'.png'),timeout:60000});
  }
  const audit={
    schema:'Genesis_Rayo_GLSL_CameraFrame_Cinematic_V001',
@@ -37,9 +44,9 @@ const fs=require('fs'),path=require('path');
    extraVfxGeometry:'one quad, two triangles, procedural shader',
    noStaticMasks:true,noSpheresOrTubes:true,
    fps:12,frames,displayResolution:[1280,720],
-   animation:last,errors};
+   animation:last,intensityComparison,errors};
  fs.writeFileSync(path.join(root,'audit.json'),JSON.stringify(audit,null,2));
- console.log('GENESIS_RAYO_V01_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
+ console.log('GENESIS_RAYO_V03_CONTAINED_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
  await browser.close();
  if(errors.length)throw Error('GENESIS_CONSOLE_ERRORS '+JSON.stringify(errors.slice(0,6)));
 })().catch(e=>{console.error('GENESIS_RAYO_PREMIUM_FAILED',e.stack||e);process.exit(1)});
