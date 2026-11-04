@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Project Genesis — Rayo · V03 Shader Premium</title>
+<script type="importmap">{"imports":{"playcanvas":"/node_modules/playcanvas/build/playcanvas.mjs"}}</script>
+<style>
+html,body{margin:0;padding:0;overflow:hidden;background:#090d15;color:#dfd6c4}
+canvas{width:1280px;height:720px;display:block}
+body{font-family:Georgia,serif}
+#ui{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 48% 46%,transparent 25%,#070a11bb 100%)}
+h1{position:absolute;top:18px;left:42px;font-size:25px;letter-spacing:6px;font-weight:400;color:#dfc59c;margin:0}
+.subtitle{position:absolute;top:58px;left:44px;font:10px Arial,sans-serif;letter-spacing:3px;color:#a7b4ca}
+#title{position:absolute;left:42px;top:255px;font-size:31px;letter-spacing:2px;color:#cddbf5}
+#level{position:absolute;right:48px;top:269px;font:12px Arial,sans-serif;letter-spacing:3px;text-align:right;color:#839bbb}
+#level span{font:31px Georgia,serif;color:#c3e5ff;display:block;margin-top:8px}
+#details{position:absolute;bottom:31px;left:44px;right:44px;border-top:1px solid #93836a44;padding-top:11px;display:flex;justify-content:space-between;font:11px Arial,sans-serif;color:#a9b8c5;letter-spacing:2.5px}
+#status{position:absolute;bottom:72px;left:44px;color:#e3b176;font:12px Arial,sans-serif}
+</style>
+</head><body><canvas id="app" width="1280" height="720"></canvas>
+<div id="ui"><h1>PROJECT GENESIS</h1><div class="subtitle">CANAL RAYO · PREVISUALIZACIÓN PC / PLAYCANVAS WEBGL2</div>
+<div id="title">EL RAYO EN LA HOJA</div><div id="level">INTENSIDAD<span>80 / 100</span></div>
+<div id="status">Cargando espada de hierro V03…</div>
+<div id="details"><span>HIERRO V175 · MATERIAL PBR ORIGINAL</span><span>SHADER PROCEDURAL · EMISSIVE · HDR BLOOM</span></div></div>
+<script type="module" src="./rayo.js"></script></body></html>
