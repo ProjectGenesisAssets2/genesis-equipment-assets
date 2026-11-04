@@ -28,7 +28,7 @@ pulseLight.setPosition(.04,.40,.17);app.root.addChild(pulseLight);
 let bloomOK=false,framePost=null;
 try{
  framePost=new pc.CameraFrame(app,camera.camera);
- framePost.bloom.intensity=.065;
+ framePost.bloom.intensity=.027;
  framePost.bloom.blurLevel=7;
  framePost.rendering.renderTargetScale=1;
  framePost.update();
@@ -50,101 +50,60 @@ const fragmentGLSL=`
 precision highp float;
 varying vec2 vUv;
 uniform float uTime;
-uniform float uIntensity;
+uniform float uIntensity; // 0 to 100, not an arbitrary rarity tier.
 float h1(float n){return fract(sin(n*127.17+34.23)*43758.5453);}
-float hash2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-float piece(float y,float sections,float seed){
- float p=y*sections;float i=floor(p);
- return mix(h1(i+seed),h1(i+1.0+seed),fract(p))*2.0-1.0;
+float zig(float y,float seed,float time){
+  float s=floor(time*3.0);
+  return .014*sin(y*51.0 + seed*2.8 + s*.56)
+       + .008*sin(y*113.0 - seed*6.2 + s*.91)
+       + .003*sin(y*251.0 + seed*1.2 + s*.33);
 }
-float fractalBolt(float y,float seed,float phase){
- float state=floor(phase*8.2);
- float x=.0;
- x+=.046*piece(y+phase*.05,12.,seed+state*.33);
- x+=.025*piece(y,37.,seed*2.17+state);
- x+=.008*piece(y,99.,seed*.67+state*1.3);
- return x;
+float lineEnergy(float distance,float width){return exp(-abs(distance)/width);}
+float segment(float y,float center,float radius){
+  return 1.0-smoothstep(radius*.45,radius,abs(y-center));
 }
-float lp(float d,float radius){return exp(-abs(d)/radius);}
-void main(){
+void main(void){
  vec2 uv=vUv;
- float y=uv.y,x=uv.x;
- float t=uTime;
- float power=clamp(uIntensity,0.0,1.0);
- // The base iron PBR remains visible through the additive light.
- float core=0.,blue=0.,outer=0.,spark=0.;
- float envelope=smoothstep(.025,.095,y)*(1.0-smoothstep(.925,.989,y));
- float stablePulse=.84+.16*sin(t*29.0+1.9);
- // Five individualized, branching electric veins, not straight geometry.
- for(int i=0;i<5;i++){
-   float fi=float(i);
-   float anchor=(fi-2.0)*.043;
-   float edgeBias=(fi<.5 || fi>3.5)?.084:0.0;
-   float path=.5+anchor+edgeBias*(fi<2.? -1.:1.)
-      +fractalBolt(y,fi*9.87+13.2,t)*(.70+.22*power);
-   float dist=abs(x-path);
-   float flick=.67+.33*h1(floor(t*12.0+fi*3.1));
-   float focus=envelope*flick*(.6+.4*sin(y*23.+t*8.+fi));
-   core+=lp(dist,.0021)*focus*(i==2?1.15:.74);
-   blue+=lp(dist,.0105)*focus*(i==2?1.05:1.16);
-   outer+=lp(dist,.034)*focus*.32;
- }
- // Short fractal branches erupt from specific anchors and dissipate.
- for(int j=0;j<12;j++){
-   float fj=float(j);
-   float seed=fj*23.74+9.0;
-   float epoch=floor(t*6.0+fj*.13);
-   float anchor=.10+fj*.064+.012*h1(fj*2.9);
-   float life=smoothstep(anchor-.005,anchor+.018,y)*
-            (1.0-smoothstep(anchor+.10,anchor+.17,y));
-   float direction=mod(fj,2.)<1.? -1.:1.;
-   float root=.5+fractalBolt(anchor,seed,t)*.45;
-   float dy=clamp((y-anchor)/.17,0.,1.);
-   float wobble=fractalBolt(y,seed*.91+4.2,t);
-   float path=root+direction*(.018+.15*dy)+wobble*.44;
-   float d=abs(x-path);
-   float pulse=.5+.5*step(.35,h1(epoch+fj*11.3));
-   float L=life*pulse;
-   core+=lp(d,.00155)*L*.65;
-   blue+=lp(d,.0085)*L*.85;
-   outer+=lp(d,.027)*L*.22;
- }
- // Faint continuous shimmer across the existing longitudinal ridge.
- float ridge=lp(x-.501,.021)*envelope*(.16+.10*sin(y*38.-t*14.));
- blue+=ridge*1.5;
- // Edge corona follows the two physical blade edges but doesn't fill the blade.
- float edgeAbs=abs(x-.5);
- float edgeGlow=lp(edgeAbs-.080,.012)*envelope*(.44+.17*sin(y*35.+t*17.));
- blue+=edgeGlow*.76;outer+=edgeGlow*.30;
- // Transient micro-ionization, positioned in the halo, not primitive spheres.
- for(int k=0;k<18;k++){
-  float fk=float(k);
-  float epoch=floor(t*5.0+fk*.43);
-  float sx=.5+(h1(fk*6.7+epoch*1.9)-.5)*.49;
-  float sy=fract(h1(fk*7.9+epoch*4.1)+t*(.13+.04*h1(fk)));
-  vec2 delta=(uv-vec2(sx,sy))*vec2(1.7,1.);
-  float d=length(delta);
-  float visibility=step(.64,h1(fk*3.2+epoch));
-  spark+=exp(-d*270.)*visibility;
- }
- float flicker=(.73+.27*sin(t*32.5+1.5));
- core=clamp(core*stablePulse,0.,1.95);
- blue=clamp(blue,0.,2.3);
- outer=clamp(outer,0.,1.8);
- float current=power*(.88+.12*flicker);
- vec3 energy=
-    vec3(.035,.25,1.62)*outer*.72+
-    vec3(.075,.59,2.65)*blue*1.55+
-    vec3(.62,1.48,3.1)*core*1.55+
-    vec3(1.2,1.68,2.3)*spark*.90;
- float glow=clamp(core*.82+blue*.35+outer*.18+spark*.55,0.,.96);
- float lowAmbient=lp(x-.50,.20)*envelope*.035*current;
- vec3 ambient=vec3(.025,.11,.38)*lowAmbient;
- gl_FragColor=vec4(energy*current+ambient,max(.0,glow)*current);
+ float x=uv.x,y=uv.y,t=uTime;
+ float power=clamp(uIntensity*.01,0.0,1.0);
+ // Blade only: never the guard, grip or pommel. Remaining UVs are transparent.
+ float blade=smoothstep(.13,.25,y)*(1.0-smoothstep(.88,.965,y));
+ blade*=1.0-smoothstep(.27,.33,abs(x-.5));
+ // Brief, contained motion rather than persistent lightning or full-body corona.
+ float beat=pow(max(0.0,sin(t*5.1+1.0)),5.0);
+ float glimmer=.31+.69*beat;
+ float travel=.56+.075*sin(t*1.6);
+ float primary=segment(y,travel,.16)*blade;
+ float second=segment(y,.38+.045*sin(t*1.25+1.7),.095)*blade
+              *smoothstep(.30,.64,power);
+ float third=segment(y,.73+.025*sin(t*.95+2.0),.065)*blade
+             *smoothstep(.73,.98,power);
+ float mainPath=.5+zig(y,1.0,t);
+ float secondPath=.52+zig(y,2.9,t);
+ float thirdPath=.477+zig(y,4.1,t);
+ float core=lineEnergy(x-mainPath,.0030)*primary
+          +lineEnergy(x-secondPath,.0024)*second*.55
+          +lineEnergy(x-thirdPath,.0020)*third*.32;
+ float shimmer=lineEnergy(x-mainPath,.015)*primary*.25
+          +lineEnergy(x-secondPath,.011)*second*.09
+          +lineEnergy(x-thirdPath,.009)*third*.05;
+ // Sparse 1-2 little branches at higher channel strength, no free-floating sparks.
+ float spurAmount=smoothstep(.52,.90,power);
+ float branchPath=.5+.028*(y-.57)+zig(y,7.2,t)*.6;
+ float branch=lineEnergy(x-branchPath,.0028)*
+              segment(y,.60,.045)*blade*spurAmount*beat*.28;
+ core+=branch;
+ float strength=power*(.14+.38*power)*glimmer;
+ vec3 electricBlue=vec3(.18,.53,1.0)*shimmer
+                  +vec3(.42,.78,1.30)*core;
+ vec3 result=electricBlue*strength;
+ float opacity=clamp((core*.45+shimmer*.18)*strength,0.,.46);
+ gl_FragColor=vec4(result,opacity);
 }
+
 `;
 const material=new pc.ShaderMaterial({
- uniqueName:'Genesis_Rayo_Premium_FractalGLSL_V001',
+ uniqueName:'Genesis_Rayo_ContainedBlade_0to100_V003',
  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
  vertexGLSL,fragmentGLSL
 });
@@ -153,12 +112,12 @@ material.cull=pc.CULLFACE_NONE;
 material.depthTest=false;
 material.depthWrite=false;
 material.setParameter('uTime',0);
-material.setParameter('uIntensity',.85);
+material.setParameter('uIntensity',35);
 material.update();
 const m=new pc.Mesh(app.graphicsDevice);
 // Plane covers the real V03 blade only, z in front; generated 2-triangle VFX screen,
 // not new sword geometry; no tube/cylinder/sphere primitives.
-m.setPositions([-0.43,-.44,.18, .43,-.44,.18, .43,1.02,.18, -.43,1.02,.18]);
+m.setPositions([-.135,.08,.18, .135,.08,.18, .135,.96,.18, -.135,.96,.18]);
 m.setUvs(0,[0,0,1,0,1,1,0,1]);
 m.setIndices([0,1,2,0,2,3]);m.update();
 const shaderEntity=new pc.Entity('RAYO_SHADER_BLADE_DECAL_PROCEDURAL');
@@ -175,19 +134,23 @@ function loadSword(){
     mats.push(mi.material?.name||'?');
   }}});
   window.__genesisReady={source:'original_v03',loaded:true,meshes,triangles:tris,bloom:bloomOK,
-     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:2,sourceGlbEdited:false,materials:mats};
+     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:2,sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:35,bladeOnly:true};
   document.getElementById('status').textContent='';
   console.log('GENESIS_RAYO_PREMIUM_READY',JSON.stringify(window.__genesisReady));
  });
 }
-window.__genesisStep=async (frame,frames=32)=>{
+window.__genesisIntensity=35;
+window.__genesisSetIntensity=(v)=>{let n=Math.max(0,Math.min(100,Math.round(Number(v)||0)));window.__genesisIntensity=n;document.getElementById('intensityValue').textContent=n;document.getElementById('intensitySlider').value=n;return n;};
+window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  if(!window.__genesisReady)throw Error('GLB_NOT_LOADED');
  const time=frame*2.75/frames;
- const intensity=.85;
+ const intensity=Math.max(0,Math.min(100,Number(forcedIntensity??window.__genesisIntensity??35)));
  material.setParameter('uTime',time);
  material.setParameter('uIntensity',intensity);
- pulseLight.light.intensity=1.2+2.5*intensity*(.75+.25*Math.sin(time*17.0)**2);
+ pulseLight.light.intensity=.30*(intensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(time*5.1+1.0)),5));
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- return {frame,time,triangles:window.__genesisReady.triangles,bloom:bloomOK};
+ return {frame,time,intensity,triangles:window.__genesisReady.triangles,bloom:bloomOK};
 };
+document.getElementById('intensitySlider').addEventListener('input',e=>window.__genesisSetIntensity(e.target.value));
+app.on('update',dt=>{if(!window.__genesisReady)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.30*(window.__genesisIntensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
 loadSword();
