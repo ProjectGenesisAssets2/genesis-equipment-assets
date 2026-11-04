@@ -62,7 +62,7 @@ jobs:
           ffmpeg -y -loglevel error -i Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4 -i palette.png -lavfi 'fps=8,scale=768:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_V03_4Combinaciones_Animated.gif
           test -s Genesis_V03_4Combinaciones_Animated.gif
           ffprobe -v error -show_entries format=duration,size -of json Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4
-      - name: Proof: no source GLB inside published output
+      - name: Proof no source GLB inside published output
         if: success()
         run: |
           ! find vfx-video-output/video -type f -iname '*.glb' | grep .
