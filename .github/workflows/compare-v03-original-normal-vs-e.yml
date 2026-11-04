@@ -1,0 +1,43 @@
+name: Genesis V03 — original vs E and two normal hybrids, HDRI32 Cycles
+on:
+  push:
+    branches: [feature/fab-iron-sword-audit]
+    paths: ['scripts/fab_sword/compare_v03_original_normal_vs_e.py','.github/workflows/compare-v03-original-normal-vs-e.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original unmodified V03 GLB
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Download studio small 09 real 32-bit EXR HDRI
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          test $(stat -c %s /tmp/studio_small_09_4k.exr) -gt 1000000
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender-4-5
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender-4-5 --strip-components=1
+      - name: Render original Fab vs E vs two true texture hybrids
+        run: |
+          mkdir -p /tmp/fab-normal-comparison
+          /tmp/blender-4-5/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/compare_v03_original_normal_vs_e.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/fab-normal-comparison --samples 96
+          for file in 01_Original_Fab_Material.png 02_E_V175_Metal_Intenso.png 03_Hibrida_V175Color_NormalOriginal.png 04_Hibrida_ColorOriginal_NormalV175.png render_audit.json; do test -s "/tmp/fab-normal-comparison/$file"; done
+      - name: Archive only rendered PNG and audit, never licensed source GLB
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-Original-Normal-Comparison-Cycles
+          path: /tmp/fab-normal-comparison/
+          retention-days: 5
+      - if: always()
+        run: rm -f /tmp/genesis-original-v03.glb
