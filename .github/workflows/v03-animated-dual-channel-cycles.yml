@@ -50,20 +50,48 @@ jobs:
           test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/frame_017.png"
           test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation_audit.json"
           test "$(find /tmp/genesis-animated-v03/${{ matrix.pair }} -name 'frame_*.png' | wc -l)" -eq 18
-      - name: Produce real GIF and MP4 animation from Cycles frames
+      - name: Assemble animated GIF using installed Pillow, independent of ffmpeg
+        env:
+          GENESIS_PAIR: ${{ matrix.pair }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from PIL import Image,ImageDraw,ImageFont
+          pair=os.environ["GENESIS_PAIR"]
+          folder=Path("/tmp/genesis-animated-v03")/pair
+          frames=[]
+          try: font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",18)
+          except OSError: font=ImageFont.load_default()
+          for p in sorted(folder.glob("frame_*.png")):
+              num=int(p.stem.split("_")[-1])
+              val=(25,80) if num<9 else (80,25)
+              names=("FUEGO","RAYO") if pair=="fire_ray" else ("HIELO","SOMBRA")
+              base=Image.open(p).convert("RGB")
+              canvas=Image.new("RGB",(base.width,base.height+42),(11,17,25))
+              canvas.paste(base,(0,0))
+              draw=ImageDraw.Draw(canvas)
+              draw.text((18,base.height+11),f"{names[0]} {val[0]}%    +    {names[1]} {val[1]}%   |   Project Genesis",fill=(233,229,212),font=font)
+              frames.append(canvas)
+          if len(frames)!=18:raise ValueError("Expected 18 real Blender Cycles frames, got "+str(len(frames)))
+          frames[0].save(folder/"animation.gif",save_all=True,append_images=frames[1:],duration=125,loop=0,optimize=True,disposal=2)
+          print("GENESIS_ANIMATED_GIF_ASSEMBLED",pair,len(frames),(folder/"animation.gif").stat().st_size)
+          PY
+          test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.gif"
+      - name: Produce optional MP4 when ffmpeg is preinstalled
+        continue-on-error: true
         run: |
           cd /tmp/genesis-animated-v03/${{ matrix.pair }}
-          ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -movflags faststart animation.mp4
-          ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -vf 'palettegen=stats_mode=diff' /tmp/genesis_palette.png
-          ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -i /tmp/genesis_palette.png -lavfi 'paletteuse=dither=bayer:bayer_scale=3' -loop 0 animation.gif
-          test -s animation.mp4
-          test -s animation.gif
-          ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=noprint_wrappers=1 animation.mp4
+          if command -v ffmpeg >/dev/null 2>&1; then
+            ffmpeg -y -loglevel error -framerate 8 -i frame_%03d.png -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -movflags faststart animation.mp4
+          else
+            echo 'ffmpeg not installed: GIF exists and is the required preview; MP4 optional'
+          fi
       - name: Only publish animations, evidence and a few proof frames (not the licensed GLB)
         if: success()
         run: |
           mkdir -p /tmp/genesis-vfx-proof
-          cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.mp4" /tmp/genesis-vfx-proof/
+          if test -s "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.mp4"; then cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.mp4" /tmp/genesis-vfx-proof/; fi
           cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation.gif" /tmp/genesis-vfx-proof/
           cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/animation_audit.json" /tmp/genesis-vfx-proof/
           cp "/tmp/genesis-animated-v03/${{ matrix.pair }}/frame_003.png" /tmp/genesis-vfx-proof/
