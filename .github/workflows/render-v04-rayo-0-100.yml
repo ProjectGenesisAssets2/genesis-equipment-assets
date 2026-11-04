@@ -1,0 +1,89 @@
+name: Genesis V04 Rayo sutil - intensity 0 to 100 verified
+on:
+  push:
+    branches: [experiment/v04-rayo-hoja-intensidad-0-100-20261104]
+    paths:
+      - 'tests/rayo-premium-v01/**'
+      - '.github/workflows/render-v04-rayo-0-100.yml'
+  workflow_dispatch:
+concurrency:
+  group: genesis-rayo-v04-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover exact source V03 GLB, verify source hashes, do not publish
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+          cp /tmp/genesis-original-v03.glb tests/rayo-premium-v01/source_original_v03.glb
+      - name: Install real official PlayCanvas 2.23.3, Chromium, ffmpeg
+        run: |
+          npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          test -s node_modules/playcanvas/build/playcanvas.mjs
+          npx playwright install chromium
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+      - name: Serve real PlayCanvas WebGL2 scene and licensed sword locally
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-rayo-http.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/rayo-premium-v01/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/rayo-premium-v01/source_original_v03.glb)" = 200
+      - name: Validate original V03 PBR GLB, blade-only 0–100 and native bloom; render 32 frames plus intensity sweep
+        env:
+          FRAMES: '32'
+        run: |
+          set -o pipefail
+          node tests/rayo-premium-v01/record.cjs | tee /tmp/rayo-premium-v01.log
+          test "$(find rayo-v04-output -maxdepth 1 -name 'frame_*.png' | wc -l)" -eq 32
+          test -s rayo-v04-output/audit.json
+      - name: Encode Rayo premium PC preview MP4 and GIF from verified WebGL2 frames
+        run: |
+          cd rayo-v04-output
+          ffmpeg -y -loglevel error -framerate 12 -i frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart Genesis_Rayo_Animado_0_a_100_V004.mp4
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Animado_0_a_100_V004.mp4 -vf 'fps=10,scale=960:-1:flags=lanczos,palettegen' palette.png
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Animado_0_a_100_V004.mp4 -i palette.png -lavfi 'fps=10,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_Rayo_Animado_0_a_100_V004.gif
+          ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=noprint_wrappers=1 Genesis_Rayo_Animado_0_a_100_V004.mp4
+          test -s Genesis_Rayo_Animado_0_a_100_V004.mp4
+          test -s Genesis_Rayo_Animado_0_a_100_V004.gif
+      - name: Prepare previews and audit only, no licensed original GLB
+        if: success()
+        run: |
+          mkdir -p public-previews/rayo-sutil-v04
+          cp rayo-v04-output/Genesis_Rayo_Animado_0_a_100_V004.mp4 public-previews/rayo-sutil-v04/
+          cp rayo-v04-output/Genesis_Rayo_Animado_0_a_100_V004.gif public-previews/rayo-sutil-v04/
+          cp rayo-v04-output/audit.json public-previews/rayo-sutil-v04/
+          cp rayo-v04-output/frame_004.png public-previews/rayo-sutil-v04/Proof_004.png
+          cp rayo-v04-output/frame_016.png public-previews/rayo-sutil-v04/Proof_016.png
+          cp rayo-v04-output/frame_027.png public-previews/rayo-sutil-v04/Proof_027.png
+          cp rayo-v04-output/Intensity_*.png public-previews/rayo-sutil-v04/
+          test "$(find public-previews/rayo-sutil-v04 -maxdepth 1 -name 'Intensity_*.png' | wc -l)" -eq 5
+          ! find public-previews/rayo-sutil-v04 -type f -iname '*.glb' | grep -q .
+      - name: Upload final artifacts for evaluation, not approved or integrated
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V04-RayoSutil-RealPlayCanvas-0to100-V004
+          path: public-previews/rayo-sutil-v04/
+          retention-days: 7
+      - name: Publish only experimental renders, previews and audit (never the licensed GLB)
+        if: success()
+        run: |
+          set -e
+          git config user.name 'Genesis Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git add public-previews/rayo-sutil-v04/
+          if git diff --cached --quiet; then echo 'Preview already current'; else
+            git commit -m 'preview(rayo): V04 Rayo real 0 to 100 animated + comparison'
+            git push origin HEAD:experiment/v04-rayo-hoja-intensidad-0-100-20261104
+          fi
+      - name: Cleanup licensed source
+        if: always()
+        run: rm -f /tmp/genesis-original-v03.glb tests/rayo-premium-v01/source_original_v03.glb
