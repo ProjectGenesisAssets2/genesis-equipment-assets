@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Genesis — Espada V03 GLB real</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#0e1721;color:#f0dfc1;font:13px system-ui,-apple-system,sans-serif}
+#view{position:relative;width:100%;height:100%;min-height:320px;overflow:hidden;background:radial-gradient(ellipse at 45% 40%,#394553 0%,#101721 75%)}
+#view canvas{width:100%;height:100%;display:block;touch-action:none}
+#status{position:absolute;top:10px;left:10px;right:10px;padding:10px 12px;background:#101a26e8;border:1px solid #6d5940;border-radius:8px;white-space:pre-wrap;z-index:5;max-height:80%;overflow:auto}
+#status.ok{font-size:11px;right:auto;color:#c6e0c7;border-color:#44634d}
+#err{color:#ffc7a8}
+#info{position:absolute;bottom:10px;left:10px;font-size:11px;color:#c9a87b;pointer-events:none}
+#controls{position:absolute;bottom:10px;right:10px;z-index:3;display:flex;gap:5px}
+button{font:inherit;border:1px solid #7b6241;background:#2b251f;color:#ebca96;padding:8px 10px;border-radius:6px;cursor:pointer}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+</head><body>
+<div id="view">
+  <div id="status">Inicializando visor de GLB original…</div>
+  <div id="info">V03 V175 · GLB original sin modificar · arrastrá para girar</div>
+  <div id="controls"><button id="front">Frente</button><button id="profile">Perfil</button><button id="reset">Recentrar</button></div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+const status=document.querySelector('#status'), root=document.querySelector('#view');
+function say(s){status.textContent=s}
+const manifestURL='https://raw.githubusercontent.com/ProjectGenesisAssets2/genesis-equipment-assets/feature/fab-iron-sword-audit/render-input/v03-blob-manifest.json';
+function hex(buffer){return Array.from(new Uint8Array(buffer),v=>v.toString(16).padStart(2,'0')).join('')}
+try {
+ const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'default',preserveDrawingBuffer:true});
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(root.clientWidth,root.clientHeight);
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
+ root.insertBefore(renderer.domElement,status);
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#19232e');
+ const envGen=new THREE.PMREMGenerator(renderer);
+ scene.environment=envGen.fromScene(new RoomEnvironment(),.05).texture;
+ scene.add(new THREE.HemisphereLight(0xe1edff,0x4d392a,1.3));
+ const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(3,4,5);scene.add(light);
+ const camera=new THREE.PerspectiveCamera(35,1,.01,500);
+ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=.5;controls.maxDistance=9;
+ say('Consultando el manifiesto del GLB original…');
+ const mf=await fetch(manifestURL,{cache:'no-store'});
+ if(!mf.ok)throw Error('No se pudo acceder al manifiesto: HTTP '+mf.status);
+ const manifest=await mf.json();
+ if(manifest.kind!=='GitBlobChunksV1'||manifest.size_bytes!==21283040||manifest.blobs?.length!==21)throw Error('Manifiesto V03 incorrecto');
+ const bytes=new Uint8Array(manifest.size_bytes);
+ let next=0,done=0;const errors=[];
+ async function worker(){
+  while(next<manifest.blobs.length){
+   const i=next++,sha=manifest.blobs[i];
+   const url='https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/git/blobs/'+sha;
+   let response=await fetch(url,{headers:{Accept:'application/vnd.github+json'}});
+   if(!response.ok)throw Error('Fragmento '+(i+1)+' no disponible: HTTP '+response.status);
+   const doc=await response.json();
+   if(doc.sha!==sha||doc.encoding!=='base64')throw Error('Fragmento '+(i+1)+' inválido');
+   const encoded=doc.content.replace(/\s/g,'');
+   const binary=atob(encoded);
+   const expected=Math.min(manifest.chunk_bytes,manifest.size_bytes-i*manifest.chunk_bytes);
+   if(binary.length!==expected)throw Error('Tamaño incorrecto de fragmento '+(i+1));
+   let start=i*manifest.chunk_bytes;
+   for(let j=0;j<binary.length;j++)bytes[start+j]=binary.charCodeAt(j);
+   done++;say('Recuperando GLB original · '+done+'/21 fragmentos · '+(done/21*100).toFixed(0)+'%');
+  }
+ }
+ await Promise.all([worker(),worker(),worker()]);
+ say('21/21 fragmentos recibidos · comprobando SHA-256…');
+ const digest=hex(await crypto.subtle.digest('SHA-256',bytes));
+ if(digest!==manifest.sha256)throw Error('Error de integridad: SHA-256 no coincide');
+ if(new DataView(bytes.buffer).getUint32(0,true)!==0x46546c67)throw Error('Cabecera GLB no válida');
+ say('GLB íntegro (21,28 MB). Cargando PBR y texturas originales…');
+ const gltf=await new GLTFLoader().parseAsync(bytes.buffer,'');
+ scene.add(gltf.scene);
+ let triangles=0,meshes=0,textureMaterials=0,normalMaps=0,roughnessMaps=0;
+ gltf.scene.traverse(o=>{if(!o.isMesh)return;meshes++;
+ const g=o.geometry;triangles+=(g.index?g.index.count:g.attributes.position.count)/3;
+ for(const m of Array.isArray(o.material)?o.material:[o.material]){
+ if(m.map)textureMaterials++;if(m.normalMap)normalMaps++;if(m.roughnessMap)roughnessMaps++;
+ }});
+ if(triangles!==2150||meshes<1)throw Error('La escena cargó con geometría distinta de la original: '+triangles+' triángulos');
+ const box=new THREE.Box3().setFromObject(gltf.scene),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+ function fit(){
+  const h=Math.max(size.x,size.y,size.z),radius=h/(2*Math.tan(35*Math.PI/360/2))*1.28;
+  camera.position.copy(center).add(new THREE.Vector3(radius*.18,radius*.1,radius));
+  camera.lookAt(center);controls.target.copy(center);controls.update();
+ }
+ fit();
+ document.querySelector('#front').onclick=()=>{fit();};
+ document.querySelector('#profile').onclick=()=>{fit();const p=camera.position.clone().sub(controls.target);camera.position.copy(center).add(new THREE.Vector3(p.z,.1,0));controls.update()};
+ document.querySelector('#reset').onclick=fit;
+ function resize(){const w=Math.max(50,root.clientWidth),h=Math.max(50,root.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}
+ new ResizeObserver(resize).observe(root);resize();
+ let frames=0;
+ function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);frames++;if(frames===3)window.__genesisResult={loaded:true,verified:true,triangles,meshes,textureMaterials,normalMaps,roughnessMaps,sha256:digest,webgl:renderer.capabilities.isWebGL2};}
+ animate();
+ status.classList.add('ok');say('V03 original verificada · '+triangles+' triángulos · '+meshes+' mallas · PBR');
+}catch(error){
+ status.classList.remove('ok');status.id='err';
+ status.textContent='ERROR DEL VISOR REAL: '+String(error?.message||error);
+ window.__genesisResult={loaded:false,error:String(error?.stack||error)};
+ console.error(error);
+}
+</script></body></html>
