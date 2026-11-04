@@ -1,0 +1,81 @@
+name: Genesis V03 Rayo premium V003 - HDRI IBL with dark studio and refined sparks
+on:
+  push:
+    branches: [experiment/v03-rayo-premium-shader-v003-hdri-composed-20261104]
+    paths:
+      - 'tests/rayo-premium-v001/**'
+      - '.github/workflows/v03-rayo-premium-pc-v003.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rehydrate exact V03 source GLB only inside CI (never publish licensed source)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v03.glb' | sha256sum -c
+          cp /tmp/genesis-v03.glb tests/rayo-premium-v001/source_original_v03.glb
+      - name: Download authentic Poly Haven Studio Small 09 32-bit RGBE HDR environment, NOT a PNG/JPG
+        run: |
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 220 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr' -o tests/rayo-premium-v001/studio_small_09_1k.hdr
+          test $(stat -c %s tests/rayo-premium-v001/studio_small_09_1k.hdr) -gt 200000
+          head -c 40 tests/rayo-premium-v001/studio_small_09_1k.hdr
+          sha256sum tests/rayo-premium-v001/studio_small_09_1k.hdr
+      - name: Install actual PlayCanvas WebGL2 Chromium test infrastructure
+        run: |
+          npm install --no-save --no-audit --no-fund playcanvas@2.23.3 playwright@1.56.1
+          test -s node_modules/playcanvas/build/playcanvas.mjs
+          npx playwright install chromium --with-deps
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+          python3 -m pip install --user --no-cache-dir pillow numpy
+      - name: Serve source sword locally to Chromium only
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v03-server.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/rayo-premium-v001/source_original_v03.glb
+      - name: Validate 2150 original triangles and 48 animated WebGL2 frames of Rayo
+        run: |
+          node tests/rayo-premium-v001/record.cjs
+          test "$(find rayo-premium-out/frames -name 'frame_*.png' | wc -l)" -eq 48
+          test -s rayo-premium-out/render_audit.json
+      - name: Check effect visibly alters blade pixels, not just an invisible shader
+        run: |
+          python3 - <<'PY'
+          from PIL import Image,ImageChops
+          import numpy as np
+          baseline=np.asarray(Image.open('rayo-premium-out/without_fx.png').convert('RGB'),dtype=np.float32)
+          fx=np.asarray(Image.open('rayo-premium-out/frames/frame_017.png').convert('RGB'),dtype=np.float32)
+          crop=(slice(48,680),slice(470,815))
+          a=baseline[crop];b=fx[crop]
+          diff=np.abs(a-b)
+          threshold=int((diff.max(axis=2)>20).sum())
+          print('GENESIS_RAYO_VISIBLE_DIFFERENCE_PIXELS',threshold)
+          assert threshold>200,'Shader visible effect not detected on sword area'
+          PY
+      - name: Encode a real PC video and looping visual inspection GIF
+        run: |
+          mkdir -p rayo-premium-out/videos
+          ffmpeg -y -loglevel error -framerate 24 -i rayo-premium-out/frames/frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags faststart rayo-premium-out/videos/Genesis_V03_Rayo_Premium_PC_Shader_V003.mp4
+          ffmpeg -y -loglevel error -framerate 24 -i rayo-premium-out/frames/frame_%03d.png -vf 'fps=12,scale=768:-1:flags=lanczos,palettegen' /tmp/rayo_palette.png
+          ffmpeg -y -loglevel error -framerate 24 -i rayo-premium-out/frames/frame_%03d.png -i /tmp/rayo_palette.png -lavfi 'fps=12,scale=768:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 rayo-premium-out/videos/Genesis_V03_Rayo_Premium_PC_Shader_V003.gif
+          test -s rayo-premium-out/videos/Genesis_V03_Rayo_Premium_PC_Shader_V003.mp4
+          test -s rayo-premium-out/videos/Genesis_V03_Rayo_Premium_PC_Shader_V003.gif
+          cp rayo-premium-out/frames/frame_017.png rayo-premium-out/videos/Rayo_Proof_Frame017.png
+          cp rayo-premium-out/frames/frame_033.png rayo-premium-out/videos/Rayo_Proof_Frame033.png
+          cp rayo-premium-out/without_fx.png rayo-premium-out/videos/Rayo_Source_WithoutVFX.png
+          cp rayo-premium-out/render_audit.json rayo-premium-out/videos/
+      - name: Preserve proof and videos but never the commercial GLB
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-Rayo-Premium-Shader-HDRI32-V003
+          path: rayo-premium-out/videos/
+          retention-days: 7
+      - if: always()
+        run: rm -f /tmp/genesis-v03.glb tests/rayo-premium-v001/source_original_v03.glb tests/rayo-premium-v001/studio_small_09_1k.hdr
