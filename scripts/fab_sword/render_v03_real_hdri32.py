@@ -132,8 +132,7 @@ def main():
     scene.render.image_settings.color_mode='RGBA'
     scene.render.film_transparent=False
     scene.view_settings.view_transform='AgX'
-    scene.view_settings.look='Medium High Contrast'
-    scene.view_settings.view_settings if False else None
+    scene.view_settings.look='AgX - Medium High Contrast'
     scene.view_settings.exposure=0.5
     scene.render.engine='CYCLES'
     # Real HDRI supplies illumination and reflections; softboxes shape metal highlights.
