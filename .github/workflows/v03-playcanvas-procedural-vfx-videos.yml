@@ -1,0 +1,85 @@
+name: Project Genesis V03 — PlayCanvas PC procedural VFX, four actual videos
+on:
+  push:
+    branches: [experiment/v03-playcanvas-procedural-vfx-videos-20261104]
+    paths:
+      - 'tests/pc-vfx-video/**'
+      - '.github/workflows/v03-playcanvas-procedural-vfx-videos.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-webgl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble exact source GLB only inside temporary runner
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v03.glb' | sha256sum -c
+          cp /tmp/genesis-v03.glb tests/pc-vfx-video/source_original_v03.glb
+      - name: Install PlayCanvas official engine, Playwright browser and FFmpeg
+        run: |
+          npm install --no-save --no-audit --no-fund playcanvas@2.23.3 playwright@1.56.1
+          test -s node_modules/playcanvas/build/playcanvas.mjs
+          npx playwright install chromium --with-deps
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+          python3 -m pip install --user --no-cache-dir pillow numpy
+      - name: Serve original GLB and WebGL scene on localhost only
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-pc-vfx-http.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/pc-vfx-video/
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/pc-vfx-video/source_original_v03.glb)" = 200
+      - name: Validate original 2150 triangle V03 and record FOUR real WebGL2 variants
+        env:
+          FRAMES: '30'
+        run: |
+          node tests/pc-vfx-video/record.cjs | tee /tmp/genesis-vfx-record.log
+          test -s vfx-video-output/playcanvas_audit.json
+          for i in 1 2 3 4; do
+             test "$(find vfx-video-output/variant_${i} -type f -name 'frame_*.png' | wc -l)" -eq 30
+          done
+      - name: Apply selective cinematic bloom to VFX video frames, not the iron texture
+        run: |
+          python3 tests/pc-vfx-video/postprocess.py --root vfx-video-output
+      - name: Encode four full-HD-aspect PC videos and combined comparison reel
+        run: |
+          mkdir -p vfx-video-output/video
+          for i in 1 2 3 4; do
+            ffmpeg -y -loglevel error -framerate 12 -i "vfx-video-output/variant_${i}/frame_%03d.png" -c:v libx264 -crf 19 -preset medium -pix_fmt yuv420p -movflags +faststart "vfx-video-output/video/variant_${i}.mp4"
+            test -s "vfx-video-output/video/variant_${i}.mp4"
+            ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=noprint_wrappers=1 "vfx-video-output/video/variant_${i}.mp4"
+          done
+          printf "file 'variant_1.mp4'\nfile 'variant_2.mp4'\nfile 'variant_3.mp4'\nfile 'variant_4.mp4'\n" > vfx-video-output/video/concat.txt
+          cd vfx-video-output/video
+          ffmpeg -y -loglevel error -f concat -safe 0 -i concat.txt -c copy Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4
+          test -s Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4
+          ffmpeg -y -loglevel error -i Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4 -vf 'fps=8,scale=768:-1:flags=lanczos,palettegen' palette.png
+          ffmpeg -y -loglevel error -i Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4 -i palette.png -lavfi 'fps=8,scale=768:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_V03_4Combinaciones_Animated.gif
+          test -s Genesis_V03_4Combinaciones_Animated.gif
+          ffprobe -v error -show_entries format=duration,size -of json Genesis_V03_4Combinaciones_PlayCanvas_Procedural_VFX.mp4
+      - name: Proof: no source GLB inside published output
+        if: success()
+        run: |
+          ! find vfx-video-output/video -type f -iname '*.glb' | grep .
+          rm -f vfx-video-output/video/palette.png vfx-video-output/video/concat.txt
+          cp vfx-video-output/variant_1/frame_015.png vfx-video-output/video/Proof_Fuego25_Rayo80.png
+          cp vfx-video-output/variant_2/frame_015.png vfx-video-output/video/Proof_Fuego80_Rayo25.png
+          cp vfx-video-output/variant_3/frame_015.png vfx-video-output/video/Proof_Hielo80_Sombra25.png
+          cp vfx-video-output/variant_4/frame_015.png vfx-video-output/video/Proof_Hielo25_Sombra80.png
+          cp vfx-video-output/playcanvas_audit.json vfx-video-output/video/
+      - name: Publish four genuine PlayCanvas WebGL recordings and combined MP4/GIF
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V03-PlayCanvas-PC-FourProceduralVFX-V001
+          path: vfx-video-output/video/
+          retention-days: 7
+      - name: Cleanup licensed original
+        if: always()
+        run: |
+          rm -f /tmp/genesis-v03.glb tests/pc-vfx-video/source_original_v03.glb
