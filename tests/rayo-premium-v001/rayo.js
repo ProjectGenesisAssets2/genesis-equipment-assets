@@ -141,6 +141,7 @@ function overlayMesh(){
  const entity=new pc.Entity('RAYO_PREMIUM_PROCEDURAL_SHADER_NOT_PARTICLES');
  entity.addComponent('render',{meshInstances:[new pc.MeshInstance(m,mat)],castShadows:false,receiveShadows:false});
  app.root.addChild(entity);
+ window.__rayoOverlay=entity;
 }
 overlayMesh();
 let sourceTri=0,sourceMeshes=0;
@@ -160,9 +161,11 @@ app.assets.loadFromUrlAndFilename('/tests/rayo-premium-v001/source_original_v03.
 window.__rayoStep=async(frame,frames=48)=>{
  if(!window.__rayoReady)throw Error(window.__rayoError||'NO_GLTF');
  const t=frame/24;
- mat.setParameter('uTime',t);
- mat.setParameter('uIntensity',.80);
- practical.light.intensity=1.10+.45*Math.pow(Math.sin(t*7.),2.);
+ const enabled=frame>=0;
+ window.__rayoOverlay.enabled=enabled;
+ mat.setParameter('uTime',Math.max(0,t));
+ mat.setParameter('uIntensity',enabled?.80:0);
+ practical.light.intensity=enabled?(1.10+.45*Math.pow(Math.sin(t*7.),2.)):0;
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  return {frame,t,meshes:sourceMeshes,triangles:sourceTri,bloom:bloomInfo};
 };
