@@ -1,0 +1,67 @@
+name: Diagnose original V03 GLB in genuine WebGL
+on:
+  push:
+    branches: [feature/fab-iron-sword-audit]
+    paths: ['tests/v03-webgl-original.html','.github/workflows/test-original-v03-webgl.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-glb-webgl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble sha256-verifiable original file
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/original-v03.glb
+      - name: Install browser, loader and local server dependencies
+        run: |
+          npm install --no-save three@0.180.0 playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Host real original GLB locally, launch browser, assert 3D mesh+material load
+        run: |
+          cat > /tmp/genesis-server.cjs <<'EOF'
+          const http=require('http'),fs=require('fs'),path=require('path');
+          http.createServer((req,res)=>{
+            const p=req.url==='/original-v03.glb'?'/tmp/original-v03.glb':req.url==='/node_modules/three/build/three.module.js'?path.resolve('node_modules/three/build/three.module.js'):req.url?.startsWith('/node_modules/three/')?path.resolve('.'+req.url):path.resolve('tests/v03-webgl-original.html');
+            if(!fs.existsSync(p)){res.writeHead(404);res.end('404');return}
+            res.setHeader('Content-Type',p.endsWith('.glb')?'model/gltf-binary':p.endsWith('.js')?'text/javascript':'text/html');
+            fs.createReadStream(p).pipe(res)
+          }).listen(8765,'127.0.0.1');
+          EOF
+          # Import map resolves internal bare "three" imports from GLTFLoader.
+          python3 - <<'PY'
+          p='tests/v03-webgl-original.html'
+          s=open(p).read().replace('<script type="module">','<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><script type="module">')
+          open('/tmp/original-index.html','w').write(s)
+          PY
+          # Serve the import-map injected page
+          sed -i "s@path.resolve('tests/v03-webgl-original.html')@'/tmp/original-index.html'@" /tmp/genesis-server.cjs
+          node /tmp/genesis-server.cjs &
+          cat > /tmp/genesis-check.cjs <<'EOF'
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl','--disable-web-security']});
+            const page=await browser.newPage({viewport:{width:1000,height:800}});
+            page.on('console',m=>console.log('BROWSER:',m.type(),m.text()));
+            page.on('pageerror',e=>console.log('BROWSER_ERROR:',e.message));
+            await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>window.__genesis!==undefined,{timeout:90000});
+            const info=await page.evaluate(()=>window.__genesis);console.log('GENESIS_ORIGINAL_V03_WEBGL',JSON.stringify(info));
+            if(!info.loaded||info.triangles<2000||info.meshes<1||info.materials<1)throw new Error('REAL_GLTF_VALIDATION_FAILED '+JSON.stringify(info));
+            await page.screenshot({path:'/tmp/real-v03-chromium.png'});
+            await browser.close()
+          })().catch(e=>{console.error(e);process.exit(1)})
+          EOF
+          node /tmp/genesis-check.cjs
+      - if: always()
+        run: rm -f /tmp/original-v03.glb
+      - name: Upload screenshot only (not licensed source)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-v03-webgl-screenshot
+          path: /tmp/real-v03-chromium.png
+          retention-days: 2
