@@ -1,0 +1,26 @@
+name: Genesis Escudo V005 | public PBR oak source audit
+on:
+  push:
+    branches: [experiment/escudo-meshy-jajar-v005]
+    paths: [".github/workflows/escudo-v005-public-oak-source-audit.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate real oak PBR source in the Genesis public organization
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/roble
+          BASE='https://raw.githubusercontent.com/ProjectgenesisAssets/genesis-workshop-assets/28fa3d583227485940ad7db023c9f7544ba9bd86/production/tutorial_materials/generated/roble_seco/source'
+          for item in wood_albedo.jpg wood_normal.png wood_roughness.png; do
+            curl --fail --location --retry 3 --max-time 100 "$BASE/$item" -o "/tmp/roble/$item"
+          done
+          echo 'de17f8827a00e0b3a13076f3c9ac9d01f2f8f6c96d4b63ef88597cdec94cb89d  /tmp/roble/wood_albedo.jpg' | sha256sum --check
+          echo 'b9604923f293ff8ecea670e8c8a852b6b74e7abb4c3792f4c37f644c8a4526a1  /tmp/roble/wood_normal.png' | sha256sum --check
+          echo '44a16b8fb2fa132ebfdfbee98590a4313439275e33e04bea03e981f2bddbaf89  /tmp/roble/wood_roughness.png' | sha256sum --check
+          echo 'REAL_GENESIS_OAK_PBR_SOURCE_VERIFIED'
