@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
           test -s node_modules/playcanvas/build/playcanvas.mjs
-          npx playwright install chromium --with-deps
+          npx playwright install chromium
           if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
       - name: Serve real PlayCanvas WebGL2 scene and licensed sword locally
         run: |
