@@ -1,7 +1,7 @@
-name: Genesis V03 Rayo Premium V001 — real PlayCanvas GLSL HDR Bloom
+name: Genesis V03 Rayo Premium V002 — real PlayCanvas GLSL HDR Bloom
 on:
   push:
-    branches: [experiment/v03-rayo-premium-glsl-bloom-20261104]
+    branches: [experiment/v03-rayo-premium-glsl-v02-brightcorona-20261104]
     paths:
       - 'tests/rayo-premium-v01/**'
       - '.github/workflows/v03-rayo-premium-glsl.yml'
@@ -44,18 +44,18 @@ jobs:
       - name: Encode Rayo premium PC preview MP4 and GIF from verified WebGL2 frames
         run: |
           cd rayo-premium-v01-output
-          ffmpeg -y -loglevel error -framerate 12 -i frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart Genesis_Rayo_Premium_PlayCanvas_V001.mp4
-          ffmpeg -y -loglevel error -i Genesis_Rayo_Premium_PlayCanvas_V001.mp4 -vf 'fps=10,scale=960:-1:flags=lanczos,palettegen' palette.png
-          ffmpeg -y -loglevel error -i Genesis_Rayo_Premium_PlayCanvas_V001.mp4 -i palette.png -lavfi 'fps=10,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_Rayo_Premium_PlayCanvas_V001.gif
-          ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=noprint_wrappers=1 Genesis_Rayo_Premium_PlayCanvas_V001.mp4
-          test -s Genesis_Rayo_Premium_PlayCanvas_V001.mp4
-          test -s Genesis_Rayo_Premium_PlayCanvas_V001.gif
+          ffmpeg -y -loglevel error -framerate 12 -i frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart Genesis_Rayo_Premium_PlayCanvas_V002.mp4
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Premium_PlayCanvas_V002.mp4 -vf 'fps=10,scale=960:-1:flags=lanczos,palettegen' palette.png
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Premium_PlayCanvas_V002.mp4 -i palette.png -lavfi 'fps=10,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_Rayo_Premium_PlayCanvas_V002.gif
+          ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=noprint_wrappers=1 Genesis_Rayo_Premium_PlayCanvas_V002.mp4
+          test -s Genesis_Rayo_Premium_PlayCanvas_V002.mp4
+          test -s Genesis_Rayo_Premium_PlayCanvas_V002.gif
       - name: Prepare previews and audit only, no licensed original GLB
         if: success()
         run: |
           mkdir -p rayo-premium-v01-public
-          cp rayo-premium-v01-output/Genesis_Rayo_Premium_PlayCanvas_V001.mp4 rayo-premium-v01-public/
-          cp rayo-premium-v01-output/Genesis_Rayo_Premium_PlayCanvas_V001.gif rayo-premium-v01-public/
+          cp rayo-premium-v01-output/Genesis_Rayo_Premium_PlayCanvas_V002.mp4 rayo-premium-v01-public/
+          cp rayo-premium-v01-output/Genesis_Rayo_Premium_PlayCanvas_V002.gif rayo-premium-v01-public/
           cp rayo-premium-v01-output/audit.json rayo-premium-v01-public/
           cp rayo-premium-v01-output/frame_004.png rayo-premium-v01-public/Proof_004.png
           cp rayo-premium-v01-output/frame_016.png rayo-premium-v01-public/Proof_016.png
@@ -65,7 +65,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Genesis-V03-RayoPremium-RealPlayCanvas-HDRBloom-V001
+          name: Genesis-V03-RayoPremium-RealPlayCanvas-HDRBloom-V002
           path: rayo-premium-v01-public/
           retention-days: 7
       - name: Cleanup licensed source
