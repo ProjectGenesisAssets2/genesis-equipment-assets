@@ -35,13 +35,34 @@ function aabbOf(points){
  return {min,max,cx:(min.x+max.x)/2,cy:(min.y+max.y)/2,cz:(min.z+max.z)/2,
          width:max.x-min.x,height:max.y-min.y,depth:max.z-min.z};
 }
-function pathFromHull(points,side=1,offset=.018,inset=1){
- const h=hull(points),c={x:h.reduce((a,b)=>a+b.x,0)/h.length,y:h.reduce((a,b)=>a+b.y,0)/h.length};
- const box=aabbOf(points);const z=side>0?box.max.z+offset:box.min.z-offset;
- return [...h,...h.slice(0,1)].map(p=>({x:c.x+(p.x-c.x)*inset,y:c.y+(p.y-c.y)*inset,z}));
+
+function shieldBasis(points){
+ const b=aabbOf(points);
+ const spans={x:b.width,y:b.height,z:b.depth};
+ const normal=['x','y','z'].sort((a,c)=>spans[a]-spans[c])[0];
+ const axes=['x','y','z'].filter(a=>a!==normal);
+ // Prefer a right-handed frame, so the front and back stay correctly oriented.
+ const u=axes[0],v=axes[1];
+ return {normal,u,v,bounds:b};
 }
-function ribbonMesh(pc,app,paths,width){
+function shieldOutline(points,basis,side=1,offset=.018,inset=.98){
+ const mapped=points.map(p=>({x:p[basis.u],y:p[basis.v]}));
+ const polygon=hull(mapped);
+ const center={x:polygon.reduce((a,p)=>a+p.x,0)/polygon.length,
+               y:polygon.reduce((a,p)=>a+p.y,0)/polygon.length};
+ const n=basis.normal;
+ const plane=side>0?basis.bounds.max[n]+offset:basis.bounds.min[n]-offset;
+ return [...polygon,polygon[0]].map(p=>{
+   const out={x:0,y:0,z:0};
+   out[basis.u]=center.x+(p.x-center.x)*inset;
+   out[basis.v]=center.y+(p.y-center.y)*inset;
+   out[n]=plane;
+   return out;
+ });
+}
+function ribbonMesh(pc,app,paths,width,normalAxis='z'){
  const pos=[],uv=[],indices=[];let n=0;
+ const normal={x:Number(normalAxis==='x'),y:Number(normalAxis==='y'),z:Number(normalAxis==='z')};
  for(const path of paths){
    if(path.length<2)continue;
    const ds=[0];for(let i=1;i<path.length;i++){
@@ -50,9 +71,14 @@ function ribbonMesh(pc,app,paths,width){
    const total=ds[ds.length-1]||1;
    for(let i=0;i<path.length;i++){
      const a=path[Math.max(0,i-1)],b=path[Math.min(path.length-1,i+1)],p=path[i];
-     const dx=b.x-a.x,dy=b.y-a.y,norm=Math.hypot(dx,dy)||1;
-     const px=-dy/norm*width,py=dx/norm*width;
-     pos.push(p.x+px,p.y+py,p.z,p.x-px,p.y-py,p.z);
+     const t={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z};
+     // Perpendicular in the shield's own plane, even if imported rotated on X/Y/Z.
+     let px=normal.y*t.z-normal.z*t.y;
+     let py=normal.z*t.x-normal.x*t.z;
+     let pz=normal.x*t.y-normal.y*t.x;
+     const mag=Math.hypot(px,py,pz)||1;
+     px=px/mag*width;py=py/mag*width;pz=pz/mag*width;
+     pos.push(p.x+px,p.y+py,p.z+pz,p.x-px,p.y-py,p.z-pz);
      uv.push(ds[i]/total,0,ds[i]/total,1);
      if(i<path.length-1){const j=n+2*i;indices.push(j,j+1,j+2,j+1,j+3,j+2);}
    }
@@ -62,14 +88,15 @@ function ribbonMesh(pc,app,paths,width){
  mesh.setPositions(pos);mesh.setUvs(0,uv);mesh.setIndices(indices);mesh.update();
  return {mesh,triangles:indices.length/3,vertexCount:pos.length/3};
 }
-function attachMesh(pc,app,paths,material,name,thickness){
- const data=ribbonMesh(pc,app,paths,thickness);
+function attachMesh(pc,app,paths,material,name,thickness,normalAxis='z'){
+ const data=ribbonMesh(pc,app,paths,thickness,normalAxis);
  const entity=new pc.Entity('GENESIS_VFX_'+name);
  entity.addComponent('render',{meshInstances:[new pc.MeshInstance(data.mesh,material)],
   castShadows:false,receiveShadows:false});
  app.root.addChild(entity);
  return {entity,...data};
 }
+
 function swordEdgePaths(points){
  const bounds=aabbOf(points);
  const lo=Math.max(bounds.min.y+.13,bounds.cy-.38);
@@ -98,8 +125,9 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
  if(kind==='sword'&&!bladeAabb)throw Error('SWORD_BLADE_AABB_REQUIRED');
  // For shields the silhouette is computed from actual mesh vertices rather than
  // assuming a circle, hexagon or pre-made UV mask. Front and reverse are separate.
+ const basis=kind==='shield'?shieldBasis(vertices):null;
  const paths=kind==='shield'
-   ?[pathFromHull(vertices,1,.023,.985),pathFromHull(vertices,-1,.023,.985)]
+   ?[shieldOutline(vertices,basis,1,.023,.985),shieldOutline(vertices,basis,-1,.023,.985)]
    :swordEdgePaths(vertices);
  const dummy=bladeAabb||new pc.BoundingBox(new pc.Vec3(box.cx,box.cy,box.cz),
   new pc.Vec3(box.width/2,box.height/2,box.depth/2));
@@ -110,17 +138,17 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
      instance=createRayoV07(pc,app,dummy);
      if(kind==='shield'){
        instance.entity.enabled=false;
-       attachments.Rayo=attachMesh(pc,app,paths,instance.material,'RAYO_SHIELD_CONTOUR',.015);
+       attachments.Rayo=attachMesh(pc,app,paths,instance.material,'RAYO_SHIELD_CONTOUR',.015,basis.normal);
      }else attachments.Rayo={entity:instance.entity,triangles:instance.stats.triangles};
    }else if(channel==='Fuego'){
      instance=createFuegoFiloV01(pc,app,dummy);
      if(kind==='shield'){
        instance.entity.enabled=false;
-       attachments.Fuego=attachMesh(pc,app,paths,instance.material,'FUEGO_SHIELD_EDGE',.013);
+       attachments.Fuego=attachMesh(pc,app,paths,instance.material,'FUEGO_SHIELD_EDGE',.013,basis.normal);
      }else attachments.Fuego={entity:instance.entity,triangles:instance.stats.triangles};
    }else {
      instance=createOtherChannel(pc,channel);
-     attachments[channel]=attachMesh(pc,app,paths,instance.material,channel.toUpperCase()+'_'+kind.toUpperCase(),.012);
+     attachments[channel]=attachMesh(pc,app,paths,instance.material,channel.toUpperCase()+'_'+kind.toUpperCase(),.012,basis?.normal||'z');
    }
    effects[channel]=instance;
  }
@@ -153,7 +181,8 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
  return {
   destroy,
   kind,rig:'Genesis Universal Seven Channels V09',effects,attachments,
-  inputMeshVertices:vertices.length,silhouetteVertices:kind==='shield'?hull(vertices).length:null,
+  inputMeshVertices:vertices.length,silhouetteVertices:kind==='shield'?hull(vertices.map(p=>({x:p[basis.u],y:p[basis.v]}))).length:null,
+  shieldNormalAxis:basis?.normal||null,
   carrierTriangles:Object.values(attachments).reduce((n,a)=>n+(a.triangles||0),0),
   baseMaterialUntouched:true,
   levels:()=>({...active}),apply
