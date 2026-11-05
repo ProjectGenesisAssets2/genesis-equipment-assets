@@ -2,110 +2,108 @@ const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
 const {PNG}=require('pngjs');
 (async()=>{
+ const FPS=12,PER_PHASE=36,CYCLE_SECONDS=1/.33;
+ const root='rayo-v07-output';
+ fs.mkdirSync(root,{recursive:true});
  const browser=await chromium.launch({headless:true,args:[
-   '--enable-webgl','--use-angle=swiftshader','--ignore-gpu-blocklist','--enable-unsafe-swiftshader'
+  '--enable-webgl','--use-angle=swiftshader','--ignore-gpu-blocklist','--enable-unsafe-swiftshader'
  ]});
  const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
- const page=await context.newPage();const errors=[];
- page.on('pageerror',e=>{console.log('PAGE_ERROR',e.stack||e.message);errors.push(String(e))});
- page.on('console',m=>{
-   if(m.type()==='error'){console.log('BROWSER_ERROR',m.text());errors.push(m.text())}
-   else if(m.text().includes('GENESIS_RAYO_'))console.log(m.text());
- });
- page.on('requestfailed',r=>{console.log('REQUEST_FAILED',r.url(),r.failure()?.errorText);errors.push(r.url())});
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>{errors.push(String(e));console.error('PAGE_ERROR',e.stack||e.message)});
+ page.on('console',m=>{if(m.type()==='error'){errors.push(m.text());console.error('BROWSER_ERROR',m.text())}else if(m.text().includes('GENESIS_RAYO_'))console.log(m.text())});
+ page.on('requestfailed',r=>{errors.push(r.url());console.error('REQUEST_FAILED',r.url(),r.failure()?.errorText)});
  await page.goto('http://127.0.0.1:8765/tests/rayo-premium-v01/',{waitUntil:'domcontentloaded',timeout:90000});
  await page.waitForFunction(()=>window.__genesisReady||window.__genesisError,null,{timeout:120000});
  const init=await page.evaluate(()=>window.__genesisReady||window.__genesisError);
- console.log('GENESIS_RAYO_V03_AUDIT',JSON.stringify(init));
- if(!init || init.loaded!==true || init.triangles!==2150||init.meshes!==2||init.proceduralShader!==true||init.bladeOnly!==true||init.geometry!=='actual-worldspace-3d-helix'||init.helix?.turns<3||init.helix?.depthTest!==true||init.intensityRange?.[0]!==0||init.intensityRange?.[1]!==100)
-  throw Error('GENESIS_SOURCE_OR_SHADER_AUDIT_FAILED '+JSON.stringify(init));
- if(!init.bloom)throw Error('CAMERAFRAME_HDR_BLOOM_WAS_NOT_ACTIVATED');
- const root='rayo-v06-output';fs.mkdirSync(root,{recursive:true});
- const frames=Number(process.env.FRAMES||32);
- let last;
- for(let frame=0;frame<frames;frame++){
-  const rampIntensity=Math.round(frame/Math.max(1,frames-1)*100);
-  last=await page.evaluate(async x=>window.__genesisStep(x.frame,x.frames,x.intensity),{frame,frames,intensity:rampIntensity});
-  if(!Number.isFinite(last.time)||last.intensity!==rampIntensity)throw Error('INVALID_RAMP_FRAME_'+frame+' '+JSON.stringify(last));
-  await page.screenshot({path:path.join(root,'frame_'+String(frame).padStart(3,'0')+'.png'),timeout:60000});
-  if(frame%8===0)console.log('GENESIS_RAYO_PREMIUM_FRAME',frame,'of',frames);
+ if(!init||init.loaded!==true||init.triangles!==2150||init.meshes!==2||
+    init.geometry!=='actual-worldspace-3d-helix'||init.helix?.turns<3||
+    init.bloom!==true||init.sourceGlbEdited!==false)
+   throw Error('ORIGINAL_SWORD_OR_TRUE_HELIX_INVALID '+JSON.stringify(init));
+ // TWO SEPARATE COMPLETE HELIX TRAVERSALS. The value never ramps inside a phase.
+ // Phase 1: fixed intensity 10 for an entire helix cycle.
+ // Phase 2: fixed intensity 100 for another entire helix cycle.
+ const phases=[{name:'SUAVE',intensity:10},{name:'FUERTE',intensity:100}];
+ const samples=[];
+ for(let pi=0;pi<phases.length;pi++){
+   const phase=phases[pi];
+   for(let local=0;local<PER_PHASE;local++){
+     const time=local/PER_PHASE*CYCLE_SECONDS;
+     const actual=await page.evaluate(async args=>{
+       const stage=document.getElementById('cycleStage');
+       if(stage)stage.textContent='CICLO '+(args.phaseIndex+1)+'/2 · INTENSIDAD FIJA '+args.intensity+'/100';
+       return window.__genesisStep(args.local,args.frames,args.intensity,args.time);
+     },{phaseIndex:pi,local,frames:PER_PHASE,intensity:phase.intensity,time});
+     if(actual.intensity!==phase.intensity||!Number.isFinite(actual.time)||
+        Math.abs(actual.time-time)>1e-7)
+       throw Error('CYCLE_FRAME_INVALID '+JSON.stringify({pi,local,actual}));
+     const ix=pi*PER_PHASE+local;
+     await page.screenshot({path:path.join(root,'cycle_frame_'+String(ix).padStart(3,'0')+'.png'),timeout:60000});
+     samples.push({frame:ix,phase:pi+1,intensity:actual.intensity,time:actual.time});
+     if(local%12===0)console.log('GENESIS_RAYO_V07_CYCLE',phase.intensity,local+'/'+PER_PHASE);
+   }
  }
- // Second independent movie: a moving lightning strand at a constant, inspectable 60/100.
- for(let frame=0;frame<frames;frame++){
-   const sample=await page.evaluate(async x=>window.__genesisStep(x.frame,x.frames,60),{frame,frames});
-   if(sample.intensity!==60||!Number.isFinite(sample.time))throw Error('HELIX_MOVIE_INVALID_FRAME_'+frame);
-   await page.screenshot({path:path.join(root,'helix_frame_'+String(frame).padStart(3,'0')+'.png'),timeout:60000});
+ const sampleLocal=14, idx10=sampleLocal, idx100=PER_PHASE+sampleLocal;
+ fs.copyFileSync(path.join(root,'cycle_frame_'+String(idx10).padStart(3,'0')+'.png'),path.join(root,'Still_010.png'));
+ fs.copyFileSync(path.join(root,'cycle_frame_'+String(idx100).padStart(3,'0')+'.png'),path.join(root,'Still_100.png'));
+ const midTime=sampleLocal/PER_PHASE*CYCLE_SECONDS;
+ await page.evaluate(async time=>window.__genesisStep(0,PER_PHASE,0,time),midTime);
+ await page.screenshot({path:path.join(root,'Still_000.png'),timeout:60000});
+ function png(name){return PNG.sync.read(fs.readFileSync(path.join(root,name)));}
+ const p0=png('Still_000.png'),p10=png('Still_010.png'),p100=png('Still_100.png');
+ function luma(p,x,y){const i=(y*p.width+x)*4;return .2126*p.data[i]+.7152*p.data[i+1]+.0722*p.data[i+2];}
+ function blueDifference(base,target,x,y){
+   const k=(y*target.width+x)*4;
+   return target.data[k+2]-base.data[k+2]>15&&target.data[k+2]-target.data[k]>12;
  }
- const intensityComparison=[];
- for(const intensity of [0,10,25,50,60,75,100]){
-   const sample=await page.evaluate(async ({n,frames})=>window.__genesisStep(16,frames,n),{n:intensity,frames});
-   if(!Number.isFinite(sample.time))throw Error('INVALID_GLSL_TIME_'+intensity);
-   if(sample.intensity!==intensity)throw Error('INTENSITY_SWEEP_MISMATCH_'+intensity);
-   intensityComparison.push(sample);
-   await page.screenshot({path:path.join(root,'Intensity_'+String(intensity).padStart(3,'0')+'.png'),timeout:60000});
- }
-
- const p0=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_000.png')));
- const p100=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_100.png')));
- const p10=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_010.png')));
- const p60=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_060.png')));
- function luminance(png,x,y){
-   const i=(y*png.width+x)*4;
-   return .2126*png.data[i]+.7152*png.data[i+1]+.0722*png.data[i+2];
- }
- let changedPixels=0;
- for(let y=45;y<310;y++)for(let x=620;x<663;x++){
-   if(Math.abs(luminance(p100,x,y)-luminance(p0,x,y))>7)changedPixels++;
- }
- let bluePixels10=0, bluePixels60=0;
- function blueChange(base,target,x,y){
-   const i=(y*target.width+x)*4;
-   return target.data[i+2]-base.data[i+2]>15 &&
-     (target.data[i+2]-target.data[i])>12;
- }
+ let electric10=0,electric100=0,variation10=0,variation100=0;
+ const a10=png('cycle_frame_008.png'),b10=png('cycle_frame_025.png');
+ const a100=png('cycle_frame_044.png'),b100=png('cycle_frame_061.png');
  for(let y=55;y<500;y++)for(let x=603;x<680;x++){
-   if(blueChange(p0,p10,x,y)) bluePixels10++;
-   if(blueChange(p0,p60,x,y)) bluePixels60++;
+   if(blueDifference(p0,p10,x,y))electric10++;
+   if(blueDifference(p0,p100,x,y))electric100++;
+   if(Math.abs(luma(a10,x,y)-luma(b10,x,y))>12)variation10++;
+   if(Math.abs(luma(a100,x,y)-luma(b100,x,y))>12)variation100++;
  }
- const visualChecks={
-   transparentBackground0:luminance(p0,600,205),
-   transparentBackground100:luminance(p100,600,205),
-   sourceBladeVisible0:luminance(p0,640,205),
-   changedPixels0to100:changedPixels,
-   bluePixels10,bluePixels60,
-   strongAt60:bluePixels60>250&&bluePixels60>bluePixels10*2.2,
-   rampStartIntensity:0,rampEndIntensity:100,
-   sampleTime:p100.width?16*2.75/frames:null
+ const visual={
+   background0:luma(p0,600,205),background10:luma(p10,600,205),
+   background100:luma(p100,600,205),bladeBase:luma(p0,640,205),
+   electricPixels10:electric10,electricPixels100:electric100,
+   motionChanged10:variation10,motionChanged100:variation100
  };
- console.log('GENESIS_RAYO_VISUAL_PIXEL_CHECKS',JSON.stringify(visualChecks));
- if(visualChecks.transparentBackground0<15||visualChecks.transparentBackground100<15)
-  throw Error('OPAQUE_BLACK_VFX_RECTANGLE_DETECTED '+JSON.stringify(visualChecks));
- if(visualChecks.sourceBladeVisible0<18)
-  throw Error('V175_BLADE_HIDDEN_AT_ZERO '+JSON.stringify(visualChecks));
- if(!visualChecks.strongAt60)
-  throw Error('RAYO_V06_INSUFFICIENT_PRESENCE_AT_60 '+JSON.stringify(visualChecks));
- if(changedPixels<35)
-  throw Error('NO_VISIBLE_INTENSITY_CHANGE '+JSON.stringify(visualChecks));
- const h8=PNG.sync.read(fs.readFileSync(path.join(root,'helix_frame_008.png')));
- const h20=PNG.sync.read(fs.readFileSync(path.join(root,'helix_frame_020.png')));
- let movingPixels=0;
- for(let y=50;y<500;y++)for(let x=599;x<682;x++){
-   if(Math.abs(luminance(h8,x,y)-luminance(h20,x,y))>13)movingPixels++;
- }
- if(movingPixels<75)throw Error('HELIX_NOT_MOVING_OR_INVISIBLE_'+movingPixels);
+ console.log('GENESIS_RAYO_V07_TWO_CYCLE_VISUAL_CHECK',JSON.stringify(visual));
+ if(Math.min(visual.background0,visual.background10,visual.background100)<18||
+    visual.bladeBase<18)
+   throw Error('BLACK_RECTANGLE_OR_HIDDEN_V175_'+JSON.stringify(visual));
+ if(electric10<30||electric100<electric10*2.1)
+   throw Error('10_VS_100_NO_VISIBLE_POWER_DIFFERENCE_'+JSON.stringify(visual));
+ if(variation10<25||variation100<150)
+   throw Error('NOT_BOTH_COMPLETE_MOVING_HELIX_PHASES_'+JSON.stringify(visual));
+ if(samples.length!==72||
+    samples.slice(0,36).some(x=>x.intensity!==10)||
+    samples.slice(36).some(x=>x.intensity!==100)||
+    samples[35].time/CYCLE_SECONDS<.95||
+    samples[71].time/CYCLE_SECONDS<.95)
+   throw Error('INCOMPLETE_CYCLE_OR_UNWANTED_RAMP');
  const audit={
-   schema:'Genesis_Rayo_V006_Helix_Enhanced60_VisualEvidence',
-   status:'experiment-not-approved',
-   verified_original_sha256:'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b',
-   source:init,realPlayCanvasWebGL2:true,
-   generatedBy:'Chromium WebGL2 PlayCanvas ShaderMaterial GLSL, camera bloom and real PBR GLB',
-   noGeometryChanges:true,sourceImageTexturesNotChanged:true,
-   extraVfxGeometry:'3D invisible helical lightning guide, 580 ribbon segments / 1160 triangles, fragment shader shows only travelling sparks',
-   noStaticMasks:true,noSpheresOrTubes:true,
-   fps:12,frames,displayResolution:[1280,720],
-   animation:last,intensityComparison,visualChecks,helixMovement:{comparisonFrames:[8,20],changedPixels:movingPixels,fixedIntensity:60},errors};
+  schema:'Genesis_Rayo_V007_TwoCompleteFixedIntensityCycles',
+  status:'experiment-not-approved',
+  originalV03SHA256:'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b',
+  source:init,realPlayCanvasWebGL2:true,noGeometryChanges:true,
+  fps:FPS,framesPerPhase:PER_PHASE,totalFrames:samples.length,
+  phaseDurationSeconds:PER_PHASE/FPS,
+  completeHelixCycleSeconds:CYCLE_SECONDS,
+  sequence:[
+   {intensity:10,fromFrame:0,toFrame:35,helixCycles:1,fixedThroughout:true},
+   {intensity:100,fromFrame:36,toFrame:71,helixCycles:1,fixedThroughout:true}
+  ],
+  intensityRamps:false,
+  sameCameraAndOriginalMaterials:true,visual,
+  sampledFrames:[samples[0],samples[14],samples[35],samples[36],samples[50],samples[71]],
+  errors
+ };
  fs.writeFileSync(path.join(root,'audit.json'),JSON.stringify(audit,null,2));
- console.log('GENESIS_RAYO_V06_HELIX_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
  await browser.close();
- if(errors.length)throw Error('GENESIS_CONSOLE_ERRORS '+JSON.stringify(errors.slice(0,6)));
-})().catch(e=>{console.error('GENESIS_RAYO_PREMIUM_FAILED',e.stack||e);process.exit(1)});
+ if(errors.length)throw Error('PLAYCANVAS_CONSOLE_ERRORS '+JSON.stringify(errors));
+ console.log('GENESIS_RAYO_V07_10_THEN_100_FULL_CYCLE_VERIFIED',JSON.stringify({frames:samples.length,visual}));
+})().catch(e=>{console.error('GENESIS_RAYO_V07_FAILED',e.stack||e);process.exit(1)});
