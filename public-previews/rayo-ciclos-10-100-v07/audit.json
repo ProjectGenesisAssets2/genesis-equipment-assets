@@ -1,0 +1,128 @@
+{
+  "schema": "Genesis_Rayo_V007_TwoCompleteFixedIntensityCycles",
+  "status": "experiment-not-approved",
+  "originalV03SHA256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source": {
+    "source": "original_v03",
+    "loaded": true,
+    "meshes": 2,
+    "triangles": 2150,
+    "bloom": true,
+    "vfxMaterial": "Untitled",
+    "proceduralShader": true,
+    "uvMasks": false,
+    "effectsMeshTriangles": 1160,
+    "helix": {
+      "turns": 3.15,
+      "segments": 580,
+      "triangles": 1160,
+      "depthTest": true,
+      "bladeHeight": 2.0000000053666396,
+      "radiusX": 0.063,
+      "radiusZ": 0.064,
+      "yStart": -0.37,
+      "yEnd": 0.8300000022271554,
+      "placementBasis": "original-v03-blade-visual-landmarks",
+      "sourceBladeBounds": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          0.3444870114326477,
+          1.0000000026833198,
+          0.061387243619883236
+        ]
+      }
+    },
+    "geometry": "actual-worldspace-3d-helix",
+    "visualCalibration": "60-of-100-legible-in-inventory",
+    "sourceGlbEdited": false,
+    "materials": [
+      "DefaultMaterial",
+      "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+    ],
+    "intensityRange": [
+      0,
+      100
+    ],
+    "defaultIntensity": 60,
+    "bladeOnly": true,
+    "intensityAnimation": "two-separate-fixed-intensity-full-blade-cycles-10-then-100"
+  },
+  "realPlayCanvasWebGL2": true,
+  "noGeometryChanges": true,
+  "fps": 12,
+  "framesPerPhase": 36,
+  "totalFrames": 72,
+  "phaseDurationSeconds": 3,
+  "completeHelixCycleSeconds": 3.0303030303030303,
+  "sequence": [
+    {
+      "intensity": 10,
+      "fromFrame": 0,
+      "toFrame": 35,
+      "helixCycles": 1,
+      "fixedThroughout": true
+    },
+    {
+      "intensity": 100,
+      "fromFrame": 36,
+      "toFrame": 71,
+      "helixCycles": 1,
+      "fixedThroughout": true
+    }
+  ],
+  "intensityRamps": false,
+  "sameCameraAndOriginalMaterials": true,
+  "visual": {
+    "background0": 54.084199999999996,
+    "background10": 54.084199999999996,
+    "background100": 66.1736,
+    "bladeBase": 110.9014,
+    "electricPixels10": 281,
+    "electricPixels100": 17824,
+    "motionChanged10": 655,
+    "motionChanged100": 9475
+  },
+  "sampledFrames": [
+    {
+      "frame": 0,
+      "phase": 1,
+      "intensity": 10,
+      "time": 0
+    },
+    {
+      "frame": 14,
+      "phase": 1,
+      "intensity": 10,
+      "time": 1.1784511784511784
+    },
+    {
+      "frame": 35,
+      "phase": 1,
+      "intensity": 10,
+      "time": 2.946127946127946
+    },
+    {
+      "frame": 36,
+      "phase": 2,
+      "intensity": 100,
+      "time": 0
+    },
+    {
+      "frame": 50,
+      "phase": 2,
+      "intensity": 100,
+      "time": 1.1784511784511784
+    },
+    {
+      "frame": 71,
+      "phase": 2,
+      "intensity": 100,
+      "time": 2.946127946127946
+    }
+  ],
+  "errors": []
+}
