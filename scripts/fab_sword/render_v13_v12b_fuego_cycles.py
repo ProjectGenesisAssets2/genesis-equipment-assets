@@ -208,7 +208,14 @@ def main():
     assert hashlib.sha256(a.input.read_bytes()).hexdigest()==preset['source_original']['sha256']
     assert hashlib.sha256(a.hdri.read_bytes()).hexdigest()==preset['lighting']['hdri_sha256']
     # Generate exact V12B using the ORIGINAL November 5 real Blender script, no rebuild.
-    v12.main()
+    # Old V12/V10 parsers do not accept our new --preset argument.
+    saved_argv=sys.argv[:]
+    try:
+        idx=sys.argv.index('--preset')
+        sys.argv=sys.argv[:idx]+sys.argv[idx+2:]
+        v12.main()
+    finally:
+        sys.argv=saved_argv
     scene=bpy.context.scene
     iron=next((mat for mat in bpy.data.materials if 'Iron_Blade_V175' in mat.name),None)
     if not iron:raise RuntimeError('Approved V12B blade material missing')
