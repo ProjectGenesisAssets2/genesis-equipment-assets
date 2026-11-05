@@ -1,0 +1,126 @@
+name: Genesis V11 - V175 color intact and historical J iron ridge reflections
+on:
+  push:
+    branches: [experiment/v11-v175-color-nervio-brillo-j-20261105]
+    paths:
+      - 'scripts/fab_sword/render_v11_colorlocked_j_ridge.py'
+      - '.github/workflows/render-v11-v175-j-ridge-reflections.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v11-v175-j-ridge
+  cancel-in-progress: true
+jobs:
+  cycles-render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rehydrate EXACT existing 21 MB V03 V175 GLB from saved Git blobs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Recover exact 4096x2048 RGB 32-bit/channel HDRI Studio Small 09 EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+          test "$(stat -c %s /tmp/studio_small_09_4k.exr)" -gt 1000000
+      - name: Install Blender Foundation official 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-blender --strip-components=1
+          /tmp/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Re-render frozen V10 and add J Fab normals and metallic reflections to unchanged V175 color
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v11
+          /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v11_colorlocked_j_ridge.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/genesis-v11 --samples 96
+          test -s /tmp/genesis-v11/V03_Blender_Cycles_HDRI32_Hero.png
+          test -s /tmp/genesis-v11/V03_Blender_Cycles_HDRI32_TresCuartos.png
+          test -s /tmp/genesis-v11/V03_V175_HDRI32_Detalle_Filo.png
+          test -s /tmp/genesis-v11/render_audit.json
+          test -s /tmp/genesis-v11/lighting_profile.json
+          for f in V11_V175_Color_Original_J_Nervio_Hero V11_V175_Color_Original_J_Nervio_TresCuartos V11_V175_Color_Original_J_Nervio_Filo_Detalle V11_V175_Color_Original_J_Nervio_Strip145_Hero; do
+            test -s "/tmp/genesis-v11/${f}.png"
+          done
+          test -s /tmp/genesis-v11/v11_surface_audit.json
+      - name: Validate exact V175 material, 96-bit/channel total RGB HDRI, source identity and camera proof
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, struct
+          p=pathlib.Path('/tmp/genesis-v11')
+          a=json.loads((p/'render_audit.json').read_text())
+          light=json.loads((p/'lighting_profile.json').read_text())
+          assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['hdri_sha256']=='bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558'
+          assert a['hdri_image_depth_bpp']==96
+          assert a['hdri_dimensions']==[4096,2048]
+          assert a['geometry_triangles']==2150 and not a['geometry_or_material_edit']
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert any('Iron_Blade_V175' in m for m in a['original_materials'])
+          assert len(a['renders'])==3 and a['effects_present'] is False
+          assert light['hdri']['bits_per_channel']==32 and light['visual_approval']=='pending'
+          for r in a['renders']:
+            data=(p/r['file']).read_bytes()
+            assert len(data)>70000 and data[:8]==b'\x89PNG\r\n\x1a\n'
+            width,height=struct.unpack_from('>II',data,16)
+            assert (width,height)==(1200,1500)
+          b=json.loads((p/'v11_surface_audit.json').read_text())
+          assert b['source_sha256']==a['source_sha256']
+          assert b['V10_color_socket_unchanged'] is True
+          assert b['triangles']==2150 and b['additional_channel_vfx'] is False
+          assert b['normal_from']=='Fab Image_2'
+          assert b['roughness_from']=='V175 ORM green * 0.49'
+          assert b['metallic_from']=='Fab Image_1 ORM blue + floor 0.98'
+          assert b['hdri_rgb_bits_per_channel']==32
+          assert len(b['rendered_files'])==4
+          for item in b['rendered_files']:
+            data=(p/item['file']).read_bytes()
+            assert len(data)>70000 and data[:8]==b'\x89PNG\r\n\x1a\n'
+            assert struct.unpack_from('>II',data,16)==(1200,1500)
+          print('GENESIS_V11_J_RIDGE_COLOR_UNCHANGED_VERIFIED',b['rendered_files'])
+          PY
+      - name: Derive compact mobile review previews FROM Cycles PNG, never from HDRI
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -y && sudo apt-get install -y ffmpeg
+          fi
+          for file in V03_Blender_Cycles_HDRI32_Hero V03_Blender_Cycles_HDRI32_TresCuartos V03_V175_HDRI32_Detalle_Filo V11_V175_Color_Original_J_Nervio_Hero V11_V175_Color_Original_J_Nervio_TresCuartos V11_V175_Color_Original_J_Nervio_Filo_Detalle V11_V175_Color_Original_J_Nervio_Strip145_Hero; do
+            ffmpeg -y -loglevel error -i "/tmp/genesis-v11/${file}.png" -vf 'scale=600:750:flags=lanczos' -frames:v 1 -q:v 4 "/tmp/genesis-v11/${file}_preview.jpg"
+            test "$(stat -c %s "/tmp/genesis-v11/${file}_preview.jpg")" -gt 10000
+          done
+      - name: Stage rendered PNG and JSON ONLY - no original model or EXR released
+        run: |
+          set -euo pipefail
+          mkdir -p public-previews/espada-v03-v175-j-reflejos-v11
+          cp /tmp/genesis-v11/*.png public-previews/espada-v03-v175-j-reflejos-v11/
+          cp /tmp/genesis-v11/*_preview.jpg public-previews/espada-v03-v175-j-reflejos-v11/
+          cp /tmp/genesis-v11/*.json public-previews/espada-v03-v175-j-reflejos-v11/
+          test "$(find public-previews/espada-v03-v175-j-reflejos-v11 -name '*.png' | wc -l)" -eq 7
+          ! find public-previews/espada-v03-v175-j-reflejos-v11 -type f \( -iname '*.glb' -o -iname '*.exr' -o -iname '*.blend' \) | grep -q .
+      - name: Publish experimental master render for visual review (not main)
+        run: |
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git add public-previews/espada-v03-v175-j-reflejos-v11/
+          if git diff --cached --quiet; then
+            echo 'Gallery already published'
+          else
+            git commit -m 'preview(v11): original V175 color with J normal and reflective ridge, Cycles HDRI32'
+            git fetch origin experiment/v11-v175-color-nervio-brillo-j-20261105
+            git rebase FETCH_HEAD
+            git push origin HEAD:experiment/v11-v175-color-nervio-brillo-j-20261105
+          fi
+      - name: Remove temporary original licensed model and HDRI from runner
+        if: always()
+        run: |
+          rm -f /tmp/genesis-original-v03.glb /tmp/studio_small_09_4k.exr
