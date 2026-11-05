@@ -1,0 +1,89 @@
+name: Genesis V08 - Fuego filo and approved Rayo V07 modular compositing
+on:
+  push:
+    branches: [experiment/v08-fuego-filo-rayo-v07-modular-20261104]
+    paths:
+      - 'vfx/**'
+      - 'tests/fire-rayo-v08/**'
+      - '.github/workflows/render-v08-fire-ray-combo.yml'
+  workflow_dispatch:
+concurrency:
+  group: genesis-v08-fire-combo
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  real-webgl-render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert V07 approved GLSL remains unchanged
+        run: python3 tests/fire-rayo-v08/check_rayo_approved.py
+      - name: Recover exact original V03 GLB locally and validate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+          cp /tmp/genesis-original-v03.glb tests/fire-rayo-v08/source_original_v03.glb
+      - name: Install official PlayCanvas, Chromium and ffmpeg
+        run: |
+          npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          test -s node_modules/playcanvas/build/playcanvas.mjs
+          npx playwright install chromium
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+      - name: Serve original sword and modular VFX
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v08-http.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/fire-rayo-v08/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/fire-rayo-v08/source_original_v03.glb)" = 200
+      - name: Render five fire-only and fire-ray samples in real PlayCanvas WebGL2
+        run: |
+          set -o pipefail
+          node tests/fire-rayo-v08/record.cjs | tee /tmp/genesis-v08-browser.log
+          test "$(find fire-rayo-v08-output -maxdepth 1 -name '*_frame_*.png' | wc -l)" -eq 120
+          test -s fire-rayo-v08-output/audit.json
+          test -s fire-rayo-v08-output/Proof_Fuego_060.png
+          test -s fire-rayo-v08-output/Proof_Fuego060_Rayo060.png
+      - name: Encode videos and GIFs from real captured frames
+        run: |
+          set -e
+          cd fire-rayo-v08-output
+          for mode in Fuego_060 Fuego_100 Rayo_060 Fuego060_Rayo060 Fuego040_Rayo080; do
+            ffmpeg -y -loglevel error -framerate 12 -i "$mode"_frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart "$mode".mp4
+            test -s "$mode".mp4
+          done
+          for mode in Fuego_060 Fuego060_Rayo060; do
+            ffmpeg -y -loglevel error -i "$mode".mp4 -vf 'fps=10,scale=960:-1:flags=lanczos,palettegen' "$mode"_palette.png
+            ffmpeg -y -loglevel error -i "$mode".mp4 -i "$mode"_palette.png -lavfi 'fps=10,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 "$mode".gif
+            test -s "$mode".gif
+          done
+      - name: Publish experiment previews only; never original licensed GLB
+        run: |
+          set -e
+          mkdir -p public-previews/fuego-rayo-v08
+          cp fire-rayo-v08-output/*.mp4 public-previews/fuego-rayo-v08/
+          cp fire-rayo-v08-output/*.gif public-previews/fuego-rayo-v08/
+          cp fire-rayo-v08-output/Proof_*.png public-previews/fuego-rayo-v08/
+          cp fire-rayo-v08-output/audit.json public-previews/fuego-rayo-v08/
+          ! find public-previews/fuego-rayo-v08 -type f -iname '*.glb' | grep -q .
+      - name: Attach experimental renders for user review
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V08-Fire-Edge-RayoV07-PlayCanvas-Experimental
+          path: public-previews/fuego-rayo-v08/
+          retention-days: 7
+      - name: Commit experiment previews only, not main
+        run: |
+          git config user.name 'Genesis Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git add public-previews/fuego-rayo-v08/
+          if git diff --cached --quiet; then echo 'Already current'; else
+            git commit -m 'preview(v08): Fire edge shader with approved Rayo V07'
+            git push origin HEAD:experiment/v08-fuego-filo-rayo-v07-modular-20261104
+          fi
+      - name: Cleanup original licensed GLB
+        if: always()
+        run: rm -f /tmp/genesis-original-v03.glb tests/fire-rayo-v08/source_original_v03.glb
