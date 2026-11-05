@@ -1,0 +1,121 @@
+{
+  "schema": "Genesis_Fuego_V16_FuegoV03_RealV12B_Cycles_Render",
+  "original_sword_GLBSHA256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "blade_material": "V12B user approved, unchanged",
+  "blade_triangles": 98,
+  "full_sword_triangles": 2150,
+  "original_GLB_geometry_modified": false,
+  "original_PBR_blade_color_modified": false,
+  "roughness_multiplier_V12B": 0.34,
+  "oxide_roughness_V12B": 0.1,
+  "actual_blade_surface_sampled": {
+    "blade_triangles": 98,
+    "blade_longitudinal_span_m": 1.422993380363855,
+    "blade_sampled_sections": 200,
+    "average_width_m": 0.11555095367416537,
+    "front_side_derived_from_real_camera": true,
+    "blade_real_front_triangles_sampled": 98,
+    "real_blade_mesh_used_as_only_attachment_reference": true,
+    "flame_source": "Unity Labs Paris CC0 RGBA TGA 64-frame flipbook (EXR source hashes verified but Blender EXR decoder unavailable)",
+    "flame_original_exr_sha256": "b18ec50896c271e9f72efcd616d16fe4fe288311ce52806cb2f70ea4e886d9ff",
+    "flame_original_tga_sha256": "99a3ccc79d94cb71b87f6a7ae1fee0578ad132701f76f5bec86f3253b4cf34db",
+    "flame_atlas_tiles": [
+      16,
+      4
+    ],
+    "no_point_lights_or_round_blobs": true,
+    "vfx_own_geometry_only": true
+  },
+  "vfx_objects_are_separate_not_in_source": true,
+  "shader_source": "Unity Labs Paris free CC0 SmallFlame01-mini original EXR+TGA atlas; PlayCanvas modular shader to be built after visual review",
+  "fire_variant": "V04_ACTUAL_CC0_FLAME_ATLAS_HDR_EXR_PREVISUALIZATION_FOR_PLAYCANVAS",
+  "render_implementation": "Blender Cycles V04 with actual Unity Labs CC0 flame HDR EXR color and TGA mask atlas, applied as moving cards on genuine V12B blade, not PlayCanvas GLSL runtime.",
+  "visual_status": "experimental_only_user_review_required",
+  "hdr_source": "studio_small_09_4k.exr",
+  "hdri_rgb_bits_per_channel": 32,
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "blender": "4.5.13 LTS",
+  "engine": "Cycles",
+  "samples": 96,
+  "rendered_files": [
+    {
+      "file": "V12_V175_Color_J_Rugosidad034_Hero.png",
+      "bytes": 1897927,
+      "effect": "Fuego",
+      "intensity": 0,
+      "note": "actual V12B no fire reference"
+    },
+    {
+      "file": "Fuego_V04_060_V12B_Hero.png",
+      "bytes": 1928872,
+      "effect": "Fuego",
+      "intensity": 60,
+      "vfx_geometry_objects": 44,
+      "separate_emissive_material": true
+    },
+    {
+      "file": "Fuego_V04_060_V12B_Detalle_Filo.png",
+      "bytes": 2064465,
+      "effect": "Fuego",
+      "intensity": 60,
+      "vfx_geometry_objects": 44,
+      "separate_emissive_material": true
+    },
+    {
+      "file": "Fuego_V04_100_V12B_Hero.png",
+      "bytes": 1950766,
+      "effect": "Fuego",
+      "intensity": 100,
+      "vfx_geometry_objects": 56,
+      "separate_emissive_material": true
+    }
+  ],
+  "fire_segments": [
+    {
+      "intensity": 60,
+      "ribbons": {
+        "vein_segments": 24,
+        "flame_tongues": 20,
+        "original_flipbook_frames": 64,
+        "fire_cards": 20,
+        "vfx_objects": 44,
+        "source": "UnityLabs CC0 SmallFlame01-mini HDR EXR+TGA",
+        "emission_strength_varies_with_intensity": true
+      },
+      "objects": 44
+    },
+    {
+      "intensity": 60,
+      "ribbons": {
+        "vein_segments": 24,
+        "flame_tongues": 20,
+        "original_flipbook_frames": 64,
+        "fire_cards": 20,
+        "vfx_objects": 44,
+        "source": "UnityLabs CC0 SmallFlame01-mini HDR EXR+TGA",
+        "emission_strength_varies_with_intensity": true
+      },
+      "objects": 44
+    },
+    {
+      "intensity": 100,
+      "ribbons": {
+        "vein_segments": 24,
+        "flame_tongues": 32,
+        "original_flipbook_frames": 64,
+        "fire_cards": 32,
+        "vfx_objects": 56,
+        "source": "UnityLabs CC0 SmallFlame01-mini HDR EXR+TGA",
+        "emission_strength_varies_with_intensity": true
+      },
+      "objects": 56
+    }
+  ],
+  "playcanvas_shader_modified": false,
+  "original_model_exported": false,
+  "flame_original_exr_sha256": "b18ec50896c271e9f72efcd616d16fe4fe288311ce52806cb2f70ea4e886d9ff",
+  "flame_original_tga_sha256": "99a3ccc79d94cb71b87f6a7ae1fee0578ad132701f76f5bec86f3253b4cf34db",
+  "flame_source_license": "Unity Labs Paris CC0 Unity.com Nov 28 2016",
+  "flame_render_texture": "original 64-frame TGA RGBA; Unity Labs EXR source downloaded and hashed but not decoded by Blender 4.5.13",
+  "concept_or_imagegen_used": false
+}
