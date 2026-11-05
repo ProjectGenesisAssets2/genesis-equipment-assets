@@ -1,0 +1,57 @@
+name: Genesis V16 - inspect official Unity Labs CC0 flame flipbook sources
+on:
+  push:
+    branches: [experiment/v16-fuego-cc0-flame-flipbook-real-v12b-20261105]
+    paths: ['.github/workflows/v16-inspect-unity-cc0-flames.yml']
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download ORIGINAL licensed CC0 realistic flame flipbooks - no generated imagery
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-flames
+          urls=(
+            'https://unity3d.com/files/labs/downloads/vfx/assets01/Flame03/Flame03-flipbooks.zip'
+            'https://unity3d.com/files/labs/downloads/vfx/assets01/SmallFlame01-mini-temperature/SmallFlame01-mini-flipbooks.zip'
+            'https://unity3d.com/files/labs/downloads/vfx/assets01/Flame02/Flame02-flipbooks.zip'
+          )
+          names=(Flame03 SmallFlame01 Flame02)
+          for i in 0 1 2; do
+            dest="/tmp/genesis-flames/\${names[$i]}.zip"
+            if curl -fL --retry 2 --connect-timeout 12 --max-time 130 "\${urls[$i]}" -o "$dest"; then
+              echo "GENESIS_CC0_DOWNLOAD_SUCCESS \${names[$i]} $(wc -c < "$dest")"
+              sha256sum "$dest"
+              unzip -Z -1 "$dest" | head -80
+            else
+              echo "GENESIS_CC0_DOWNLOAD_FAILED \${names[$i]}"
+            fi
+          done
+          test "$(find /tmp/genesis-flames -name '*.zip' -size +100k | wc -l)" -ge 1
+      - name: Inspect real frame dimensions / alpha and pixel formats
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          import zipfile, pathlib, json, io
+          from PIL import Image
+          out={}
+          for archive in sorted(pathlib.Path('/tmp/genesis-flames').glob('*.zip')):
+            with zipfile.ZipFile(archive) as z:
+              files=[n for n in z.namelist() if not n.endswith('/')]
+              report=[]
+              for name in files:
+                d=z.getinfo(name)
+                item={'name':name,'bytes':d.file_size}
+                if name.lower().endswith(('.png','.jpg','.jpeg','.tga','.tif','.tiff')):
+                  try:
+                    with Image.open(io.BytesIO(z.read(name))) as im:
+                      item['image']={'size':im.size,'mode':im.mode,'bands':im.getbands()}
+                  except Exception as e:item['image_error']=str(e)
+                report.append(item)
+              out[archive.stem]=report
+          print('GENESIS_CC0_FLAME_ATLAS_AUDIT',json.dumps(out,ensure_ascii=False))
+          assert out
+          PY
