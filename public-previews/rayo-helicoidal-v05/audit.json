@@ -54,7 +54,7 @@
   "generatedBy": "Chromium WebGL2 PlayCanvas ShaderMaterial GLSL, camera bloom and real PBR GLB",
   "noGeometryChanges": true,
   "sourceImageTexturesNotChanged": true,
-  "extraVfxGeometry": "one quad, two triangles, procedural shader",
+  "extraVfxGeometry": "3D invisible helical lightning guide, 580 ribbon segments / 1160 triangles; only moving emissive arcs appear",
   "noStaticMasks": true,
   "noSpheresOrTubes": true,
   "fps": 12,
