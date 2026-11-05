@@ -28,7 +28,7 @@ pulseLight.setPosition(.04,.40,.17);app.root.addChild(pulseLight);
 let bloomOK=false,framePost=null;
 try{
  framePost=new pc.CameraFrame(app,camera.camera);
- framePost.bloom.intensity=.027;
+ framePost.bloom.intensity=.047;
  framePost.bloom.blurLevel=7;
  framePost.rendering.renderTargetScale=1;
  framePost.update();
@@ -50,91 +50,115 @@ const fragmentGLSL=`
 precision highp float;
 varying vec2 vUv;
 uniform float uTime;
-uniform float uIntensity; // 0 to 100, not an arbitrary rarity tier.
-float h1(float n){return fract(sin(n*127.17+34.23)*43758.5453);}
-float zig(float y,float seed,float time){
-  float s=floor(time*3.0);
-  return .014*sin(y*51.0 + seed*2.8 + s*.56)
-       + .008*sin(y*113.0 - seed*6.2 + s*.91)
-       + .003*sin(y*251.0 + seed*1.2 + s*.33);
+uniform float uIntensity;
+float circleDistance(float a,float b){
+  float d=abs(fract(a-b+.5)-.5);
+  return d;
 }
-float lineEnergy(float distance,float width){return exp(-abs(distance)/width);}
-float segment(float y,float center,float radius){
-  return 1.0-smoothstep(radius*.45,radius,abs(y-center));
+float travellingArc(float pos,float head,float radius){
+  float d=circleDistance(pos,head);
+  return 1.0-smoothstep(radius*.38,radius,d);
 }
 void main(void){
- vec2 uv=vUv;
- float x=uv.x,y=uv.y,t=uTime;
  float power=clamp(uIntensity*.01,0.0,1.0);
- // Blade only: never the guard, grip or pommel. Remaining UVs are transparent.
- float blade=smoothstep(.13,.25,y)*(1.0-smoothstep(.88,.965,y));
- blade*=1.0-smoothstep(.27,.33,abs(x-.5));
- // Brief, contained motion rather than persistent lightning or full-body corona.
- float beat=pow(max(0.0,sin(t*5.1+1.0)),5.0);
- float glimmer=.31+.69*beat;
- float travel=.56+.075*sin(t*1.6);
- float primary=segment(y,travel,.16)*blade;
- float second=segment(y,.38+.045*sin(t*1.25+1.7),.095)*blade
-              *smoothstep(.30,.64,power);
- float third=segment(y,.73+.025*sin(t*.95+2.0),.065)*blade
-             *smoothstep(.73,.98,power);
- float mainPath=.5+zig(y,1.0,t);
- float secondPath=.52+zig(y,2.9,t);
- float thirdPath=.477+zig(y,4.1,t);
- float core=lineEnergy(x-mainPath,.0080)*primary
-          +lineEnergy(x-secondPath,.0065)*second*.55
-          +lineEnergy(x-thirdPath,.0055)*third*.32;
- float shimmer=lineEnergy(x-mainPath,.027)*primary*.25
-          +lineEnergy(x-secondPath,.011)*second*.09
-          +lineEnergy(x-thirdPath,.009)*third*.05;
- // Sparse 1-2 little branches at higher channel strength, no free-floating sparks.
- float spurAmount=smoothstep(.52,.90,power);
- float branchPath=.5+.028*(y-.57)+zig(y,7.2,t)*.6;
- float branch=lineEnergy(x-branchPath,.0028)*
-              segment(y,.60,.045)*blade*spurAmount*beat*.28;
- core+=branch;
- float strength=power*(.70+.70*power)*(.42+.58*beat);
- vec3 electricBlue=vec3(.36,1.00,2.00)*shimmer
-                  +vec3(.90,1.55,2.40)*core;
- vec3 result=electricBlue*strength;
- float opacity=clamp((core*.90+shimmer*.34)*(.30+.70*power),0.,.65);
- gl_FragColor=vec4(result,opacity);
+ if(power<.005) discard;
+ float pos=vUv.x;
+ float motion=fract(.14+uTime*.33);
+ // Each illuminated arc follows the true 3D helix. The spring/guide is invisible.
+ float primary=travellingArc(pos,motion,.135);
+ float secondary=travellingArc(pos,fract(motion+.43),.095)*smoothstep(.36,.76,power)*.68;
+ float tertiary=travellingArc(pos,fract(motion+.76),.065)*smoothstep(.73,1.0,power)*.40;
+ float activity=clamp(primary+secondary+tertiary,0.0,1.0);
+ float transverse=abs(2.0*vUv.y-1.0);
+ float brightCore=pow(max(0.0,1.0-transverse),11.0);
+ float halo=pow(max(0.0,1.0-transverse),2.3);
+ float shimmer=.83+.17*sin(pos*230.0+uTime*19.0);
+ float brightness=(.53+1.14*power)*power*activity*shimmer;
+ float lum=(.42*halo+1.70*brightCore)*brightness;
+ if(lum<.012) discard;
+ vec3 electric=vec3(.12,.50,1.70)*halo+vec3(.75,1.35,2.75)*brightCore;
+ float alpha=clamp((.19*halo+.52*brightCore)*activity*(.45+.55*power),0.0,.74);
+ gl_FragColor=vec4(electric*brightness,alpha);
 }
 
 `;
 const material=new pc.ShaderMaterial({
- uniqueName:'Genesis_Rayo_ContainedBlade_0to100_V004',
+ uniqueName:'Genesis_Rayo_Helice3D_V005_0to100',
  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
  vertexGLSL,fragmentGLSL
 });
 material.blendType=pc.BLEND_ADDITIVEALPHA;
 material.cull=pc.CULLFACE_NONE;
-material.depthTest=false;
+material.depthTest=true;
 material.depthWrite=false;
 material.setParameter('uTime',0);
 material.setParameter('uIntensity',35);
 material.update();
-const m=new pc.Mesh(app.graphicsDevice);
-// Plane covers the real V03 blade only, z in front; generated 2-triangle VFX screen,
-// not new sword geometry; no tube/cylinder/sphere primitives.
-m.setPositions([-.135,.08,.18, .135,.08,.18, .135,.96,.18, -.135,.96,.18]);
-m.setUvs(0,[0,0,1,0,1,1,0,1]);
-m.setIndices([0,1,2,0,2,3]);m.update();
-const shaderEntity=new pc.Entity('RAYO_SHADER_BLADE_DECAL_PROCEDURAL');
-shaderEntity.addComponent('render',{meshInstances:[new pc.MeshInstance(m,material)],castShadows:false,receiveShadows:false});
-app.root.addChild(shaderEntity);
+
+let helixStats=null;
+function buildHelicalLightning(bladeAabb){
+ const lo=bladeAabb.center.y-bladeAabb.halfExtents.y;
+ const hi=bladeAabb.center.y+bladeAabb.halfExtents.y;
+ const height=hi-lo;
+ const yStart=lo+height*.065;
+ const yEnd=hi-height*.085;
+ const radiusX=Math.max(.030,Math.min(.090,bladeAabb.halfExtents.x*.98));
+ const radiusZ=Math.max(.034,bladeAabb.halfExtents.z+.034);
+ const cx=bladeAabb.center.x,cz=bladeAabb.center.z;
+ const turns=3.15,steps=580;
+ const verts=[],uvs=[],indices=[];
+ function point(t){
+   const tt=Math.max(0,Math.min(1,t));
+   const angle=2*Math.PI*(turns*tt+.18);
+   const tipTaper=1.0-.46*Math.pow(Math.max(0,(tt-.76)/.24),1.45);
+   const jag=.0021*Math.sin(tt*411.0)+.0011*Math.sin(tt*979.0);
+   const radius=radiusX*tipTaper+jag;
+   return [cx+radius*Math.cos(angle),yStart+(yEnd-yStart)*tt,cz+radiusZ*Math.sin(angle)];
+ }
+ const ribbonHalfWidth=.012;
+ for(let i=0;i<=steps;i++){
+   const t=i/steps,pt=point(t),before=point(t-.002),after=point(t+.002);
+   let tx=after[0]-before[0],ty=after[1]-before[1];
+   let norm=Math.hypot(tx,ty)||1;
+   let perpX=-ty/norm,perpY=tx/norm;
+   for(const side of [-1,1]){
+     verts.push(pt[0]+perpX*ribbonHalfWidth*side,pt[1]+perpY*ribbonHalfWidth*side,pt[2]);
+     uvs.push(t,side<0?0:1);
+   }
+   if(i<steps){
+     let k=2*i;
+     indices.push(k,k+1,k+2,k+1,k+3,k+2);
+   }
+ }
+ const mesh=new pc.Mesh(app.graphicsDevice);
+ mesh.setPositions(verts);mesh.setUvs(0,uvs);mesh.setIndices(indices);mesh.update();
+ const entity=new pc.Entity('GENESIS_RAYO_V05_INVISIBLE_HELIX_3D');
+ entity.addComponent('render',{meshInstances:[new pc.MeshInstance(mesh,material)],castShadows:false,receiveShadows:false});
+ app.root.addChild(entity);
+ helixStats={turns,segments:steps,triangles:steps*2,depthTest:true,bladeHeight:height,
+   radiusX,radiusZ,yStart,yEnd,sourceBladeBounds:{
+     center:[cx,bladeAabb.center.y,cz],
+     half:[bladeAabb.halfExtents.x,bladeAabb.halfExtents.y,bladeAabb.halfExtents.z]
+   }};
+ pulseLight.setPosition(cx,(yStart+yEnd)/2,cz+.08);
+ return helixStats;
+}
+
 function loadSword(){
  app.assets.loadFromUrlAndFilename('/tests/rayo-premium-v01/source_original_v03.glb','Genesis_original_V03.glb','container',(err,asset)=>{
   if(err){window.__genesisError=String(err);console.error('SOURCE_V03_ERROR',err);return;}
   const e=asset.resource.instantiateRenderEntity();e.name='ORIGINAL_SOURCE_V03_UNMODIFIED';
   app.root.addChild(e);
-  let meshes=0,tris=0;const mats=[];
+  let meshes=0,tris=0;const mats=[];let bladeAabb=null;
   e.forEach(c=>{if(c.render){for(const mi of c.render.meshInstances){
     meshes++;tris+=(mi.mesh?.primitive?.[0]?.count||0)/3;
     mats.push(mi.material?.name||'?');
+    if((mi.material?.name||'').includes('Iron_Blade_V175'))bladeAabb=mi.aabb;
   }}});
+  if(!bladeAabb){window.__genesisError='V175_BLADE_BOUNDS_MISSING';throw Error(window.__genesisError);}
+  const helix=buildHelicalLightning(bladeAabb);
   window.__genesisReady={source:'original_v03',loaded:true,meshes,triangles:tris,bloom:bloomOK,
-     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:2,sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:35,bladeOnly:true,intensityAnimation:'0-to-100-in-32-frames'};
+     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:helix.triangles,helix,geometry:'actual-worldspace-3d-helix',sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:35,bladeOnly:true,intensityAnimation:'0-to-100-in-32-frames'};
   document.getElementById('status').textContent='';
   console.log('GENESIS_RAYO_PREMIUM_READY',JSON.stringify(window.__genesisReady));
  });
@@ -150,11 +174,11 @@ window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  const intensity=Math.max(0,Math.min(100,Number(rampIntensity)));
  material.setParameter('uTime',time);
  material.setParameter('uIntensity',intensity);
- pulseLight.light.intensity=.30*(intensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(time*5.1+1.0)),5));
+ pulseLight.light.intensity=.24*(intensity/100)*(.45+.55*Math.pow(Math.max(0,Math.sin(time*5.1+1.0)),5));
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  if(!Number.isFinite(time))throw Error('INVALID_SHADER_TIME');
  return {frame,time,intensity,triangles:window.__genesisReady.triangles,bloom:bloomOK};
 };
 document.getElementById('intensitySlider').addEventListener('input',e=>window.__genesisSetIntensity(e.target.value));
-app.on('update',dt=>{if(!window.__genesisReady||window.__genesisCaptureMode)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.30*(window.__genesisIntensity/100)*(.35+.65*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
+app.on('update',dt=>{if(!window.__genesisReady||window.__genesisCaptureMode)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.24*(window.__genesisIntensity/100)*(.45+.55*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
 loadSword();
