@@ -239,8 +239,8 @@ def flame_atlas_material(intensity):
     """Actual 64-frame Unity Labs Paris CC0 flame flipbook. HDR EXR RGB + RGBA TGA alpha.
     This is NOT ImageGen, not a procedural fire concept, and not a baked change to sword.
     """
-    if FLAME_IMAGE_EXR is None or FLAME_IMAGE_TGA is None:
-        raise RuntimeError('Missing actual CC0 flame images; fire render must not proceed')
+    if FLAME_IMAGE_TGA is None:
+        raise RuntimeError('Missing actual CC0 RGBA fire atlas; cannot render real flame')
     m=bpy.data.materials.new('GENESIS_V16_CC0_UNITY_LABS_REAL_FLAME_'+str(intensity))
     m.use_nodes=True
     nodes=m.node_tree.nodes;nodes.clear()
@@ -266,7 +266,9 @@ def flame_atlas_material(intensity):
     color.inputs['Hue'].default_value=.49
     color.inputs['Saturation'].default_value=1.10
     color.inputs['Value'].default_value=.94
-    m.node_tree.links.new(exr.outputs['Color'],color.inputs['Color'])
+    # Use the confirmed decoded TGA RGB. The historical EXR inside Unity Labs' ZIP
+    # fails to decode in Blender 4.5.13; HDR EXR STUDIO LIGHTING is unaffected.
+    m.node_tree.links.new(tga.outputs['Color'],color.inputs['Color'])
     m.node_tree.links.new(color.outputs['Color'],emit.inputs['Color'])
     m.node_tree.links.new(tga.outputs['Alpha'],alpha.inputs[0])
     m.node_tree.links.new(alpha.outputs[0],mix.inputs[0])
@@ -368,7 +370,7 @@ def create_fire(intensity,frame,source):
     geometry.update({
        'blade_real_front_triangles_sampled':tri_count,
        'real_blade_mesh_used_as_only_attachment_reference':True,
-       'flame_source':'Unity Labs Paris CC0 HDR EXR 64-frame flipbook',
+       'flame_source':'Unity Labs Paris CC0 RGBA TGA 64-frame flipbook (EXR source hashes verified but Blender EXR decoder unavailable)',
        'flame_original_exr_sha256':FLAME_SHA_EXR,
        'flame_original_tga_sha256':FLAME_SHA_TGA,
        'flame_atlas_tiles':[16,4],
@@ -423,19 +425,18 @@ def main():
         sys.argv=saved_argv
     FLAME_SHA_EXR=hashlib.sha256(a.flame_exr.read_bytes()).hexdigest()
     FLAME_SHA_TGA=hashlib.sha256(a.flame_tga.read_bytes()).hexdigest()
-    FLAME_IMAGE_EXR=bpy.data.images.load(str(a.flame_exr.resolve()),check_existing=False)
+    # Verified CC0 real-flame TGA is RGBA and decodes correctly; source ZIP also
+    # includes an EXR which Blender 4.5.13 currently reports as 0x0. Do not
+    # substitute a procedural texture or change the ORIGINAL 32bpc EXR HDRI.
+    FLAME_IMAGE_EXR=None
     FLAME_IMAGE_TGA=bpy.data.images.load(str(a.flame_tga.resolve()),check_existing=False)
-    source_sizes={}
-    for im in [FLAME_IMAGE_EXR,FLAME_IMAGE_TGA]:
-        im.reload()
-        w,h=[int(v) for v in im.size]
-        print('GENESIS_V16_CC0_IMAGE_METADATA',im.name,'size',w,h,
-              'format',im.file_format,'depth',im.depth,flush=True)
-        if w<256 or h<128 or not (1.90<=w/h<=2.10):
-            raise RuntimeError('Flame 16x4 atlas has invalid size '+im.name+': '+repr([w,h]))
-        source_sizes[im.name]=[w,h]
-    print('GENESIS_V16_REAL_CC0_FLAME_SOURCE_LOADED',
-          FLAME_SHA_EXR,FLAME_SHA_TGA,source_sizes,flush=True)
+    FLAME_IMAGE_TGA.reload()
+    w,h=[int(v) for v in FLAME_IMAGE_TGA.size]
+    print('GENESIS_V16_CC0_TGA_LOADED',FLAME_IMAGE_TGA.name,
+          [w,h],'depth',FLAME_IMAGE_TGA.depth,
+          'unreadable_exr_sha256_preserved',FLAME_SHA_EXR,flush=True)
+    if (w,h)!=(2048,1024):
+        raise RuntimeError('CC0 RGBA flame atlas is not 2048x1024: '+repr((w,h)))
 
     scene=bpy.context.scene
     iron=next((mat for mat in bpy.data.materials if 'Iron_Blade_V175' in mat.name),None)
@@ -491,6 +492,7 @@ def main():
      'playcanvas_shader_modified':False,'original_model_exported':False,
      'flame_original_exr_sha256':FLAME_SHA_EXR,'flame_original_tga_sha256':FLAME_SHA_TGA,
      'flame_source_license':'Unity Labs Paris CC0 Unity.com Nov 28 2016',
+     'flame_render_texture':'original 64-frame TGA RGBA; Unity Labs EXR source downloaded and hashed but not decoded by Blender 4.5.13',
      'concept_or_imagegen_used':False
     }
     (target/'fuego_v04_cc0_real_v12b_audit.json').write_text(json.dumps(audit,indent=2,ensure_ascii=False))
