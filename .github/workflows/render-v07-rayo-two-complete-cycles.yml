@@ -1,0 +1,98 @@
+name: Genesis V07 Rayo - two complete fixed intensity cycles 10 then 100
+on:
+  push:
+    branches: [experiment/v07-rayo-ciclo-completo-10-vs-100-20261104]
+    paths:
+      - 'tests/rayo-premium-v01/**'
+      - '.github/workflows/render-v07-rayo-two-complete-cycles.yml'
+  workflow_dispatch:
+concurrency:
+  group: genesis-rayo-v07-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover licensed original V03 from repository blobs and verify SHA256
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+          cp /tmp/genesis-original-v03.glb tests/rayo-premium-v01/source_original_v03.glb
+      - name: Install official PlayCanvas WebGL2, Playwright, image validation and ffmpeg
+        run: |
+          npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          test -s node_modules/playcanvas/build/playcanvas.mjs
+          npx playwright install chromium
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+      - name: Serve original sword and real PlayCanvas scene
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-rayo-v07-http.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/rayo-premium-v01/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/rayo-premium-v01/source_original_v03.glb)" = 200
+      - name: Render and verify each entire helix traversal at constant intensity
+        run: |
+          set -o pipefail
+          node tests/rayo-premium-v01/record.cjs | tee /tmp/rayo-v07-real-playcanvas.log
+          test "$(find rayo-v07-output -maxdepth 1 -name 'cycle_frame_*.png' | wc -l)" -eq 72
+          test -s rayo-v07-output/Still_010.png
+          test -s rayo-v07-output/Still_100.png
+          test -s rayo-v07-output/audit.json
+      - name: Encode two 3-second cycles in one 6-second MP4 and GIF
+        run: |
+          set -e
+          cd rayo-v07-output
+          ffmpeg -y -loglevel error -framerate 12 -i cycle_frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart Genesis_Rayo_Ciclos_10_y_100_V007.mp4
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Ciclos_10_y_100_V007.mp4 -vf 'fps=10,scale=960:-1:flags=lanczos,palettegen' palette.png
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Ciclos_10_y_100_V007.mp4 -i palette.png -lavfi 'fps=10,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_Rayo_Ciclos_10_y_100_V007.gif
+          test -s Genesis_Rayo_Ciclos_10_y_100_V007.mp4
+          test -s Genesis_Rayo_Ciclos_10_y_100_V007.gif
+          test "$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nw=1:nk=1 Genesis_Rayo_Ciclos_10_y_100_V007.mp4)" -eq 72
+      - name: Make real sword closeup with fixed intensity labels for mobile
+        run: |
+          set -e
+          cd rayo-v07-output
+          ffmpeg -y -loglevel error -framerate 12 -i cycle_frame_%03d.png -vf "crop=260:680:510:15,scale=520:1360:flags=lanczos,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='CICLO 1 - RAYO 10/100':fontcolor=white:fontsize=27:box=1:boxcolor=black@0.55:boxborderw=12:x=15:y=24:enable='lt(t,3)',drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='CICLO 2 - RAYO 100/100':fontcolor=white:fontsize=27:box=1:boxcolor=black@0.55:boxborderw=12:x=15:y=24:enable='gte(t,3)'" -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.mp4
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.mp4 -vf 'fps=10,scale=440:-1:flags=lanczos,palettegen' zoom_palette.png
+          ffmpeg -y -loglevel error -i Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.mp4 -i zoom_palette.png -lavfi 'fps=10,scale=440:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.gif
+          test -s Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.mp4
+          test -s Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.gif
+      - name: Stage previews only and never distribute original V03 GLB
+        if: success()
+        run: |
+          set -e
+          mkdir -p public-previews/rayo-ciclos-10-100-v07
+          cp rayo-v07-output/Genesis_Rayo_Ciclos_10_y_100_V007.mp4 public-previews/rayo-ciclos-10-100-v07/
+          cp rayo-v07-output/Genesis_Rayo_Ciclos_10_y_100_V007.gif public-previews/rayo-ciclos-10-100-v07/
+          cp rayo-v07-output/Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.mp4 public-previews/rayo-ciclos-10-100-v07/
+          cp rayo-v07-output/Genesis_Rayo_Ciclos_10_y_100_Zoom_V007.gif public-previews/rayo-ciclos-10-100-v07/
+          cp rayo-v07-output/Still_0*.png public-previews/rayo-ciclos-10-100-v07/
+          cp rayo-v07-output/Still_100.png public-previews/rayo-ciclos-10-100-v07/
+          cp rayo-v07-output/audit.json public-previews/rayo-ciclos-10-100-v07/
+          ! find public-previews/rayo-ciclos-10-100-v07 -type f -iname '*.glb' | grep -q .
+      - name: Upload video and screenshots for visual assessment only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V07-Rayo-Cycles-Fixed10-Fixed100-RealPlayCanvas
+          path: public-previews/rayo-ciclos-10-100-v07/
+          retention-days: 7
+      - name: Publish verified previews only to isolated experimental branch
+        if: success()
+        run: |
+          git config user.name 'Genesis Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git add public-previews/rayo-ciclos-10-100-v07/
+          if git diff --cached --quiet; then echo 'Already current'; else
+            git commit -m 'preview(rayo): complete cycle at 10 then complete cycle at 100'
+            git push origin HEAD:experiment/v07-rayo-ciclo-completo-10-vs-100-20261104
+          fi
+      - name: Cleanup licensed source
+        if: always()
+        run: rm -f /tmp/genesis-original-v03.glb tests/rayo-premium-v01/source_original_v03.glb
