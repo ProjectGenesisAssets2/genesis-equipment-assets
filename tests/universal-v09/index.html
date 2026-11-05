@@ -1,0 +1,22 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Genesis V09 · 7 canales espada y escudo · prueba técnica</title>
+<script type="importmap">{"imports":{"playcanvas":"/node_modules/playcanvas/build/playcanvas.mjs"}}</script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#070d16;color:#e1dacb;font:16px Arial,sans-serif}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.meta{position:absolute;top:28px;left:35px;z-index:2;pointer-events:none}
+.meta h1{margin:0 0 7px;font:27px Georgia,serif;letter-spacing:1px}
+.meta p{margin:0;color:#a4b1c1;font-size:12px}
+.right{position:absolute;right:35px;top:32px;z-index:2;color:#b8cfdb;text-align:right}
+.right b{font-size:28px}
+.labels{position:absolute;bottom:35px;left:20%;right:20%;display:flex;justify-content:space-between;color:#b6bac4}
+#status{position:absolute;bottom:75px;left:32px;font-size:13px;color:#cee7fa}
+</style></head><body><canvas id="viewport" width="1280" height="720"></canvas>
+<div class="meta"><h1>PROJECT GENESIS — SIETE CANALES</h1>
+<p>PRUEBA REAL PLAYCANVAS WEBGL2 · VFX REUTILIZABLES</p>
+<p>Escudo: malla geométrica de control, NO asset aprobado</p></div>
+<div class="right"><div id="activeChannel">Rayo</div><b><span id="activeIntensity">60</span>/100</b></div>
+<div class="labels"><span>ESPADA V03 ORIGINAL · V175</span><span>ESCUDO DE CONTROL · NO APROBADO</span></div>
+<div id="status">Cargando V03...</div>
+<script type="module" src="./scene.js"></script></body></html>
