@@ -37,4 +37,6 @@
 
 [Auditoría](fuego_v03_real_v12b_audit.json) · [Preset original aprobado](../../presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json)
 
+[Preset experimental de Fuego V03 — intensidades, geometría y colores](../../presets/experimental/Genesis_Fuego_V03_V12B_Lookdev.json)
+
 Ninguna modificación a `main`.
