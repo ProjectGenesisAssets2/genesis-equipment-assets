@@ -43,6 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           target=public-previews/espada-v03-v175-j-reflejos-v11
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
           for f in 03_J_hierro_v175_072 05_J_tres_cuartos 06_J_cara_posterior; do
             cp "/tmp/genesis-old-j/$f.png" "$target/REF_J_Historica_$f.png"
             ffmpeg -y -loglevel error -i "/tmp/genesis-old-j/$f.png" -vf 'scale=600:750:flags=lanczos' -frames:v 1 -q:v 4 "$target/REF_J_Historica_$f.jpg"
