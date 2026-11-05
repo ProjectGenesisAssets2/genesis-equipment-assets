@@ -47,7 +47,7 @@ const {PNG}=require('pngjs');
  fs.copyFileSync(path.join(root,'cycle_frame_'+String(idx10).padStart(3,'0')+'.png'),path.join(root,'Still_010.png'));
  fs.copyFileSync(path.join(root,'cycle_frame_'+String(idx100).padStart(3,'0')+'.png'),path.join(root,'Still_100.png'));
  const midTime=sampleLocal/PER_PHASE*CYCLE_SECONDS;
- await page.evaluate(async time=>window.__genesisStep(0,PER_PHASE,0,time),midTime);
+ await page.evaluate(async ({time,frames})=>window.__genesisStep(0,frames,0,time),{time:midTime,frames:PER_PHASE});
  await page.screenshot({path:path.join(root,'Still_000.png'),timeout:60000});
  function png(name){return PNG.sync.read(fs.readFileSync(path.join(root,name)));}
  const p0=png('Still_000.png'),p10=png('Still_010.png'),p100=png('Still_100.png');
