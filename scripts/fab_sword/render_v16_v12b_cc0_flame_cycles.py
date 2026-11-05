@@ -404,15 +404,6 @@ def main():
     global FLAME_IMAGE_EXR,FLAME_IMAGE_TGA,FLAME_SHA_EXR,FLAME_SHA_TGA
     if not a.flame_exr.exists() or not a.flame_tga.exists():
         raise RuntimeError('Original Unity Labs CC0 asset is required')
-    FLAME_SHA_EXR=hashlib.sha256(a.flame_exr.read_bytes()).hexdigest()
-    FLAME_SHA_TGA=hashlib.sha256(a.flame_tga.read_bytes()).hexdigest()
-    FLAME_IMAGE_EXR=bpy.data.images.load(str(a.flame_exr.resolve()),check_existing=False)
-    FLAME_IMAGE_TGA=bpy.data.images.load(str(a.flame_tga.resolve()),check_existing=False)
-    for im in [FLAME_IMAGE_EXR,FLAME_IMAGE_TGA]:
-        if (im.size[0],im.size[1])!=(2048,1024):
-            raise RuntimeError('Flame flipbook must be exactly 2048x1024: '+im.name+str(im.size))
-    print('GENESIS_V16_REAL_CC0_FLAME_SOURCE_LOADED',
-          FLAME_SHA_EXR,FLAME_SHA_TGA,FLAME_IMAGE_EXR.size[:],flush=True)
 
     preset=json.loads(a.preset.read_text())
     assert preset['id']=='Genesis_Espada_V03_Hierro_V175_V12B'
@@ -430,6 +421,16 @@ def main():
         v12.main()
     finally:
         sys.argv=saved_argv
+    FLAME_SHA_EXR=hashlib.sha256(a.flame_exr.read_bytes()).hexdigest()
+    FLAME_SHA_TGA=hashlib.sha256(a.flame_tga.read_bytes()).hexdigest()
+    FLAME_IMAGE_EXR=bpy.data.images.load(str(a.flame_exr.resolve()),check_existing=False)
+    FLAME_IMAGE_TGA=bpy.data.images.load(str(a.flame_tga.resolve()),check_existing=False)
+    for im in [FLAME_IMAGE_EXR,FLAME_IMAGE_TGA]:
+        if (im.size[0],im.size[1])!=(2048,1024):
+            raise RuntimeError('Flame flipbook must be exactly 2048x1024: '+im.name+str(im.size))
+    print('GENESIS_V16_REAL_CC0_FLAME_SOURCE_LOADED',
+          FLAME_SHA_EXR,FLAME_SHA_TGA,FLAME_IMAGE_EXR.size[:],flush=True)
+
     scene=bpy.context.scene
     iron=next((mat for mat in bpy.data.materials if 'Iron_Blade_V175' in mat.name),None)
     if not iron:raise RuntimeError('Approved V12B blade material missing')
