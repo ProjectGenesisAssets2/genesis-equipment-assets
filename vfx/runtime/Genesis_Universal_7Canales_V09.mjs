@@ -126,6 +126,7 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
  }
  let active={};
  function apply(time,levels){
+   if(disposed)throw Error('GENESIS_VFX_RIG_DISPOSED');
    for(const channel of ELEMENTAL_CHANNELS){
      const value=Math.max(0,Math.min(100,Number(levels?.[channel]||0)));
      effects[channel].set(time,value);
@@ -134,7 +135,23 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
    return {...active};
  }
  apply(0,{});
+ let disposed=false;
+ function destroy(){
+   if(disposed)return;
+   disposed=true;
+   // Dispose only ephemeral shader carriers/lights. The source GLB's meshes, textures
+   // and PBR materials belong to the game's asset manager and are NEVER destroyed.
+   const entities=new Set();
+   for(const a of Object.values(attachments))if(a.entity)entities.add(a.entity);
+   for(const fx of Object.values(effects)){
+     if(fx.entity)entities.add(fx.entity);
+     if(fx.light)entities.add(fx.light);
+   }
+   for(const entity of entities)if(entity.parent)entity.destroy();
+   for(const fx of Object.values(effects))if(fx.material)fx.material.destroy();
+ }
  return {
+  destroy,
   kind,rig:'Genesis Universal Seven Channels V09',effects,attachments,
   inputMeshVertices:vertices.length,silhouetteVertices:kind==='shield'?hull(vertices).length:null,
   carrierTriangles:Object.values(attachments).reduce((n,a)=>n+(a.triangles||0),0),
