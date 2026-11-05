@@ -28,7 +28,7 @@ pulseLight.setPosition(.04,.40,.17);app.root.addChild(pulseLight);
 let bloomOK=false,framePost=null;
 try{
  framePost=new pc.CameraFrame(app,camera.camera);
- framePost.bloom.intensity=.047;
+ framePost.bloom.intensity=.092;
  framePost.bloom.blurLevel=7;
  framePost.rendering.renderTargetScale=1;
  framePost.update();
@@ -64,26 +64,27 @@ void main(void){
  if(power<.005) discard;
  float pos=vUv.x;
  float motion=fract(.14+uTime*.33);
- // Each illuminated arc follows the true 3D helix. The spring/guide is invisible.
- float primary=travellingArc(pos,motion,.135);
- float secondary=travellingArc(pos,fract(motion+.43),.095)*smoothstep(.36,.76,power)*.68;
- float tertiary=travellingArc(pos,fract(motion+.76),.065)*smoothstep(.73,1.0,power)*.40;
+ // Bright but contained 3D helicoidal discharge: 60/100 now reads as a powered channel.
+ // The guiding spring remains invisible; only travelling core and soft emissive spill render.
+ float primary=travellingArc(pos,motion,mix(.155,.295,power));
+ float secondary=travellingArc(pos,fract(motion+.43),.165)*smoothstep(.18,.85,power)*.76;
+ float tertiary=travellingArc(pos,fract(motion+.76),.082)*smoothstep(.74,1.0,power)*.38;
  float activity=clamp(primary+secondary+tertiary,0.0,1.0);
  float transverse=abs(2.0*vUv.y-1.0);
- float brightCore=pow(max(0.0,1.0-transverse),11.0);
- float halo=pow(max(0.0,1.0-transverse),2.3);
- float shimmer=.83+.17*sin(pos*230.0+uTime*19.0);
- float brightness=(.53+1.14*power)*power*activity*shimmer;
- float lum=(.42*halo+1.70*brightCore)*brightness;
+ float brightCore=pow(max(0.0,1.0-transverse),6.0);
+ float halo=pow(max(0.0,1.0-transverse),1.65);
+ float shimmer=.84+.16*sin(pos*230.0+uTime*19.0);
+ float brightness=(1.35+1.9*power)*power*activity*shimmer;
+ float lum=(.65*halo+2.05*brightCore)*brightness;
  if(lum<.012) discard;
- vec3 electric=vec3(.12,.50,1.70)*halo+vec3(.75,1.35,2.75)*brightCore;
- float alpha=clamp((.19*halo+.52*brightCore)*activity*(.45+.55*power),0.0,.74);
+ vec3 electric=vec3(.20,.66,1.90)*halo+vec3(.88,1.82,3.25)*brightCore;
+ float alpha=clamp((.30*halo+.68*brightCore)*activity*(.58+.42*power),0.0,.84);
  gl_FragColor=vec4(electric*brightness,alpha);
 }
 
 `;
 const material=new pc.ShaderMaterial({
- uniqueName:'Genesis_Rayo_Helice3D_V005_0to100',
+ uniqueName:'Genesis_Rayo_Helice3D_V006_PresenceAt60',
  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
  vertexGLSL,fragmentGLSL
 });
@@ -92,7 +93,7 @@ material.cull=pc.CULLFACE_NONE;
 material.depthTest=true;
 material.depthWrite=false;
 material.setParameter('uTime',0);
-material.setParameter('uIntensity',35);
+material.setParameter('uIntensity',60);
 material.update();
 
 let helixStats=null;
@@ -117,7 +118,7 @@ function buildHelicalLightning(bladeAabb){
    const radius=radiusX*tipTaper+jag;
    return [cx+radius*Math.cos(angle),yStart+(yEnd-yStart)*tt,cz+radiusZ*Math.sin(angle)];
  }
- const ribbonHalfWidth=.012;
+ const ribbonHalfWidth=.020;
  for(let i=0;i<=steps;i++){
    const t=i/steps,pt=point(t),before=point(t-.002),after=point(t+.002);
    let tx=after[0]-before[0],ty=after[1]-before[1];
@@ -134,7 +135,7 @@ function buildHelicalLightning(bladeAabb){
  }
  const mesh=new pc.Mesh(app.graphicsDevice);
  mesh.setPositions(verts);mesh.setUvs(0,uvs);mesh.setIndices(indices);mesh.update();
- const entity=new pc.Entity('GENESIS_RAYO_V05_INVISIBLE_HELIX_3D');
+ const entity=new pc.Entity('GENESIS_RAYO_V06_INVISIBLE_HELIX_3D');
  entity.addComponent('render',{meshInstances:[new pc.MeshInstance(mesh,material)],castShadows:false,receiveShadows:false});
  app.root.addChild(entity);
  helixStats={turns,segments:steps,triangles:steps*2,depthTest:true,bladeHeight:height,
@@ -160,12 +161,12 @@ function loadSword(){
   if(!bladeAabb){window.__genesisError='V175_BLADE_BOUNDS_MISSING';throw Error(window.__genesisError);}
   const helix=buildHelicalLightning(bladeAabb);
   window.__genesisReady={source:'original_v03',loaded:true,meshes,triangles:tris,bloom:bloomOK,
-     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:helix.triangles,helix,geometry:'actual-worldspace-3d-helix',sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:35,bladeOnly:true,intensityAnimation:'0-to-100-in-32-frames'};
+     vfxMaterial:material.name,proceduralShader:true,uvMasks:false,effectsMeshTriangles:helix.triangles,helix,geometry:'actual-worldspace-3d-helix',visualCalibration:'60-of-100-legible-in-inventory',sourceGlbEdited:false,materials:mats,intensityRange:[0,100],defaultIntensity:60,bladeOnly:true,intensityAnimation:'0-to-100-in-32-frames'};
   document.getElementById('status').textContent='';
   console.log('GENESIS_RAYO_PREMIUM_READY',JSON.stringify(window.__genesisReady));
  });
 }
-window.__genesisIntensity=35;
+window.__genesisIntensity=60;
 window.__genesisSetIntensity=(v)=>{let n=Math.max(0,Math.min(100,Math.round(Number(v)||0)));window.__genesisIntensity=n;document.getElementById('intensityValue').textContent=n;document.getElementById('intensitySlider').value=n;return n;};
 window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  if(!window.__genesisReady)throw Error('GLB_NOT_LOADED');
@@ -176,11 +177,11 @@ window.__genesisStep=async (frame,frames=32,forcedIntensity)=>{
  const intensity=Math.max(0,Math.min(100,Number(rampIntensity)));
  material.setParameter('uTime',time);
  material.setParameter('uIntensity',intensity);
- pulseLight.light.intensity=.24*(intensity/100)*(.45+.55*Math.pow(Math.max(0,Math.sin(time*5.1+1.0)),5));
+ pulseLight.light.intensity=.53*(intensity/100)*(.62+.38*Math.pow(Math.max(0,Math.sin(time*5.1+1.0)),5));
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  if(!Number.isFinite(time))throw Error('INVALID_SHADER_TIME');
  return {frame,time,intensity,triangles:window.__genesisReady.triangles,bloom:bloomOK};
 };
 document.getElementById('intensitySlider').addEventListener('input',e=>window.__genesisSetIntensity(e.target.value));
-app.on('update',dt=>{if(!window.__genesisReady||window.__genesisCaptureMode)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.24*(window.__genesisIntensity/100)*(.45+.55*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
+app.on('update',dt=>{if(!window.__genesisReady||window.__genesisCaptureMode)return;const now=performance.now()/1000;material.setParameter('uTime',now);material.setParameter('uIntensity',window.__genesisIntensity);pulseLight.light.intensity=.53*(window.__genesisIntensity/100)*(.62+.38*Math.pow(Math.max(0,Math.sin(now*5.1+1.0)),5));});
 loadSword();
