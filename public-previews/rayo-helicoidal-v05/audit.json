@@ -1,0 +1,128 @@
+{
+  "schema": "Genesis_Rayo_V005_3DHelix_Animated_Evidence",
+  "status": "experiment-not-approved",
+  "verified_original_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source": {
+    "source": "original_v03",
+    "loaded": true,
+    "meshes": 2,
+    "triangles": 2150,
+    "bloom": true,
+    "vfxMaterial": "Untitled",
+    "proceduralShader": true,
+    "uvMasks": false,
+    "effectsMeshTriangles": 1160,
+    "helix": {
+      "turns": 3.15,
+      "segments": 580,
+      "triangles": 1160,
+      "depthTest": true,
+      "bladeHeight": 2.0000000053666396,
+      "radiusX": 0.063,
+      "radiusZ": 0.064,
+      "yStart": -0.37,
+      "yEnd": 0.8300000022271554,
+      "placementBasis": "original-v03-blade-visual-landmarks",
+      "sourceBladeBounds": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          0.3444870114326477,
+          1.0000000026833198,
+          0.061387243619883236
+        ]
+      }
+    },
+    "geometry": "actual-worldspace-3d-helix",
+    "sourceGlbEdited": false,
+    "materials": [
+      "DefaultMaterial",
+      "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+    ],
+    "intensityRange": [
+      0,
+      100
+    ],
+    "defaultIntensity": 35,
+    "bladeOnly": true,
+    "intensityAnimation": "0-to-100-in-32-frames"
+  },
+  "realPlayCanvasWebGL2": true,
+  "generatedBy": "Chromium WebGL2 PlayCanvas ShaderMaterial GLSL, camera bloom and real PBR GLB",
+  "noGeometryChanges": true,
+  "sourceImageTexturesNotChanged": true,
+  "extraVfxGeometry": "one quad, two triangles, procedural shader",
+  "noStaticMasks": true,
+  "noSpheresOrTubes": true,
+  "fps": 12,
+  "frames": 32,
+  "displayResolution": [
+    1280,
+    720
+  ],
+  "animation": {
+    "frame": 31,
+    "time": 2.6640625,
+    "intensity": 100,
+    "triangles": 2150,
+    "bloom": true
+  },
+  "intensityComparison": [
+    {
+      "frame": 16,
+      "time": 1.375,
+      "intensity": 0,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": 1.375,
+      "intensity": 25,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": 1.375,
+      "intensity": 50,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": 1.375,
+      "intensity": 75,
+      "triangles": 2150,
+      "bloom": true
+    },
+    {
+      "frame": 16,
+      "time": 1.375,
+      "intensity": 100,
+      "triangles": 2150,
+      "bloom": true
+    }
+  ],
+  "visualChecks": {
+    "transparentBackground0": 48.296800000000005,
+    "transparentBackground100": 49.084199999999996,
+    "sourceBladeVisible0": 106.6888,
+    "changedPixels0to100": 370,
+    "rampStartIntensity": 0,
+    "rampEndIntensity": 100,
+    "sampleTime": 1.375
+  },
+  "helixMovement": {
+    "comparisonFrames": [
+      8,
+      20
+    ],
+    "changedPixels": 373,
+    "fixedIntensity": 60
+  },
+  "errors": []
+}
