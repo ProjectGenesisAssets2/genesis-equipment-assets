@@ -20,7 +20,7 @@ const {PNG}=require('pngjs');
  if(!init || init.loaded!==true || init.triangles!==2150||init.meshes!==2||init.proceduralShader!==true||init.bladeOnly!==true||init.geometry!=='actual-worldspace-3d-helix'||init.helix?.turns<3||init.helix?.depthTest!==true||init.intensityRange?.[0]!==0||init.intensityRange?.[1]!==100)
   throw Error('GENESIS_SOURCE_OR_SHADER_AUDIT_FAILED '+JSON.stringify(init));
  if(!init.bloom)throw Error('CAMERAFRAME_HDR_BLOOM_WAS_NOT_ACTIVATED');
- const root='rayo-v05-output';fs.mkdirSync(root,{recursive:true});
+ const root='rayo-v06-output';fs.mkdirSync(root,{recursive:true});
  const frames=Number(process.env.FRAMES||32);
  let last;
  for(let frame=0;frame<frames;frame++){
@@ -37,7 +37,7 @@ const {PNG}=require('pngjs');
    await page.screenshot({path:path.join(root,'helix_frame_'+String(frame).padStart(3,'0')+'.png'),timeout:60000});
  }
  const intensityComparison=[];
- for(const intensity of [0,25,50,75,100]){
+ for(const intensity of [0,10,25,50,60,75,100]){
    const sample=await page.evaluate(async ({n,frames})=>window.__genesisStep(16,frames,n),{n:intensity,frames});
    if(!Number.isFinite(sample.time))throw Error('INVALID_GLSL_TIME_'+intensity);
    if(sample.intensity!==intensity)throw Error('INTENSITY_SWEEP_MISMATCH_'+intensity);
@@ -47,6 +47,8 @@ const {PNG}=require('pngjs');
 
  const p0=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_000.png')));
  const p100=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_100.png')));
+ const p10=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_010.png')));
+ const p60=PNG.sync.read(fs.readFileSync(path.join(root,'Intensity_060.png')));
  function luminance(png,x,y){
    const i=(y*png.width+x)*4;
    return .2126*png.data[i]+.7152*png.data[i+1]+.0722*png.data[i+2];
@@ -55,11 +57,23 @@ const {PNG}=require('pngjs');
  for(let y=45;y<310;y++)for(let x=620;x<663;x++){
    if(Math.abs(luminance(p100,x,y)-luminance(p0,x,y))>7)changedPixels++;
  }
+ let bluePixels10=0, bluePixels60=0;
+ function blueChange(base,target,x,y){
+   const i=(y*target.width+x)*4;
+   return target.data[i+2]-base.data[i+2]>15 &&
+     (target.data[i+2]-target.data[i])>12;
+ }
+ for(let y=55;y<500;y++)for(let x=603;x<680;x++){
+   if(blueChange(p0,p10,x,y)) bluePixels10++;
+   if(blueChange(p0,p60,x,y)) bluePixels60++;
+ }
  const visualChecks={
    transparentBackground0:luminance(p0,600,205),
    transparentBackground100:luminance(p100,600,205),
    sourceBladeVisible0:luminance(p0,640,205),
    changedPixels0to100:changedPixels,
+   bluePixels10,bluePixels60,
+   strongAt60:bluePixels60>250&&bluePixels60>bluePixels10*2.2,
    rampStartIntensity:0,rampEndIntensity:100,
    sampleTime:p100.width?16*2.75/frames:null
  };
@@ -68,6 +82,8 @@ const {PNG}=require('pngjs');
   throw Error('OPAQUE_BLACK_VFX_RECTANGLE_DETECTED '+JSON.stringify(visualChecks));
  if(visualChecks.sourceBladeVisible0<18)
   throw Error('V175_BLADE_HIDDEN_AT_ZERO '+JSON.stringify(visualChecks));
+ if(!visualChecks.strongAt60)
+  throw Error('RAYO_V06_INSUFFICIENT_PRESENCE_AT_60 '+JSON.stringify(visualChecks));
  if(changedPixels<35)
   throw Error('NO_VISIBLE_INTENSITY_CHANGE '+JSON.stringify(visualChecks));
  const h8=PNG.sync.read(fs.readFileSync(path.join(root,'helix_frame_008.png')));
@@ -78,7 +94,7 @@ const {PNG}=require('pngjs');
  }
  if(movingPixels<75)throw Error('HELIX_NOT_MOVING_OR_INVISIBLE_'+movingPixels);
  const audit={
-   schema:'Genesis_Rayo_V005_3DHelix_Animated_Evidence',
+   schema:'Genesis_Rayo_V006_Helix_Enhanced60_VisualEvidence',
    status:'experiment-not-approved',
    verified_original_sha256:'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b',
    source:init,realPlayCanvasWebGL2:true,
@@ -89,7 +105,7 @@ const {PNG}=require('pngjs');
    fps:12,frames,displayResolution:[1280,720],
    animation:last,intensityComparison,visualChecks,helixMovement:{comparisonFrames:[8,20],changedPixels:movingPixels,fixedIntensity:60},errors};
  fs.writeFileSync(path.join(root,'audit.json'),JSON.stringify(audit,null,2));
- console.log('GENESIS_RAYO_V05_HELIX_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
+ console.log('GENESIS_RAYO_V06_HELIX_COMPLETE',JSON.stringify({frames,errors:errors.length,bloom:init.bloom,triangles:init.triangles}));
  await browser.close();
  if(errors.length)throw Error('GENESIS_CONSOLE_ERRORS '+JSON.stringify(errors.slice(0,6)));
 })().catch(e=>{console.error('GENESIS_RAYO_PREMIUM_FAILED',e.stack||e);process.exit(1)});
