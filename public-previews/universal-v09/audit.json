@@ -1,0 +1,325 @@
+{
+  "schema": "GenesisUniversalV09SevenChannelsSwordShieldFixture",
+  "experimental": true,
+  "approvedRayoIntact": true,
+  "actualV03SwordVerified": true,
+  "actualApprovedShieldVerified": false,
+  "productionShieldFixtureOnly": true,
+  "expectedChannels": [
+    "Luz",
+    "Sombra",
+    "Fuego",
+    "Hielo",
+    "Naturaleza",
+    "Tierra",
+    "Rayo"
+  ],
+  "baseChannelIsNotElement": true,
+  "natureIsNotPoison": true,
+  "targetTypes": [
+    "sword-real-v03",
+    "shield-noncircular-test-fixture"
+  ],
+  "hdrEnvironmentInThisValidation": false,
+  "independentIntensityRange": [
+    0,
+    100
+  ],
+  "originalPBRPreserved": true,
+  "vertexExtractionAndHullVerified": true,
+  "init": {
+    "channels": [
+      "Luz",
+      "Sombra",
+      "Fuego",
+      "Hielo",
+      "Naturaleza",
+      "Tierra",
+      "Rayo"
+    ],
+    "channelCount": 7,
+    "sword": {
+      "source": "real V03 GLB",
+      "triangles": 2150,
+      "meshes": 2,
+      "materials": [
+        "DefaultMaterial",
+        "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+      ],
+      "carrierTriangles": 3800,
+      "meshVertices": 2812
+    },
+    "shield": {
+      "source": "procedural fixture NOT USER SHIELD",
+      "shape": "noncircular-pointed-shield",
+      "carrierTriangles": 252,
+      "meshVertices": 20,
+      "computedSilhouetteVertices": 9
+    },
+    "originalSourceEdited": false,
+    "bloom": true,
+    "renderEngine": "PlayCanvas 2.23 WebGL2",
+    "approvedRayoVisualPreserved": true,
+    "fireUnapproved": true,
+    "productionShieldGLBTested": false
+  },
+  "captures": [
+    {
+      "channel": "Luz",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Luz",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Luz",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Luz",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Sombra",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Sombra",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Sombra",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Sombra",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Fuego",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Fuego",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Fuego",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Fuego",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Hielo",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Hielo",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Hielo",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Hielo",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Naturaleza",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Naturaleza",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Naturaleza",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Naturaleza",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Tierra",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Tierra",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Tierra",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Tierra",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Rayo",
+      "intensity": 0,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Rayo",
+      "intensity": 10,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Rayo",
+      "intensity": 60,
+      "state": "independent on sword/shield"
+    },
+    {
+      "channel": "Rayo",
+      "intensity": 100,
+      "state": "independent on sword/shield"
+    }
+  ],
+  "combo": {
+    "time": 1.3,
+    "channel": "Fuego",
+    "intensity": 60,
+    "sword": {
+      "Luz": 0,
+      "Sombra": 0,
+      "Fuego": 60,
+      "Hielo": 0,
+      "Naturaleza": 0,
+      "Tierra": 0,
+      "Rayo": 70
+    },
+    "shield": {
+      "Luz": 0,
+      "Sombra": 0,
+      "Fuego": 60,
+      "Hielo": 0,
+      "Naturaleza": 0,
+      "Tierra": 0,
+      "Rayo": 70
+    }
+  },
+  "coverage": [
+    {
+      "channel": "Luz",
+      "sword": {
+        "count": 869,
+        "red": 864,
+        "blue": 0
+      },
+      "shield": {
+        "count": 1628,
+        "red": 1628,
+        "blue": 0
+      }
+    },
+    {
+      "channel": "Sombra",
+      "sword": {
+        "count": 923,
+        "red": 0,
+        "blue": 602
+      },
+      "shield": {
+        "count": 1623,
+        "red": 0,
+        "blue": 797
+      }
+    },
+    {
+      "channel": "Fuego",
+      "sword": {
+        "count": 1168,
+        "red": 1168,
+        "blue": 0
+      },
+      "shield": {
+        "count": 1724,
+        "red": 1724,
+        "blue": 0
+      }
+    },
+    {
+      "channel": "Hielo",
+      "sword": {
+        "count": 1178,
+        "red": 0,
+        "blue": 1101
+      },
+      "shield": {
+        "count": 2059,
+        "red": 0,
+        "blue": 1789
+      }
+    },
+    {
+      "channel": "Naturaleza",
+      "sword": {
+        "count": 739,
+        "red": 76,
+        "blue": 0
+      },
+      "shield": {
+        "count": 1402,
+        "red": 385,
+        "blue": 0
+      }
+    },
+    {
+      "channel": "Tierra",
+      "sword": {
+        "count": 560,
+        "red": 560,
+        "blue": 0
+      },
+      "shield": {
+        "count": 974,
+        "red": 974,
+        "blue": 0
+      }
+    },
+    {
+      "channel": "Rayo",
+      "sword": {
+        "count": 3412,
+        "red": 41,
+        "blue": 3307
+      },
+      "shield": {
+        "count": 9034,
+        "red": 110,
+        "blue": 8881
+      }
+    }
+  ],
+  "errors": []
+}
