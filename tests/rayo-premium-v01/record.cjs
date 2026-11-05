@@ -20,7 +20,7 @@ const {PNG}=require('pngjs');
  if(!init || init.loaded!==true || init.triangles!==2150||init.meshes!==2||init.proceduralShader!==true||init.bladeOnly!==true||init.geometry!=='actual-worldspace-3d-helix'||init.helix?.turns<3||init.helix?.depthTest!==true||init.intensityRange?.[0]!==0||init.intensityRange?.[1]!==100)
   throw Error('GENESIS_SOURCE_OR_SHADER_AUDIT_FAILED '+JSON.stringify(init));
  if(!init.bloom)throw Error('CAMERAFRAME_HDR_BLOOM_WAS_NOT_ACTIVATED');
- const root='rayo-v04-output';fs.mkdirSync(root,{recursive:true});
+ const root='rayo-v05-output';fs.mkdirSync(root,{recursive:true});
  const frames=Number(process.env.FRAMES||32);
  let last;
  for(let frame=0;frame<frames;frame++){
