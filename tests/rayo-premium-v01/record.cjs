@@ -84,7 +84,7 @@ const {PNG}=require('pngjs');
    source:init,realPlayCanvasWebGL2:true,
    generatedBy:'Chromium WebGL2 PlayCanvas ShaderMaterial GLSL, camera bloom and real PBR GLB',
    noGeometryChanges:true,sourceImageTexturesNotChanged:true,
-   extraVfxGeometry:'one quad, two triangles, procedural shader',
+   extraVfxGeometry:'3D invisible helical lightning guide, 580 ribbon segments / 1160 triangles, fragment shader shows only travelling sparks',
    noStaticMasks:true,noSpheresOrTubes:true,
    fps:12,frames,displayResolution:[1280,720],
    animation:last,intensityComparison,visualChecks,helixMovement:{comparisonFrames:[8,20],changedPixels:movingPixels,fixedIntensity:60},errors};
