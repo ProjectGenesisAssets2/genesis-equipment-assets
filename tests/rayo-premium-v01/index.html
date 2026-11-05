@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Project Genesis · Espada V03 · Canal Rayo V06 · recorrido helicoidal visible 3D</title>
+<title>Project Genesis · Espada V03 · Canal Rayo V07 · comparar dos ciclos completos a intensidad fija</title>
 <script type="importmap">{"imports":{"playcanvas":"/node_modules/playcanvas/build/playcanvas.mjs"}}</script>
 <style>
 *{box-sizing:border-box}
@@ -17,7 +17,7 @@ html,body{width:100%;height:100%;margin:0;background:#080b11;color:#eddfc8;font-
 .title h1{font-weight:normal;font-size:44px;margin:0 0 9px;color:#d0e6ff;text-shadow:0 0 24px #1957bb}
 .title p{font:12px/1.9 Arial,sans-serif;letter-spacing:2.0px;color:#98b9e7;margin:0}
 .grade{position:absolute;top:283px;right:61px;text-align:right;font:12px/1.7 Arial,sans-serif;letter-spacing:2px;color:#b4bac5}
-.grade{z-index:3}.grade input{display:block;width:180px;margin-left:auto;accent-color:#69aaff;pointer-events:auto;cursor:pointer}.grade .tiny{font:10px Arial,sans-serif;color:#8a9db2;letter-spacing:.7px;margin-top:6px}.grade strong{font-size:35px;font-weight:normal;color:#ebf7ff;text-shadow:0 0 20px #2b7edb;display:block}
+.grade{z-index:3}.grade input{display:block;width:180px;margin-left:auto;accent-color:#69aaff;pointer-events:auto;cursor:pointer}.grade .tiny{font:11px Arial,sans-serif;color:#b9cfff;letter-spacing:.5px;margin-top:8px;max-width:240px;line-height:1.5}.grade strong{font-size:35px;font-weight:normal;color:#ebf7ff;text-shadow:0 0 20px #2b7edb;display:block}
 .grade span{color:#6bb5ff}
 .foot{position:absolute;left:45px;right:45px;bottom:32px;border-top:1px solid #91836855;padding-top:12px;display:flex;justify-content:space-between;font:10px Arial,sans-serif;letter-spacing:2px;color:#85919f}
 #status{position:absolute;bottom:82px;left:49px;font:11px Arial,sans-serif;color:#aed5ff;z-index:2}
@@ -26,7 +26,7 @@ html,body{width:100%;height:100%;margin:0;background:#080b11;color:#eddfc8;font-
 <div class="ui"><div class="corner"><div class="brand">PROJECT GENESIS</div><div class="sub">ESTUDIO DE CANALES · VFX PARA PC</div><div class="line"></div></div>
 <div class="right">ESPADA DE HIERRO V03<br>MATERIAL V175 ORIGINAL<br>PLAYCANVAS · WEBGL2</div>
 <div class="title"><h1>Rayo</h1><p>DESCARGAS ELEMENTALES<br>HÉLICE INVISIBLE · ENERGÍA EN MOVIMIENTO<br>SHADER GLSL / EMISSIVE / BLOOM HDR</p></div>
-<div class="grade">INTENSIDAD DEL CANAL<strong><span id="intensityValue">60</span> <span>/ 100</span></strong><input id="intensitySlider" type="range" min="0" max="100" step="1" value="60" aria-label="Intensidad Rayo de 0 a 100"><div class="tiny">Rayo helicoidal · presente desde 60/100</div></div>
+<div class="grade">INTENSIDAD DEL CANAL<strong><span id="intensityValue">10</span> <span>/ 100</span></strong><input id="intensitySlider" type="range" min="0" max="100" step="1" value="10" aria-label="Intensidad Rayo de 0 a 100"><div id="cycleStage" class="tiny">CICLO 1/2 · INTENSIDAD FIJA 10/100</div></div>
 <div class="foot"><span>GEOMETRÍA Y PBR V03 PRESERVADOS</span><span>ESTUDIO EXPERIMENTAL • NO APROBADO</span></div>
 <div id="status">Cargando espada V03 original…</div></div>
 <script type="module" src="./rayo-premium.js"></script></body></html>
