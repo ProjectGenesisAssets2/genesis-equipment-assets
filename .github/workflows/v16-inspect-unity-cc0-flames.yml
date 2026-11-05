@@ -21,13 +21,13 @@ jobs:
           )
           names=(Flame03 SmallFlame01 Flame02)
           for i in 0 1 2; do
-            dest="/tmp/genesis-flames/\${names[$i]}.zip"
-            if curl -fL --retry 2 --connect-timeout 12 --max-time 130 "\${urls[$i]}" -o "$dest"; then
-              echo "GENESIS_CC0_DOWNLOAD_SUCCESS \${names[$i]} $(wc -c < "$dest")"
+            dest="/tmp/genesis-flames/${names[$i]}.zip"
+            if curl -fL --retry 2 --connect-timeout 12 --max-time 130 "${urls[$i]}" -o "$dest"; then
+              echo "GENESIS_CC0_DOWNLOAD_SUCCESS ${names[$i]} $(wc -c < "$dest")"
               sha256sum "$dest"
               unzip -Z -1 "$dest" | head -80
             else
-              echo "GENESIS_CC0_DOWNLOAD_FAILED \${names[$i]}"
+              echo "GENESIS_CC0_DOWNLOAD_FAILED ${names[$i]}"
             fi
           done
           test "$(find /tmp/genesis-flames -name '*.zip' -size +100k | wc -l)" -ge 1
