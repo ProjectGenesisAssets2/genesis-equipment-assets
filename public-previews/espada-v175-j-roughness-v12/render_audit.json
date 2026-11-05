@@ -1,0 +1,69 @@
+{
+  "blender": "4.5.13 LTS",
+  "renderer": "Cycles",
+  "samples": 96,
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "geometry_triangles": 2150,
+  "meshes": 1,
+  "original_materials": [
+    "DefaultMaterial",
+    "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+  ],
+  "pbr_source_textures": {
+    "DefaultMaterial": [
+      "Image_0",
+      "Image_1",
+      "Image_2"
+    ],
+    "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL": [
+      "Genesis_V175_APPROVED_PALETTE_BAKED_V03",
+      "Genesis_V175_Hierro_ORM_2K",
+      "Genesis_V175_Hierro_Normal_2K",
+      "Genesis_V175_Hierro_ORM_2K"
+    ]
+  },
+  "hdri_name": "studio_small_09_4k.exr",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_image_depth_bpp": 96,
+  "hdri_dimensions": [
+    4096,
+    2048
+  ],
+  "geometry_or_material_edit": false,
+  "renders": [
+    {
+      "file": "V03_Blender_Cycles_HDRI32_Hero.png",
+      "bytes": 1869140,
+      "camera_bounds": [
+        0.19397898018360138,
+        0.8060210347175598,
+        0.09999997168779373,
+        0.8999999761581421
+      ]
+    },
+    {
+      "file": "V03_Blender_Cycles_HDRI32_TresCuartos.png",
+      "bytes": 1864957,
+      "camera_bounds": [
+        0.199871227145195,
+        0.8001288771629333,
+        0.09999946504831314,
+        0.8999994993209839
+      ]
+    },
+    {
+      "file": "V03_V175_HDRI32_Detalle_Filo.png",
+      "bytes": 1937290,
+      "camera_bounds_blade_only": [
+        0.2955479621887207,
+        0.7020232081413269,
+        0.08750126510858536,
+        0.9075013399124146
+      ]
+    }
+  ],
+  "hdri_verified_rgb_float32": true,
+  "original_v175_blade_triangles": 98,
+  "effects_present": false,
+  "camera_profile": "V10 fixed HDRI studio for comparisons; three angles"
+}

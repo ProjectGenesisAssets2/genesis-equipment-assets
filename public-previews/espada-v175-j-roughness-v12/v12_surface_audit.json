@@ -1,0 +1,54 @@
+{
+  "schema": "Genesis_V12_V175_ColorLocked_J_LocalRoughness",
+  "status": "experimental_visual_approval_pending",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source_glb_modified": false,
+  "triangles": 2150,
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "cycles_samples": 96,
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_dimensions": [
+    4096,
+    2048
+  ],
+  "hdri_rgb_bits_per_channel": 32,
+  "V10_color_socket_unchanged": true,
+  "V10_color_node": "Image Texture",
+  "V10_color_socket": "Color",
+  "normal_from": "Fab Image_2",
+  "normal_previous": "Genesis_V175_Hierro_Normal_2K",
+  "metallic_from": "Fab Image_1 ORM blue + floor 0.98",
+  "roughness_from": "V175 ORM green * 0.42 or 0.34 + J spatial oxide 0.13 or 0.10",
+  "new_strip_width_m": 0.24,
+  "new_strip_length_m": 2.8,
+  "new_strip_watts": [
+    85
+  ],
+  "additional_texture_or_palette_tint": false,
+  "additional_channel_vfx": false,
+  "J_reference": "Historical J oxide and clean/rough iron contrast recovered in roughness only. V12 preserves V10 Base Color exactly, no J darkening .72.",
+  "previous_baseline": "V10 exact color and unchanged camera/HDRI, historical J normal and metallic",
+  "comparison_roughness_multipliers": [
+    0.42,
+    0.34
+  ],
+  "comparison_local_oxide": [
+    0.13,
+    0.1
+  ],
+  "rendered_files": [
+    {
+      "file": "V12_V175_Color_J_Rugosidad042_Hero.png",
+      "bytes": 1884953
+    },
+    {
+      "file": "V12_V175_Color_J_Rugosidad042_Detalle_Filo.png",
+      "bytes": 1981723
+    },
+    {
+      "file": "V12_V175_Color_J_Rugosidad034_Hero.png",
+      "bytes": 1897986
+    }
+  ]
+}
