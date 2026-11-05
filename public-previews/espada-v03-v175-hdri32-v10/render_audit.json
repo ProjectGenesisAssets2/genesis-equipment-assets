@@ -33,7 +33,7 @@
   "renders": [
     {
       "file": "V03_Blender_Cycles_HDRI32_Hero.png",
-      "bytes": 1868680,
+      "bytes": 1869297,
       "camera_bounds": [
         0.19397898018360138,
         0.8060210347175598,
@@ -43,7 +43,7 @@
     },
     {
       "file": "V03_Blender_Cycles_HDRI32_TresCuartos.png",
-      "bytes": 1864846,
+      "bytes": 1864990,
       "camera_bounds": [
         0.199871227145195,
         0.8001288771629333,
@@ -53,7 +53,7 @@
     },
     {
       "file": "V03_V175_HDRI32_Detalle_Filo.png",
-      "bytes": 1937211,
+      "bytes": 1937372,
       "camera_bounds_blade_only": [
         0.2955479621887207,
         0.7020232081413269,
