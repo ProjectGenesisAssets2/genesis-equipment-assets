@@ -1,0 +1,125 @@
+{
+  "status": "EXPERIMENT_ONLY_VISUAL_APPROVAL_PENDING",
+  "experiment_version": "V02_iron_tone",
+  "blender": "4.5.13 LTS",
+  "render_engine": "Cycles",
+  "samples": 96,
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source_file_unchanged": true,
+  "geometry_triangle_count": 2150,
+  "original_mesh_count": 1,
+  "pbr_iron_color_source": [
+    "Genesis_V175_Hierro_Color_2K",
+    "Genesis_V175_APPROVED_PALETTE_BAKED_V03"
+  ],
+  "pbr_original_normal": "Image_2",
+  "pbr_v175_roughness_source": "Genesis_V175_Hierro_ORM_2K",
+  "pbr_original_fab_metallic_source": "Image_1",
+  "hdr": "studio_small_09_4k.exr",
+  "hdr_bits_per_pixel": 96,
+  "hdr_size": [
+    4096,
+    2048
+  ],
+  "reference_same_lighting": true,
+  "parameters": [
+    {
+      "name": "01_G_original_reference",
+      "iron_palette_baseline": 0.2,
+      "localized_patina_strength": 0.84,
+      "roughness_multiplier": 0.48,
+      "oxide_roughness_added": 0.13,
+      "oxide_metallicity_loss": 0.1,
+      "iron_tone_multiplier": 1.0
+    },
+    {
+      "name": "02_I_hierro_v175_082",
+      "iron_palette_baseline": 0.2,
+      "localized_patina_strength": 0.84,
+      "roughness_multiplier": 0.48,
+      "oxide_roughness_added": 0.13,
+      "oxide_metallicity_loss": 0.1,
+      "iron_tone_multiplier": 0.82
+    },
+    {
+      "name": "03_J_hierro_v175_072",
+      "iron_palette_baseline": 0.2,
+      "localized_patina_strength": 0.84,
+      "roughness_multiplier": 0.49,
+      "oxide_roughness_added": 0.13,
+      "oxide_metallicity_loss": 0.1,
+      "iron_tone_multiplier": 0.72
+    },
+    {
+      "name": "04_K_hierro_forged_076",
+      "iron_palette_baseline": 0.26,
+      "localized_patina_strength": 0.86,
+      "roughness_multiplier": 0.55,
+      "oxide_roughness_added": 0.16,
+      "oxide_metallicity_loss": 0.13,
+      "iron_tone_multiplier": 0.76
+    }
+  ],
+  "renders": [
+    {
+      "file": "01_G_original_reference.png",
+      "bytes": 1891716,
+      "camera_bounds": [
+        0.19397898018360138,
+        0.8060210347175598,
+        0.09999997168779373,
+        0.8999999761581421
+      ]
+    },
+    {
+      "file": "02_I_hierro_v175_082.png",
+      "bytes": 1889579,
+      "camera_bounds": [
+        0.19397898018360138,
+        0.8060210347175598,
+        0.09999997168779373,
+        0.8999999761581421
+      ]
+    },
+    {
+      "file": "03_J_hierro_v175_072.png",
+      "bytes": 1886891,
+      "camera_bounds": [
+        0.19397898018360138,
+        0.8060210347175598,
+        0.09999997168779373,
+        0.8999999761581421
+      ]
+    },
+    {
+      "file": "04_K_hierro_forged_076.png",
+      "bytes": 1886846,
+      "camera_bounds": [
+        0.19397898018360138,
+        0.8060210347175598,
+        0.09999997168779373,
+        0.8999999761581421
+      ]
+    },
+    {
+      "file": "05_J_tres_cuartos.png",
+      "bytes": 1873785,
+      "camera_bounds": [
+        0.20103058218955994,
+        0.7989692687988281,
+        0.09999984502792358,
+        0.8999998569488525
+      ]
+    },
+    {
+      "file": "06_J_cara_posterior.png",
+      "bytes": 1855399,
+      "camera_bounds": [
+        0.19397911429405212,
+        0.8060213327407837,
+        0.09999975562095642,
+        0.8999997973442078
+      ]
+    }
+  ]
+}
