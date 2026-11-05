@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "id": "Genesis_Fuego_V03_BladeAttached_V12B_Cycles",
+  "visual_status": "awaiting_user_approval",
+  "engine": "Blender 4.5.13 LTS Cycles",
+  "source_script": "scripts/fab_sword/render_v15_v12b_fuego_v03_cycles.py",
+  "source_glsl": "vfx/experimental/Genesis_Fuego_Filo_V01.mjs",
+  "implementation_note": "Rendered Cycles visual look-dev; PlayCanvas GLSL for V03 not yet implemented or approved.",
+  "asset": {
+    "id": "Genesis_Espada_V03_Hierro_V175_V12B",
+    "source_glb_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "triangles": 2150,
+    "bladeTriangles": 98,
+    "baseMaterialUnchanged": true,
+    "sourcePreset": "presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json"
+  },
+  "environment": {
+    "hdri": "studio_small_09_4k.exr",
+    "rgbBitsPerChannel": 32,
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+    "cyclesSamples": 96
+  },
+  "visual_profile": {
+    "palette": "deep red ember to saturated molten copper-orange with translucent orange flame tongues",
+    "emissiveMaterials": "separate from PBR source",
+    "mask": "blade real 98 triangle surface sampled",
+    "emissionFlameBody": {
+      "formula": "2.8+2.2*(intensity/100)",
+      "orangeBase": [
+        1,
+        0.44,
+        0.036
+      ],
+      "redTip": [
+        0.94,
+        0.07,
+        0.005
+      ]
+    },
+    "softEdgePower": 0.42,
+    "tipFadePower": 0.42,
+    "uvOpacityScale": 0.96,
+    "flameGeometry": "rooted curved ribbons; 22 sections each",
+    "surfaceVeins": true,
+    "localizedHeatLights": false,
+    "additionalPointLights": false,
+    "noWhiteGlowingStreaks": true,
+    "noSourceGeometryChanges": true
+  },
+  "presets": [
+    {
+      "intensity": 0,
+      "flameTongues": 0,
+      "veinSegments": 0,
+      "preview": "public-previews/espada-v03-v175-v12b-fuego-v03-v15/V12_V175_Color_J_Rugosidad034_Hero.png"
+    },
+    {
+      "intensity": 60,
+      "flameTongues": 10,
+      "veinSegments": 49,
+      "vfxTemporaryObjects": 69,
+      "preview": "public-previews/espada-v03-v175-v12b-fuego-v03-v15/Fuego_V03_060_V12B_Hero.png",
+      "detail": "public-previews/espada-v03-v175-v12b-fuego-v03-v15/Fuego_V03_060_V12B_Detalle_Filo.png"
+    },
+    {
+      "intensity": 100,
+      "flameTongues": 15,
+      "veinSegments": 81,
+      "vfxTemporaryObjects": 111,
+      "preview": "public-previews/espada-v03-v175-v12b-fuego-v03-v15/Fuego_V03_100_V12B_Hero.png"
+    }
+  ],
+  "verification": {
+    "runId": 42073439009,
+    "workflow": "https://github.com/ProjectGenesisAssets2/genesis-equipment-assets/actions/runs/42073439009",
+    "sourceShaVerified": true,
+    "baseIronPresetVerified": true,
+    "hdriHashVerified": true,
+    "cyclesRenderReal": true,
+    "glslPlaybackTested": false,
+    "assetIntegratedInGame": false
+  },
+  "approval": {
+    "baseIronV12B": true,
+    "fireV03": false,
+    "needHumanReview": true,
+    "mainUntouched": true
+  }
+}
