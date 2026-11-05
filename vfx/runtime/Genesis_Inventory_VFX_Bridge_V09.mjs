@@ -4,7 +4,7 @@ import {createSevenChannelRig,ELEMENTAL_CHANNELS} from './Genesis_Universal_7Can
 
 export const BASE_CHANNEL='Base';
 export const CHANNEL_SET=new Set(ELEMENTAL_CHANNELS);
-const validate=(levels)=>{
+export const validateChannelLevels=(levels)=>{
  if(!levels||typeof levels!=='object')return {};
  const out={};
  for(const [key,value] of Object.entries(levels)){
@@ -22,10 +22,10 @@ export function connectGenesisElementalVFX(pc,app,assetRoot,{
 }={}){
  if(!assetRoot||!assetRoot.enabled)throw Error('GENESIS_VFX_ASSET_ROOT_REQUIRED');
  const rig=createSevenChannelRig(pc,app,assetRoot,{kind,bladeAabb});
- let current=validate(initialChannels),alive=true;
+ let current=validateChannelLevels(initialChannels),alive=true;
  function setChannels(values){
    if(!alive)throw Error('VFX_BRIDGE_DISPOSED');
-   current=validate(values);
+   current=validateChannelLevels(values);
    rig.apply(getTime(),current);
    return {...current};
  }
