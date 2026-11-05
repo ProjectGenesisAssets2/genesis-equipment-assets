@@ -125,6 +125,7 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
    effects[channel]=instance;
  }
  let active={};
+ let disposed=false;
  function apply(time,levels){
    if(disposed)throw Error('GENESIS_VFX_RIG_DISPOSED');
    for(const channel of ELEMENTAL_CHANNELS){
@@ -135,7 +136,6 @@ export function createSevenChannelRig(pc,app,targetEntity,{kind='sword',bladeAab
    return {...active};
  }
  apply(0,{});
- let disposed=false;
  function destroy(){
    if(disposed)return;
    disposed=true;
