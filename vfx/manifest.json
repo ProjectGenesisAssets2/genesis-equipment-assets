@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "project": "Project Genesis",
+  "purpose": "Approved shaders and experimental independent channels",
+  "originalSword": {
+    "sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "triangles": 2150,
+    "material": "V175"
+  },
+  "effects": [
+    {
+      "id": "Rayo",
+      "version": "V07",
+      "approvedVisual": true,
+      "integrated": false,
+      "range": [
+        0,
+        100
+      ],
+      "module": "vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs",
+      "sourceBranch": "experiment/v07-rayo-ciclo-completo-10-vs-100-20261104",
+      "shaderLocked": true
+    },
+    {
+      "id": "Fuego",
+      "version": "V01",
+      "approvedVisual": false,
+      "integrated": false,
+      "range": [
+        0,
+        100
+      ],
+      "module": "vfx/experimental/Genesis_Fuego_Filo_V01.mjs",
+      "description": "animated glowing edge veins"
+    }
+  ]
+}
