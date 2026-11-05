@@ -1,0 +1,144 @@
+{
+  "schema": "Genesis_Fuego_V13_RealV12B_Cycles_Render",
+  "original_sword_GLBSHA256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "blade_material": "V12B user approved, unchanged",
+  "blade_triangles": 98,
+  "full_sword_triangles": 2150,
+  "original_GLB_geometry_modified": false,
+  "original_PBR_blade_color_modified": false,
+  "roughness_multiplier_V12B": 0.34,
+  "oxide_roughness_V12B": 0.1,
+  "actual_blade_surface_sampled": {
+    "blade_triangles": 98,
+    "blade_longitudinal_span_m": 1.422993380363855,
+    "blade_sampled_sections": 200,
+    "average_width_m": 0.11555095367416537,
+    "front_side_derived_from_real_camera": true
+  },
+  "vfx_objects_are_separate_not_in_source": true,
+  "shader_source": "vfx/experimental/Genesis_Fuego_Filo_V01.mjs",
+  "render_implementation": "Blender Cycles emissive geometry translation of four Fuego V01 paths. NOT direct GLSL execution.",
+  "visual_status": "experimental_only_user_review_required",
+  "hdr_source": "studio_small_09_4k.exr",
+  "hdri_rgb_bits_per_channel": 32,
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "blender": "4.5.13 LTS",
+  "engine": "Cycles",
+  "samples": 96,
+  "rendered_files": [
+    {
+      "file": "V12_V175_Color_J_Rugosidad034_Hero.png",
+      "bytes": 1897986,
+      "effect": "Fuego",
+      "intensity": 0,
+      "note": "actual V12B no fire reference"
+    },
+    {
+      "file": "Fuego_060_V12B_Hero.png",
+      "bytes": 1918520,
+      "effect": "Fuego",
+      "intensity": 60,
+      "vfx_geometry_objects": 37,
+      "separate_emissive_material": true
+    },
+    {
+      "file": "Fuego_060_V12B_Detalle_Filo.png",
+      "bytes": 2047217,
+      "effect": "Fuego",
+      "intensity": 60,
+      "vfx_geometry_objects": 37,
+      "separate_emissive_material": true
+    },
+    {
+      "file": "Fuego_100_V12B_Hero.png",
+      "bytes": 1919114,
+      "effect": "Fuego",
+      "intensity": 100,
+      "vfx_geometry_objects": 39,
+      "separate_emissive_material": true
+    }
+  ],
+  "fire_segments": [
+    {
+      "intensity": 60,
+      "ribbons": [
+        {
+          "lane": 0,
+          "inner": false,
+          "segments": 6
+        },
+        {
+          "lane": 1,
+          "inner": false,
+          "segments": 8
+        },
+        {
+          "lane": 2,
+          "inner": true,
+          "segments": 9
+        },
+        {
+          "lane": 3,
+          "inner": true,
+          "segments": 9
+        }
+      ],
+      "objects": 37
+    },
+    {
+      "intensity": 60,
+      "ribbons": [
+        {
+          "lane": 0,
+          "inner": false,
+          "segments": 6
+        },
+        {
+          "lane": 1,
+          "inner": false,
+          "segments": 8
+        },
+        {
+          "lane": 2,
+          "inner": true,
+          "segments": 9
+        },
+        {
+          "lane": 3,
+          "inner": true,
+          "segments": 9
+        }
+      ],
+      "objects": 37
+    },
+    {
+      "intensity": 100,
+      "ribbons": [
+        {
+          "lane": 0,
+          "inner": false,
+          "segments": 7
+        },
+        {
+          "lane": 1,
+          "inner": false,
+          "segments": 10
+        },
+        {
+          "lane": 2,
+          "inner": true,
+          "segments": 8
+        },
+        {
+          "lane": 3,
+          "inner": true,
+          "segments": 9
+        }
+      ],
+      "objects": 39
+    }
+  ],
+  "playcanvas_shader_modified": false,
+  "original_model_exported": false,
+  "concept_or_imagegen_used": false
+}
