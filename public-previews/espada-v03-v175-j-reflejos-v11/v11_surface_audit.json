@@ -1,0 +1,51 @@
+{
+  "schema": "Genesis_V11_V175_ColorLocked_J_Nervio_Reflections",
+  "status": "experimental_visual_approval_pending",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source_glb_modified": false,
+  "triangles": 2150,
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "cycles_samples": 96,
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_dimensions": [
+    4096,
+    2048
+  ],
+  "hdri_rgb_bits_per_channel": 32,
+  "V10_color_socket_unchanged": true,
+  "V10_color_node": "Image Texture",
+  "V10_color_socket": "Color",
+  "normal_from": "Fab Image_2",
+  "normal_previous": "Genesis_V175_Hierro_Normal_2K",
+  "metallic_from": "Fab Image_1 ORM blue + floor 0.98",
+  "roughness_from": "V175 ORM green * 0.49",
+  "new_strip_width_m": 0.24,
+  "new_strip_length_m": 2.8,
+  "new_strip_watts": [
+    85,
+    145
+  ],
+  "additional_texture_or_palette_tint": false,
+  "additional_channel_vfx": false,
+  "J_reference": "v03_fine_oxide_reflection_v02.py; J had Fab normal, metallic min .98, roughness mult .49, plus oxide patina. V11 preserves V10 Base Color and does NOT copy J iron tone .72.",
+  "previous_baseline": "V10 original PBR, with same full rig lights HDRI and cameras",
+  "rendered_files": [
+    {
+      "file": "V11_V175_Color_Original_J_Nervio_Hero.png",
+      "bytes": 1876620
+    },
+    {
+      "file": "V11_V175_Color_Original_J_Nervio_TresCuartos.png",
+      "bytes": 1879115
+    },
+    {
+      "file": "V11_V175_Color_Original_J_Nervio_Filo_Detalle.png",
+      "bytes": 1968630
+    },
+    {
+      "file": "V11_V175_Color_Original_J_Nervio_Strip145_Hero.png",
+      "bytes": 1875804
+    }
+  ]
+}

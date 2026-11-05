@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "asset": "Genesis_Sword_Iron_V03_V175_Colores",
+  "master_reference_only": true,
+  "visual_approval": "pending",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "geometry_triangles": 2150,
+  "metal": "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL",
+  "renderer": "Blender Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 96,
+  "output_pixels": [
+    1200,
+    1500
+  ],
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "source": "Poly Haven Studio Small 09 - 4K EXR",
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr",
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "bits_per_channel": 32,
+    "channels": "RGB",
+    "world_strength": 0.9,
+    "environment_rotation_radians": 0.45,
+    "camera_background": "dark only"
+  },
+  "exposure_ev": 0.5,
+  "view_transform": "AgX",
+  "look": "AgX - Medium High Contrast",
+  "softboxes": [
+    {
+      "name": "Wide key reflection",
+      "power_watts": 320,
+      "width_m": 2.2,
+      "height_m": 3.2
+    },
+    {
+      "name": "Long blade strip",
+      "power_watts": 230,
+      "width_m": 0.52,
+      "height_m": 3.0
+    },
+    {
+      "name": "Rim separation",
+      "power_watts": 270,
+      "width_m": 1.0,
+      "height_m": 2.4
+    },
+    {
+      "name": "Hilt warm fill",
+      "power_watts": 85,
+      "width_m": 1.4,
+      "height_m": 1.6
+    }
+  ],
+  "images": [
+    "V03_Blender_Cycles_HDRI32_Hero.png",
+    "V03_Blender_Cycles_HDRI32_TresCuartos.png",
+    "V03_V175_HDRI32_Detalle_Filo.png"
+  ],
+  "channel_effects": "NONE — base PBR reference only",
+  "for_later_vfx": "Freeze HDRI hash, camera setup, exposure and sword material; render channels separately",
+  "do_not_publish_source_glb": true
+}
