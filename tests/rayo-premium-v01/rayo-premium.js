@@ -100,10 +100,12 @@ function buildHelicalLightning(bladeAabb){
  const lo=bladeAabb.center.y-bladeAabb.halfExtents.y;
  const hi=bladeAabb.center.y+bladeAabb.halfExtents.y;
  const height=hi-lo;
- const yStart=lo+height*.065;
- const yEnd=hi-height*.085;
- const radiusX=Math.max(.030,Math.min(.090,bladeAabb.halfExtents.x*.98));
- const radiusZ=Math.max(.034,bladeAabb.halfExtents.z+.034);
+ // Original V03 GLB AABB covers the whole sword, including guard and grip.
+ // These fixed landmarks constrain VFX to its blade; source geometry remains unchanged.
+ const yStart=Math.max(lo+height*.065,-.37);
+ const yEnd=Math.min(hi-height*.085,.90);
+ const radiusX=.063; // calibrated to actual blade silhouette, not whole-sword AABB
+ const radiusZ=.064; // a little outside the blade surface for front/back depth occlusion
  const cx=bladeAabb.center.x,cz=bladeAabb.center.z;
  const turns=3.15,steps=580;
  const verts=[],uvs=[],indices=[];
@@ -136,7 +138,7 @@ function buildHelicalLightning(bladeAabb){
  entity.addComponent('render',{meshInstances:[new pc.MeshInstance(mesh,material)],castShadows:false,receiveShadows:false});
  app.root.addChild(entity);
  helixStats={turns,segments:steps,triangles:steps*2,depthTest:true,bladeHeight:height,
-   radiusX,radiusZ,yStart,yEnd,sourceBladeBounds:{
+   radiusX,radiusZ,yStart,yEnd,placementBasis:'original-v03-blade-visual-landmarks',sourceBladeBounds:{
      center:[cx,bladeAabb.center.y,cz],
      half:[bladeAabb.halfExtents.x,bladeAabb.halfExtents.y,bladeAabb.halfExtents.z]
    }};
