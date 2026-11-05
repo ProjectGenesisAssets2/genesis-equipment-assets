@@ -20,6 +20,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify approved Rayo V07 shader unchanged
         run: python3 tests/fire-rayo-v08/check_rayo_approved.py
+      - name: Check inventory channel semantics and intensity clamps
+        run: node tests/universal-v09/validate-bridge.mjs
       - name: Recover exact original sword V03; verify unchanged SHA256
         env:
           GITHUB_TOKEN: ${{ github.token }}
