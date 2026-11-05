@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "id": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "display_name": "Espada de hierro V03 – V175 V12B",
+  "visual_status": "approved_by_user",
+  "approval_scope": "V12B iron base material and Blender look; not a game asset export",
+  "approved_on": "2026-11-05",
+  "source_original": {
+    "name": "Genesis_Sword_Iron_V03_V175_Colores.glb",
+    "sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "triangles": 2150,
+    "source_mesh_unchanged": true
+  },
+  "base_color": {
+    "source": "original embedded V175 baked palette texture V03",
+    "material_name": "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL",
+    "node_connection": "Image Texture Color -> Principled BSDF Base Color",
+    "unchanged_from_v10": true
+  },
+  "surface": {
+    "normal_image": "Fab Image_2",
+    "metallic": "Fab Image_1 ORM Blue + maximum(0.98)",
+    "roughness": "V175 ORM Green * 0.34 plus localized J oxidation noise (0.10)",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness_add": 0.1,
+    "metallic_floor": 0.98,
+    "oxide_mask": {
+      "coordinates": "Generated",
+      "anisotropy": [
+        27,
+        3.2,
+        8
+      ],
+      "noise_scale": 1,
+      "detail": 3,
+      "roughness": 0.67,
+      "distortion": 0.12,
+      "smoothstep": [
+        0.52,
+        0.66
+      ]
+    },
+    "no_blade_geometry_change": true
+  },
+  "lighting": {
+    "type": "Blender Cycles world HDRI + softboxes",
+    "renderer": "Blender 4.5.13 LTS Cycles",
+    "samples": 96,
+    "hdri_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr",
+    "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+    "hdri_format": "OPEN_EXR",
+    "hdri_dimensions": [
+      4096,
+      2048
+    ],
+    "bits_per_channel": 32,
+    "world_strength": 0.9,
+    "exposure_ev": 0.5,
+    "view_transform": "AgX",
+    "look": "AgX - Medium High Contrast",
+    "j_longitudinal_strip": {
+      "watts": 85,
+      "width_m": 0.24,
+      "length_m": 2.8
+    }
+  },
+  "reference_render": "public-previews/espada-v175-j-roughness-v12/V12_V175_Color_J_Rugosidad034_Hero.png",
+  "reference_workflow": "https://github.com/ProjectGenesisAssets2/genesis-equipment-assets/actions/runs/42041841430",
+  "vfx_policy": {
+    "channels_independent": true,
+    "vfx_off_in_base": true,
+    "fuego_status": "experimental",
+    "rayo_status": "V07 approved, unchanged",
+    "no_material_replacement": true
+  },
+  "source_script": "scripts/fab_sword/render_v12_v175_j_roughness.py"
+}
