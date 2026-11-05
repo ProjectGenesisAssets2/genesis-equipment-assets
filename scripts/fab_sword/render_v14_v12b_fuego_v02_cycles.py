@@ -400,7 +400,7 @@ def main():
      'actual_blade_surface_sampled':geometry,
      'vfx_objects_are_separate_not_in_source':True,
      'shader_source':'vfx/experimental/Genesis_Fuego_Filo_V01.mjs',
-     'fire_variant':'V02_BLENDER_CYCLES_PREVISUALIZATION_FOR_NEW_GLASSL_IMPLEMENTATION',,
+     'fire_variant':'V02_BLENDER_CYCLES_PREVISUALIZATION_FOR_NEW_GLSL_IMPLEMENTATION',
      'render_implementation':'Blender Cycles experimental Fuego V02 emissive surface curves and flame sheets on original V12B. NOT direct PlayCanvas GLSL execution.',
      'visual_status':'experimental_only_user_review_required',
      'hdr_source':'studio_small_09_4k.exr','hdri_rgb_bits_per_channel':32,
