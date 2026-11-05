@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: genesis-v15-fuego-v03
+  group: genesis-v15-fuego-v03-pillow-recovery
   cancel-in-progress: true
 jobs:
   cycles-render:
