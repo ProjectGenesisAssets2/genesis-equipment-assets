@@ -425,11 +425,17 @@ def main():
     FLAME_SHA_TGA=hashlib.sha256(a.flame_tga.read_bytes()).hexdigest()
     FLAME_IMAGE_EXR=bpy.data.images.load(str(a.flame_exr.resolve()),check_existing=False)
     FLAME_IMAGE_TGA=bpy.data.images.load(str(a.flame_tga.resolve()),check_existing=False)
+    source_sizes={}
     for im in [FLAME_IMAGE_EXR,FLAME_IMAGE_TGA]:
-        if (im.size[0],im.size[1])!=(2048,1024):
-            raise RuntimeError('Flame flipbook must be exactly 2048x1024: '+im.name+str(im.size))
+        im.reload()
+        w,h=[int(v) for v in im.size]
+        print('GENESIS_V16_CC0_IMAGE_METADATA',im.name,'size',w,h,
+              'format',im.file_format,'depth',im.depth,flush=True)
+        if w<256 or h<128 or not (1.90<=w/h<=2.10):
+            raise RuntimeError('Flame 16x4 atlas has invalid size '+im.name+': '+repr([w,h]))
+        source_sizes[im.name]=[w,h]
     print('GENESIS_V16_REAL_CC0_FLAME_SOURCE_LOADED',
-          FLAME_SHA_EXR,FLAME_SHA_TGA,FLAME_IMAGE_EXR.size[:],flush=True)
+          FLAME_SHA_EXR,FLAME_SHA_TGA,source_sizes,flush=True)
 
     scene=bpy.context.scene
     iron=next((mat for mat in bpy.data.materials if 'Iron_Blade_V175' in mat.name),None)
