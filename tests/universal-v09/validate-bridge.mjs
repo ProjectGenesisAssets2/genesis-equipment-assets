@@ -1,0 +1,15 @@
+import {validateChannelLevels,CHANNEL_SET,BASE_CHANNEL} from '../../vfx/runtime/Genesis_Inventory_VFX_Bridge_V09.mjs';
+import {ELEMENTAL_CHANNELS} from '../../vfx/runtime/Genesis_Universal_7Canales_V09.mjs';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+assert.deepEqual(ELEMENTAL_CHANNELS,['Luz','Sombra','Fuego','Hielo','Naturaleza','Tierra','Rayo']);
+assert.equal(CHANNEL_SET.size,7);
+assert.equal(BASE_CHANNEL,'Base');
+assert.deepEqual(validateChannelLevels({Base:100,Fuego:80,Rayo:120,Naturaleza:0,Veneno:55}),{Fuego:80,Rayo:100});
+assert.deepEqual(validateChannelLevels({Fuego:-1,Sombra:2.5,Luz:10}),{Sombra:2.5,Luz:10});
+assert.deepEqual(validateChannelLevels({}),{});
+assert.throws(()=>validateChannelLevels({Aire:12}),/UNSUPPORTED_ELEMENTAL_CHANNEL/);
+assert.throws(()=>validateChannelLevels({Luz:'NaN'}),/INVALID_ELEMENTAL_INTENSITY/);
+const approved=readFileSync('vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs','utf8');
+assert.match(approved,/approvedVisual:true/);
+console.log('GENESIS_V09_INVENTORY_CHANNEL_VALIDATION_PASSED');
