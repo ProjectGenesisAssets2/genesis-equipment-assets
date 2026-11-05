@@ -1,0 +1,61 @@
+name: Genesis V11 - retrieve historic genuine J candidate Cycles reference
+on:
+  push:
+    branches: [experiment/v11-v175-color-nervio-brillo-j-20261105]
+    paths: ['.github/workflows/recover-historic-j-reference.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  recover-j:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover exact prior verified 2026-11-04 J output from successful workflow artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-old-j
+          gh run download 41838201305 -n Genesis-V03-FineIron-V02-ToneCycles-HDRI32 -D /tmp/genesis-old-j
+          ls -lh /tmp/genesis-old-j/
+          test -s /tmp/genesis-old-j/03_J_hierro_v175_072.png
+          test -s /tmp/genesis-old-j/05_J_tres_cuartos.png
+          test -s /tmp/genesis-old-j/06_J_cara_posterior.png
+          test -s /tmp/genesis-old-j/render_audit.json
+      - name: Verify genuine former J script settings and 32bit EXR HDRI audit
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          j=json.loads(pathlib.Path('/tmp/genesis-old-j/render_audit.json').read_text())
+          assert j['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert j['hdr_bits_per_pixel']==96
+          assert j['geometry_triangle_count']==2150
+          p=next(x for x in j['parameters'] if x['name']=='03_J_hierro_v175_072')
+          assert p['roughness_multiplier']==.49 and p['iron_tone_multiplier']==.72
+          assert p['oxide_roughness_added']==.13 and p['oxide_metallicity_loss']==.10
+          assert j['source_file_unchanged'] is True
+          print('GENESIS_HISTORIC_J_CONFIRMED',p)
+          PY
+      - name: Publish J reference views and mobile previews, no model binaries
+        run: |
+          set -euo pipefail
+          target=public-previews/espada-v03-v175-j-reflejos-v11
+          for f in 03_J_hierro_v175_072 05_J_tres_cuartos 06_J_cara_posterior; do
+            cp "/tmp/genesis-old-j/$f.png" "$target/REF_J_Historica_$f.png"
+            ffmpeg -y -loglevel error -i "/tmp/genesis-old-j/$f.png" -vf 'scale=600:750:flags=lanczos' -frames:v 1 -q:v 4 "$target/REF_J_Historica_$f.jpg"
+            test -s "$target/REF_J_Historica_$f.jpg"
+          done
+          cp /tmp/genesis-old-j/render_audit.json "$target/REF_J_Historica_render_audit.json"
+          ! find "$target" -type f \( -iname '*.glb' -o -iname '*.blend' -o -iname '*.exr' \) | grep -q .
+          git config user.name 'Genesis Historical Reference CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git add "$target"
+          if git diff --cached --quiet; then echo "J reference already present"; else
+            git commit -m 'reference(v11): recover exact J 0.72 Cycles renders from Nov 4 artifact'
+            git fetch origin experiment/v11-v175-color-nervio-brillo-j-20261105
+            git rebase FETCH_HEAD
+            git push origin HEAD:experiment/v11-v175-color-nervio-brillo-j-20261105
+          fi
