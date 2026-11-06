@@ -68,8 +68,8 @@ export function createV21SurfaceChannel(pc,app,bladeAabb,config){
    const y=yStart+v*full;
    const smooth=Math.pow(Math.max(0.,Math.sin(Math.PI*t)),patch.shape==='glint'?.45:.55);
    const jagged=patch.shape==='crystal'?(1.+.16*Math.sin(t*27.+i*2.4)):1.;
-   const width=patch.halfWidth*smooth*jagged;
    const centerX=(patch.x||0)+(patch.curve||0)*Math.sin(t*Math.PI*1.3+i*.82)*smooth;
+   const width=Math.min(patch.halfWidth*smooth*jagged,Math.max(.0004,.0385-Math.abs(centerX)));
    if(Math.abs(centerX)+width>.039)throw Error('V21_OUT_OF_CENTER_METAL_'+config.id+'_'+i);
    const z=cz+(patch.z||.085);
    p.push(cx+centerX-width,y,z,cx+centerX+width,y,z);
