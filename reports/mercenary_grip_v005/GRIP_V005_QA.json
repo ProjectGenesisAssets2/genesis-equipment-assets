@@ -142,23 +142,23 @@
   "renders": [
     {
       "name": "V005_01_tres_cuartos_espada_metal.png",
-      "bytes": 2003822,
-      "sha256": "0b3f07cb566ebd795298ca595f5b2e929f293b3fbca72cd11a7cd882218f6a31"
+      "bytes": 2127839,
+      "sha256": "dbdc6f913fef86e4f754c9b62a7be79589dfbbdb317a483812cc5acbd55e204c"
     },
     {
       "name": "V005_02_frente_espada_metal.png",
-      "bytes": 2032534,
-      "sha256": "e01e69ad9f291ea9181b60d5c0b52431ade9298ff4fbe33149019885503908c3"
+      "bytes": 2152451,
+      "sha256": "717c4767d46f6e07f082d6c3b414bc7ec335474362c83c997123e61614e1db3c"
     },
     {
       "name": "V005_03_detalle_agarre_real.png",
-      "bytes": 1698099,
-      "sha256": "58f56c7ec806bb6e06383f9da7aa6d38295a7949dc4f83237c0140fe2719c55d"
+      "bytes": 1791964,
+      "sha256": "cb3c5bcb50ada48566bf97a876f770519fdb54c4644e2bcf0d797ab1f897a09d"
     },
     {
       "name": "V005_04_detalle_hoja_hierro_v175.png",
-      "bytes": 2337156,
-      "sha256": "f7490224c61c88c26f47804475138a819cb450d25a55083897f84deededb5c50"
+      "bytes": 2439007,
+      "sha256": "105d7217e1118776e68c899c0222b5755aac9ce92eaa23658ac7b4a7ed877cbf"
     }
   ],
   "game_integrated": false,
