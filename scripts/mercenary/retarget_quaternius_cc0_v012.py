@@ -15,7 +15,10 @@ def mul(a,b):
 def inv(a):return [-a[0],-a[1],-a[2],a[3]]
 def unit(q):
  length=math.sqrt(sum(x*x for x in q))
- assert length>.99
+ # Source GLB can contain intermediary root/helper nodes with a zero
+ # quaternion; glTF's default is identity. Never apply this fallback to
+ # the 24 verified target skin joints, whose rest rotations are unit length.
+ if length<1e-8:return [0,0,0,1]
  return [x/length for x in q]
 def slerp(a,b,t):
  dot=sum(x*y for x,y in zip(a,b))
