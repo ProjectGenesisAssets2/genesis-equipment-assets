@@ -2,6 +2,9 @@ name: Genesis V18 - Fuego V06 elegante CC0 ondas fluidas V12B HDRI32
 on:
   push:
     branches: [experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v17-fuego-elegante-fluido-referencia-20261105]
     paths:
       - 'scripts/fab_sword/render_v18_v12b_fuego_v06_flow_cycles.py'
       - 'presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json'
@@ -162,13 +165,13 @@ jobs:
         run: |
           git config user.name 'Genesis Studio Preview CI'
           git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105
+          git checkout -B experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105 FETCH_HEAD
           git add public-previews/espada-v03-v175-v12b-fuego-v06-v18/
           if git diff --cached --quiet; then
             echo 'Gallery already published'
           else
-            git commit -m 'preview(v18): continuous elegant orange flame on real V12B sword, actual CC0 fire details, 0..100 Cycles HDRI32'
-            git fetch origin experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105
-            git rebase FETCH_HEAD
+            git commit -m 'preview(v18): 60-percent-thinner real V12B flame, CC0 Cycles HDRI32'
             git push origin HEAD:experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105
           fi
       - name: Remove temporary original licensed model and HDRI from runner
