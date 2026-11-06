@@ -27,11 +27,19 @@ def centroid_for_group(meshes,name):
   if ob.type!="MESH":continue
   group=ob.vertex_groups.get(name)
   if not group:continue
-  for vert in ob.data.vertices:
-   try:wt=next(v.weight for v in vert.groups if v.group==group.index)
-   except StopIteration:continue
-   if wt<.5:continue
-   pts.append(ob.matrix_world@vert.co);weights.append(wt)
+  # Read the DEFORMED skinned positions. Raw bpy.data.vertices are rest-pose
+  # coordinates, unusable for comparison with animated hand bones.
+  deps=bpy.context.evaluated_depsgraph_get()
+  evaluated=ob.evaluated_get(deps)
+  deform=evaluated.to_mesh()
+  try:
+   for vert in ob.data.vertices:
+    try:wt=next(v.weight for v in vert.groups if v.group==group.index)
+    except StopIteration:continue
+    if wt<.5:continue
+    pts.append(evaluated.matrix_world@deform.vertices[vert.index].co);weights.append(wt)
+  finally:
+   evaluated.to_mesh_clear()
  if not pts:return None,0
  center=sum((v*w for v,w in zip(pts,weights)),Vector())/sum(weights)
  return center,len(pts)
