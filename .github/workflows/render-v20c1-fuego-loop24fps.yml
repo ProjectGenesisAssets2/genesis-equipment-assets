@@ -1,0 +1,112 @@
+name: Genesis V20C.1 - fuego V20C original, loop real 24fps sin saltos
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v20c-calor-metal-flamas-organicas-20261106]
+  workflow_dispatch:
+concurrency:
+  group: genesis-v20c1-seamless-loop
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  real-webgl-loop:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm V20C shader original intact and smoke-test scripts
+        run: |
+          test "$(git hash-object vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs)" = fc4a3722e7c07b33d034b6d1ead5504f480a6345
+          node --check tests/fuego-v20c1/scene.js
+          node --check tests/fuego-v20c1/record.cjs
+          node --check tests/fuego-v20c1/assemble_loop.cjs
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+      - name: Restore unchanged GLB V03 and PBR V175 temporarily
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v20c1-original.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v20c1-original.glb' | sha256sum -c
+          cp /tmp/genesis-v20c1-original.glb tests/fuego-v20c1/source_original_v03.glb
+      - name: Install PlayCanvas and Chromium headless shell
+        timeout-minutes: 5
+        run: |
+          timeout 180s npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          timeout 120s npx playwright install chromium --only-shell
+      - name: Install standalone FFmpeg when absent
+        timeout-minutes: 3
+        run: |
+          set -e
+          if ! command -v ffmpeg >/dev/null; then
+            python3 -m venv /tmp/genesis-ffmpeg-venv
+            /tmp/genesis-ffmpeg-venv/bin/pip install --disable-pip-version-check --quiet imageio-ffmpeg==0.6.0
+            mkdir -p /tmp/genesis-ffmpeg-bin
+            ln -s "$(/tmp/genesis-ffmpeg-venv/bin/python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')" /tmp/genesis-ffmpeg-bin/ffmpeg
+            echo /tmp/genesis-ffmpeg-bin >> "$GITHUB_PATH"
+          fi
+      - name: Serve real original sword and V20C unchanged flame
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v20c1-http.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/fuego-v20c1/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/fuego-v20c1/source_original_v03.glb)" = 200
+      - name: Capture 168 real WebGL frames at 24fps
+        timeout-minutes: 18
+        run: |
+          set -o pipefail
+          node tests/fuego-v20c1/record.cjs | tee /tmp/genesis-v20c1-browser.log
+          test "$(find fuego-v20c1-output -maxdepth 1 -name '*_source_frame_*.png' | wc -l)" -eq 168
+          test -s fuego-v20c1-output/capture_audit.json
+          test -s fuego-v20c1-output/Proof_Fuego_060.png
+          test -s fuego-v20c1-output/Proof_Fuego_100.png
+      - name: Assemble smooth loop and measure actual old vs new seam
+        timeout-minutes: 9
+        run: |
+          set -o pipefail
+          node tests/fuego-v20c1/assemble_loop.cjs | tee /tmp/genesis-v20c1-seam.log
+          test "$(find fuego-v20c1-output -maxdepth 1 -name 'Fuego_*_frame_*.png' ! -name '*source*' | wc -l)" -eq 144
+          test -s fuego-v20c1-output/loop_audit.json
+      - name: Encode looped 24fps MP4 and 20fps GIF from real PlayCanvas screenshots
+        timeout-minutes: 5
+        run: |
+          set -e
+          cd fuego-v20c1-output
+          for mode in Fuego_060 Fuego_100; do
+            ffmpeg -y -loglevel error -framerate 24 -i "$mode"_frame_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart "$mode"_Loop24fps.mp4
+            ffmpeg -y -loglevel error -i "$mode"_Loop24fps.mp4 -vf 'fps=20,scale=960:-1:flags=lanczos,palettegen' "$mode"_palette.png
+            ffmpeg -y -loglevel error -i "$mode"_Loop24fps.mp4 -i "$mode"_palette.png -lavfi 'fps=20,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 "$mode"_Loop20fps.gif
+            test -s "$mode"_Loop24fps.mp4
+            test -s "$mode"_Loop20fps.gif
+          done
+      - name: Stage reviewer previews - source GLB and giant frame sequences excluded
+        run: |
+          set -e
+          mkdir -p public-previews/fuego-v20c1-loop
+          cp fuego-v20c1-output/*.mp4 public-previews/fuego-v20c1-loop/
+          cp fuego-v20c1-output/*.gif public-previews/fuego-v20c1-loop/
+          cp fuego-v20c1-output/Proof_*.png public-previews/fuego-v20c1-loop/
+          cp fuego-v20c1-output/*audit.json public-previews/fuego-v20c1-loop/
+          test "$(find public-previews/fuego-v20c1-loop -maxdepth 1 -name '*.mp4' | wc -l)" -eq 2
+          ! find public-previews/fuego-v20c1-loop -type f \( -iname '*.glb' -o -iname '*.exr' -o -iname '*.blend' \) | grep -q .
+      - name: Retain experimental preview artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V20C1-OriginalFire-SmoothLoop-24fps
+          path: public-previews/fuego-v20c1-loop/
+          retention-days: 7
+      - name: Publish experimental V20C.1 previews to isolated branch only
+        run: |
+          set -e
+          git config user.name 'Genesis Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v20c1-animacion-24fps-loop-perfecto-20261106
+          git checkout -B experiment/v20c1-animacion-24fps-loop-perfecto-20261106 FETCH_HEAD
+          git add public-previews/fuego-v20c1-loop/
+          if git diff --cached --quiet; then echo 'Previews unchanged'; else
+            git commit -m 'preview(v20c1): correct V20C fire GIF jump with real 24fps frames'
+            git push origin HEAD:experiment/v20c1-animacion-24fps-loop-perfecto-20261106
+          fi
+      - name: Remove locally reconstructed original model
+        if: always()
+        run: rm -f /tmp/genesis-v20c1-original.glb tests/fuego-v20c1/source_original_v03.glb
