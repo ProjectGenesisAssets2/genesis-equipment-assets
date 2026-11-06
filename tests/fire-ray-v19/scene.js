@@ -38,7 +38,9 @@ function set(time,fire,ray){
  fuego.set(time,f);
  rayo.set(time,r);
  setTitle(f,r);
- return {time,fire:f,ray:r,source:'V03 original + V175, preview lighting V19 (not identical to Cycles V12B)'};
+ getElement('fireSlider').value=String(f);
+ getElement('raySlider').value=String(r);
+ return {time,fire:f,ray:r,sliderFire:Number(getElement('fireSlider').value),sliderRay:Number(getElement('raySlider').value),source:'V03 original + V175, preview lighting V19 (not identical to Cycles V12B)'};
 }
 function loadSword(){
  app.assets.loadFromUrlAndFilename('/tests/fire-ray-v19/source_original_v03.glb','Genesis_original_V03.glb','container',(err,asset)=>{
