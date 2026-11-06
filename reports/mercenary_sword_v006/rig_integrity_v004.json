@@ -1,0 +1,49 @@
+{
+  "status": "EXPERIMENTAL_AVATAR_SOCKET_GLTF_V004",
+  "not_integrated": true,
+  "source_sha256": "cdd7a5918ec3f054e6d5288cc956f3e1c6d8f12bafa8cb1fcee45e6de12e6f5f",
+  "output_sha256": "39abc0750132e4ac2056dc8227269d4e769599b5dea743ea95faf6a5e27110f8",
+  "source_bytes": 3934364,
+  "output_bytes": 3934888,
+  "mesh_and_animation_buffers_unmodified_sha256": "a48c6982dcfd158506f7662d4e8d3393d0711cf453f2d58705692d4e0686a746",
+  "skin_count": 1,
+  "clip_count": 10,
+  "clip_names": [
+    "Idle_02",
+    "Agree_Gesture",
+    "Talk_Passionately",
+    "Stand_Talking_Angry",
+    "Victory_Fist_Pump",
+    "Hand_on_Hip_Gesture",
+    "Angry_Stomp",
+    "Finger_Wag_No",
+    "Formal_Bow",
+    "victory"
+  ],
+  "sockets": [
+    {
+      "parent_bone": "RightHand",
+      "name": "GENESIS_SOCKET_WEAPON_R",
+      "translation_joint_local": [
+        0.0,
+        6.0,
+        0.0
+      ],
+      "usage": "weapon"
+    },
+    {
+      "parent_bone": "LeftHand",
+      "name": "GENESIS_SOCKET_SHIELD_L",
+      "translation_joint_local": [
+        0.0,
+        6.0,
+        0.0
+      ],
+      "usage": "shield"
+    }
+  ],
+  "sword": "V03 V175 V12B - geometry separate; source rights preserved",
+  "shield": "approved shield separate: no provisional shield treated as final",
+  "in_game": false,
+  "approved_avatar": false
+}
