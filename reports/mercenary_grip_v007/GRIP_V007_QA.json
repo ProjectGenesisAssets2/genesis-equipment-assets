@@ -1,0 +1,182 @@
+{
+  "status": "V007_EXPERIMENTAL_PALM_GRIP_FINE_ALIGNMENT",
+  "avatar": "Meshy CC0 candidate unapproved",
+  "source_socket_glb_sha256": "39abc0750132e4ac2056dc8227269d4e769599b5dea743ea95faf6a5e27110f8",
+  "source_sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "grip_fit": {
+    "glove_to_handle_anchor_m": 0.0186,
+    "glove_centroid_world_m": [
+      -0.36395958065986633,
+      -0.19722811877727509,
+      1.30129075050354
+    ],
+    "grip_world_m": [
+      -0.37695959210395813,
+      -0.2102281153202057,
+      1.298290729522705
+    ],
+    "blade_center_world_m": [
+      -0.40887024998664856,
+      -0.22763389348983765,
+      1.0105148553848267
+    ]
+  },
+  "grip_position_fraction": 0.175,
+  "sword_length_m": 0.8925,
+  "previous_sword_length_m": 1.05,
+  "scale_ratio_relative_v005": 0.85,
+  "reduction_percent": 15,
+  "grip_offset_v006_to_v007_m": [
+    -0.013,
+    -0.005,
+    0
+  ],
+  "grip_offset_total_to_deformed_palm_m": [
+    -0.013,
+    -0.013,
+    -0.003
+  ],
+  "hand_grip_goal": "Move sword 13 mm toward glove fingers and 5 mm toward front; no finger mesh changes",
+  "inclination_degrees_from_vertical": 7.2,
+  "v005_inclination_degrees": 17.11,
+  "blade_rolled_to_face_camera": true,
+  "roll_alignment_target": [
+    0.16227322816848755,
+    -0.9858670830726624,
+    0.041635069996118546
+  ],
+  "metal_maps_and_iron_preset_unchanged": true,
+  "light_reflections": "Two sword-specific area softboxes",
+  "sword": "V03 V175 V12B authentic original",
+  "sword_material": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "shield": "approved shield model not present in this public QA runner; left-hand socket tested structurally",
+  "bones": 24,
+  "animation_action_count": 10,
+  "wrist_to_socket_m": {
+    "GENESIS_SOCKET_WEAPON_R": 0.06,
+    "GENESIS_SOCKET_SHIELD_L": 0.06
+  },
+  "blender_importer_joint_child_offset_m": {
+    "GENESIS_SOCKET_WEAPON_R": 21.22611,
+    "GENESIS_SOCKET_SHIELD_L": 21.58296
+  },
+  "palm_mesh_centroids": {
+    "right": {
+      "skinned_vertices": 519,
+      "palm_centroid_distance_m": 0.0491
+    },
+    "left": {
+      "skinned_vertices": 516,
+      "palm_centroid_distance_m": 0.0596
+    }
+  },
+  "socket_world_positions": {
+    "right_rest": [
+      -0.3663463592529297,
+      -0.15075111389160156,
+      1.316899299621582
+    ],
+    "left_rest": [
+      0.34503817558288574,
+      0.003975391387939453,
+      1.1236495971679688
+    ]
+  },
+  "socket_names": [
+    "GENESIS_SOCKET_WEAPON_R",
+    "GENESIS_SOCKET_SHIELD_L"
+  ],
+  "animated_clip_probes": [
+    {
+      "clip": "Agree_Gesture",
+      "right_socket_delta_m": 0.58754,
+      "left_socket_delta_m": 0.11135
+    },
+    {
+      "clip": "Angry_Stomp",
+      "right_socket_delta_m": 0.17041,
+      "left_socket_delta_m": 0.14169
+    },
+    {
+      "clip": "Finger_Wag_No",
+      "right_socket_delta_m": 0.63017,
+      "left_socket_delta_m": 0.14229
+    },
+    {
+      "clip": "Formal_Bow",
+      "right_socket_delta_m": 0.04796,
+      "left_socket_delta_m": 0.13054
+    },
+    {
+      "clip": "Hand_on_Hip_Gesture",
+      "right_socket_delta_m": 0.21925,
+      "left_socket_delta_m": 0.05818
+    },
+    {
+      "clip": "Idle_02",
+      "right_socket_delta_m": 0.0136,
+      "left_socket_delta_m": 0.01857
+    },
+    {
+      "clip": "Stand_Talking_Angry",
+      "right_socket_delta_m": 0.28781,
+      "left_socket_delta_m": 0.25506
+    },
+    {
+      "clip": "Talk_Passionately",
+      "right_socket_delta_m": 0.46791,
+      "left_socket_delta_m": 0.07731
+    },
+    {
+      "clip": "victory",
+      "right_socket_delta_m": 0.52833,
+      "left_socket_delta_m": 0.56756
+    },
+    {
+      "clip": "Victory_Fist_Pump",
+      "right_socket_delta_m": 0.04519,
+      "left_socket_delta_m": 0.03232
+    }
+  ],
+  "sword_parent_object": "GENESIS_SOCKET_WEAPON_R",
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "renders": [
+    {
+      "name": "V007_01_tres_cuartos_espada_metal.png",
+      "bytes": 2120562,
+      "sha256": "b9c0e18a08275c8144c129b79b7922ec541d24dbf9e56ed07e296e93b04724ef"
+    },
+    {
+      "name": "V007_02_frente_espada_metal.png",
+      "bytes": 2144162,
+      "sha256": "c075c55ecb437384b999a126b378062f97710a4d53f8ea309ee3d3074b66e70a"
+    },
+    {
+      "name": "V007_03_detalle_agarre_real.png",
+      "bytes": 1751997,
+      "sha256": "387345893b8465d5339c8141051a17dce559fd52e10406c20991a29a280d253a"
+    },
+    {
+      "name": "V007_04_agarre_angulo_opuesto.png",
+      "bytes": 1931668,
+      "sha256": "5b5163d73ac4630ec29bbea6daf28f5af04a8f94dfcb020c8185b8538c4c23b6"
+    }
+  ],
+  "game_integrated": false,
+  "shader_visual_approved": true
+}
