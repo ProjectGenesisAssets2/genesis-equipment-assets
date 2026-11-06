@@ -1,0 +1,115 @@
+name: Genesis | V005 agarre real + reflejos hierro V12B HDRI32
+on:
+  push:
+    branches: [experiment/mercenary-grip-v005-hdri32]
+    paths:
+      - scripts/mercenary/qa_grip_and_iron_v005.py
+      - scripts/mercenary/build_socket_rig_v004.py
+      - scripts/mercenary/qa_grip_and_iron_v005.py
+      - scripts/mercenary/validate_native_sockets_v004.py
+      - .github/workflows/mercenary-grip-iron-v005-hdri32.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sockets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hydrate authentic original approved V12B geometry; do not publish source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis_original_v03_v175.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_original_v03_v175.glb' | sha256sum -c
+      - name: Download unaltered CC0 candidate rig and real HDRI 32-bit EXR
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mercenary_input
+          curl -fSL --retry 4 --max-time 180 -A 'ProjectGenesis-Asset-Review/1.0' 'https://vibeassets.io/download/9h7odik5fl' -o /tmp/mercenary_input/meshy_captain_cc0.glb
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/mercenary_input/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/mercenary_input/studio_small_09_4k.exr' | sha256sum -c
+      - name: Inject real child-of-joint sockets into original animated GLB, preserving binary buffers
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_grip_v005
+          python3 scripts/mercenary/build_socket_rig_v004.py --source /tmp/mercenary_input/meshy_captain_cc0.glb --out output/mercenary_grip_v005
+      - name: Check 10 animated clips against native GLB hand-joint hierarchy (not Blender importer)
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/validate_native_sockets_v004.py \
+            --rig output/mercenary_grip_v005/mercenary_meshy_cc0_rig_sockets_v004.glb \
+            --out output/mercenary_grip_v005/native_animated_sockets_v004.json
+          test -s output/mercenary_grip_v005/native_animated_sockets_v004.json
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          sudo mkdir -p /opt/genesis-blender
+          sudo tar -xJf /tmp/blender-4.5.13.tar.xz -C /opt/genesis-blender --strip-components=1
+          /opt/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: QA actual skinned hands and approved V175 V12B sword; render Cycles HDRI32
+        run: |
+          set -euo pipefail
+          /opt/genesis-blender/blender -b -t 4 --python-exit-code 1 --python scripts/mercenary/qa_grip_and_iron_v005.py -- \
+            --character output/mercenary_grip_v005/mercenary_meshy_cc0_rig_sockets_v004.glb \
+            --sword /tmp/genesis_original_v03_v175.glb \
+            --hdri /tmp/mercenary_input/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_grip_v005
+          test -s output/mercenary_grip_v005/GRIP_V005_QA.json
+          test "$(find output/mercenary_grip_v005 -name '*.png' | wc -l)" -eq 4
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('output/mercenary_grip_v005')
+          a=json.loads((p/'rig_integrity_v004.json').read_text())
+          b=json.loads((p/'GRIP_V005_QA.json').read_text())
+          assert a['clip_count']==10 and a['skin_count']==1
+          assert set(b['socket_names'])=={'GENESIS_SOCKET_WEAPON_R','GENESIS_SOCKET_SHIELD_L'}
+          assert b['sword_parent_object']=='GENESIS_SOCKET_WEAPON_R'
+          assert b['grip_fit']['glove_to_handle_anchor_m'] < 0.025
+          assert b['metal_maps_and_iron_preset_unchanged'] is True
+          print('QA_OK',a['output_sha256'],b['wrist_to_socket_m'])
+          PY
+      - name: Save verified review JPGs for user
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          mkdir -p reports/mercenary_grip_v005
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          import shutil
+          src=Path('output/mercenary_grip_v005');out=Path('reports/mercenary_grip_v005')
+          for p in sorted(src.glob('*.png')):
+            image=Image.open(p).convert('RGB')
+            image.thumbnail((1100,1400),Image.Resampling.LANCZOS)
+            image.save(out/(p.stem+'.jpg'),quality=89,optimize=True)
+          for name in ('rig_integrity_v004.json','GRIP_V005_QA.json','native_animated_sockets_v004.json'):
+            shutil.copy2(src/name,out/name)
+          assert len(list(out.glob('*.jpg')))==4
+          PY
+      - name: Commit small authentic QA previews only to experimental branch, never main
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/mercenary_grip_v005
+          git diff --cached --quiet || git commit -m 'QA actual real Blender renders: joint sockets and V12B sword only'
+          git fetch origin experiment/mercenary-grip-v005-hdri32
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-grip-v005-hdri32
+      - name: Upload clean sockets GLB, real PNGs and reports; licensed V12B source excluded
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-mercenary-grip-iron-v005-hdri32
+          path: output/mercenary_grip_v005
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Erase protected sword source after run
+        if: always()
+        run: rm -f /tmp/genesis_original_v03_v175.glb
