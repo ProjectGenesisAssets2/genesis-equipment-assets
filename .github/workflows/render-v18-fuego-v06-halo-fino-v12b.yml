@@ -1,0 +1,181 @@
+name: Genesis V18 - Fuego V06 elegante CC0 ondas fluidas V12B HDRI32
+on:
+  push:
+    branches: [experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v17-fuego-elegante-fluido-referencia-20261105]
+    paths:
+      - 'scripts/fab_sword/render_v18_v12b_fuego_v06_flow_cycles.py'
+      - 'presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json'
+      - '.github/workflows/render-v18-fuego-v06-elegante-v12b.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v18-real-cc0-flowing-fire
+  cancel-in-progress: true
+jobs:
+  cycles-render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Blender fire render script syntax
+        run: python3 -m py_compile scripts/fab_sword/render_v18_v12b_fuego_v06_flow_cycles.py
+      - name: Rehydrate EXACT existing 21 MB V03 V175 GLB from saved Git blobs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Recover exact 4096x2048 RGB 32-bit/channel HDRI Studio Small 09 EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+          test "$(stat -c %s /tmp/studio_small_09_4k.exr)" -gt 1000000
+      - name: Recover exact source CC0 HDR flame EXR + TGA flipbook from Unity Labs Paris
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-unity-fire
+          curl -fL --retry 3 --connect-timeout 15 --max-time 150 'https://unity3d.com/files/labs/downloads/vfx/assets01/SmallFlame01-mini-temperature/SmallFlame01-mini-flipbooks.zip' -o /tmp/genesis-unity-fire/SmallFlame01-mini-flipbooks.zip
+          echo 'a9585630cdfa568849f82b62fe1dac93045012f90963cc21ee909cceaa23953e  /tmp/genesis-unity-fire/SmallFlame01-mini-flipbooks.zip' | sha256sum -c
+          unzip -oj /tmp/genesis-unity-fire/SmallFlame01-mini-flipbooks.zip SmallFlame01-mini_16x4.exr SmallFlame01-mini_16x4.tga -d /tmp/genesis-unity-fire
+          test -s /tmp/genesis-unity-fire/SmallFlame01-mini_16x4.exr
+          test -s /tmp/genesis-unity-fire/SmallFlame01-mini_16x4.tga
+          sha256sum /tmp/genesis-unity-fire/SmallFlame01-mini_16x4.*
+          echo 'License: CC0. Source: https://unity.com/blog/engine-platform/free-vfx-image-sequences-flipbooks'
+      - name: Install Blender Foundation official 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-blender --strip-components=1
+          /tmp/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render actual original V12B sword with independent 0 60 100 intensity Fire VFX
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v18
+          /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v18_v12b_fuego_v06_flow_cycles.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/genesis-v18 --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --flame-exr /tmp/genesis-unity-fire/SmallFlame01-mini_16x4.exr --flame-tga /tmp/genesis-unity-fire/SmallFlame01-mini_16x4.tga --samples 96
+          test -s /tmp/genesis-v18/V03_Blender_Cycles_HDRI32_Hero.png
+          test -s /tmp/genesis-v18/V03_Blender_Cycles_HDRI32_TresCuartos.png
+          test -s /tmp/genesis-v18/V03_V175_HDRI32_Detalle_Filo.png
+          test -s /tmp/genesis-v18/render_audit.json
+          test -s /tmp/genesis-v18/lighting_profile.json
+          for f in Fuego_V06_025_V12B_Hero Fuego_V06_050_V12B_Hero Fuego_V06_060_V12B_Hero Fuego_V06_060_V12B_Detalle_Filo Fuego_V06_075_V12B_Hero Fuego_V06_100_V12B_Hero; do
+            test -s "/tmp/genesis-v18/${f}.png"
+          done
+          test -s /tmp/genesis-v18/fuego_v06_fluid_real_v12b_audit.json
+      - name: Validate exact V175 material, 96-bit/channel total RGB HDRI, source identity and camera proof
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, struct
+          p=pathlib.Path('/tmp/genesis-v18')
+          a=json.loads((p/'render_audit.json').read_text())
+          light=json.loads((p/'lighting_profile.json').read_text())
+          assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['hdri_sha256']=='bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558'
+          assert a['hdri_image_depth_bpp']==96
+          assert a['hdri_dimensions']==[4096,2048]
+          assert a['geometry_triangles']==2150 and not a['geometry_or_material_edit']
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert any('Iron_Blade_V175' in m for m in a['original_materials'])
+          assert len(a['renders'])==3 and a['effects_present'] is False
+          assert light['hdri']['bits_per_channel']==32 and light['visual_approval']=='pending'
+          for r in a['renders']:
+            data=(p/r['file']).read_bytes()
+            assert len(data)>70000 and data[:8]==b'\x89PNG\r\n\x1a\n'
+            width,height=struct.unpack_from('>II',data,16)
+            assert (width,height)==(1200,1500)
+          b=json.loads((p/'fuego_v06_fluid_real_v12b_audit.json').read_text())
+          preset=json.loads(pathlib.Path('presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json').read_text())
+          assert preset['visual_status']=='approved_by_user'
+          assert b['original_sword_GLBSHA256']==a['source_sha256']
+          assert b['blade_triangles']==98 and b['full_sword_triangles']==2150
+          assert b['actual_blade_surface_sampled']['blade_sampled_sections']>120
+          assert b['original_GLB_geometry_modified'] is False
+          assert b['original_PBR_blade_color_modified'] is False
+          assert b['halo_thickness_scale_vs_v17']==.40
+          assert b['lateral_waviness_scale_vs_v17']==.40
+          assert b['width_reduction_vs_v17_percent']==60
+          assert b['roughness_multiplier_V12B']==.34 and b['oxide_roughness_V12B']==.10
+          assert b['hdri_rgb_bits_per_channel']==32 and b['hdri_sha256']==preset['lighting']['hdri_sha256']
+          assert b['concept_or_imagegen_used'] is False
+          assert b['flame_source_license'].startswith('Unity Labs Paris CC0')
+          assert b['actual_blade_surface_sampled']['flame_atlas_tiles']==[16,4]
+          assert b['actual_blade_surface_sampled']['no_point_lights_or_round_blobs'] is True
+          assert all(e['ribbons']['original_flipbook_frames']==64 for e in b['fire_segments'])
+          assert all(e['ribbons']['flame_tongues']==4 for e in b['fire_segments'])
+          assert all(e['ribbons']['intensity_is_continuous_and_clamped'] is True for e in b['fire_segments'])
+          assert b['actual_blade_surface_sampled']['no_short_repetitive_fire_cards'] is True
+          assert b['flame_original_exr_sha256'] and b['flame_original_tga_sha256']
+          assert len(b['rendered_files'])==7 and len(b['fire_segments'])==6
+          assert [z['intensity'] for z in b['rendered_files']]==[0,25,50,60,60,75,100]
+          assert b['intensity_behavior']['range']==[0,100]
+          assert b['intensity_behavior']['zero_has_no_geometry'] is True
+          assert b['intensity_behavior']['no_thresholded_lanes'] is True
+          assert all(e['ribbons']['intensity_scalar']==e['intensity'] for e in b['fire_segments'])
+          for item in b['rendered_files']:
+            data=(p/item['file']).read_bytes()
+            assert len(data)>70000 and data[:8]==b'\x89PNG\r\n\x1a\n'
+            assert struct.unpack_from('>II',data,16)==(1200,1500)
+          print('GENESIS_V18_FUEGO_V06_FLUID_0_100_V12B_VERIFIED',b['actual_blade_surface_sampled'])
+          PY
+      - name: Generate mobile JPEGs directly with Pillow (no apt ffmpeg dependency)
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/genesis-v18-pillow
+          /tmp/genesis-v18-pillow/bin/python -m pip install --quiet pillow
+          /tmp/genesis-v18-pillow/bin/python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          folder=Path('/tmp/genesis-v18')
+          names=['V12_V175_Color_J_Rugosidad034_Hero',
+                 'Fuego_V06_025_V12B_Hero',
+                 'Fuego_V06_050_V12B_Hero',
+                 'Fuego_V06_060_V12B_Hero',
+                 'Fuego_V06_060_V12B_Detalle_Filo',
+                 'Fuego_V06_075_V12B_Hero',
+                 'Fuego_V06_100_V12B_Hero']
+          for name in names:
+              src=folder/(name+'.png')
+              dst=folder/(name+'_preview.jpg')
+              assert src.exists(),src
+              with Image.open(src) as im:
+                  rgb=im.convert('RGB')
+                  rgb.resize((600,750),Image.Resampling.LANCZOS).save(dst,'JPEG',quality=88,optimize=True)
+              assert dst.stat().st_size>10000,dst
+              print('GENESIS_REAL_RENDER_MOBILE_PREVIEW',name,dst.stat().st_size)
+          PY
+      - name: Stage rendered PNG and JSON ONLY - no original model or EXR released
+        run: |
+          set -euo pipefail
+          mkdir -p public-previews/espada-v03-v175-v12b-fuego-v06-v18
+          cp /tmp/genesis-v18/V12_V175_Color_J_Rugosidad034_Hero.png public-previews/espada-v03-v175-v12b-fuego-v06-v18/
+          cp /tmp/genesis-v18/Fuego_*.png public-previews/espada-v03-v175-v12b-fuego-v06-v18/
+          cp /tmp/genesis-v18/*_preview.jpg public-previews/espada-v03-v175-v12b-fuego-v06-v18/
+          cp /tmp/genesis-v18/fuego_v06_fluid_real_v12b_audit.json public-previews/espada-v03-v175-v12b-fuego-v06-v18/
+
+          test "$(find public-previews/espada-v03-v175-v12b-fuego-v06-v18 -name '*.png' | wc -l)" -eq 7
+          ! find public-previews/espada-v03-v175-v12b-fuego-v06-v18 -type f \( -iname '*.glb' -o -iname '*.exr' -o -iname '*.blend' \) | grep -q .
+      - name: Publish experimental master render for visual review (not main)
+        run: |
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105
+          git checkout -B experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105 FETCH_HEAD
+          git add public-previews/espada-v03-v175-v12b-fuego-v06-v18/
+          if git diff --cached --quiet; then
+            echo 'Gallery already published'
+          else
+            git commit -m 'preview(v18): 60-percent-thinner real V12B flame, CC0 Cycles HDRI32'
+            git push origin HEAD:experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105
+          fi
+      - name: Remove temporary original licensed model and HDRI from runner
+        if: always()
+        run: |
+          rm -f /tmp/genesis-original-v03.glb /tmp/studio_small_09_4k.exr
+          rm -rf /tmp/genesis-unity-fire
