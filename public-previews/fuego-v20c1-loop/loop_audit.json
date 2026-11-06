@@ -1,0 +1,29 @@
+{
+  "schema": "Genesis_V20C1_RealWebGL24FPS_SeamCrossfade",
+  "sourceShaderUnmodified": true,
+  "sourceModelUnmodified": true,
+  "fps": 24,
+  "loopFrames": 72,
+  "overlapFrames": 12,
+  "note": "Crossfades real source time 3.0-3.5s to real source time 0-0.5s in FIRST 12 output frames. The preceding frame is t=2.958s, then frame 0 matches t=3.0s. No synthetic interpolation between game states.",
+  "modes": [
+    {
+      "mode": "Fuego_060",
+      "oldSeamMeanAbsRGB": 5.070589564038912,
+      "correctedSeamMeanAbsRGB": 0.4946916647842808,
+      "firstTransitionMeanAbsRGB": 0.5219486484451502,
+      "handoffMeanAbsRGB": 0.23303968074693013,
+      "unchangedMidpointMeanAbsRGB": 0,
+      "relativeSeamImprovement": 0.9024390243902446
+    },
+    {
+      "mode": "Fuego_100",
+      "oldSeamMeanAbsRGB": 10.070438972968896,
+      "correctedSeamMeanAbsRGB": 1.0105037271289774,
+      "firstTransitionMeanAbsRGB": 1.0228521948648348,
+      "handoffMeanAbsRGB": 0.4151795798509186,
+      "unchangedMidpointMeanAbsRGB": 0,
+      "relativeSeamImprovement": 0.8996564370390034
+    }
+  ]
+}
