@@ -67,7 +67,7 @@ def main():
   bw=arm.matrix_world@pb.matrix
   ob=sockets[name]
   imported_socket_distance[name]=round((ob.matrix_world.translation-bw.translation).length,5)
-  target=bw@Matrix.Translation((0,.06,0))
+  target=bw@Matrix.Translation((0,6.0,0))
   ob.parent=None
   ob.matrix_world=target
   bpy.context.view_layer.update()
