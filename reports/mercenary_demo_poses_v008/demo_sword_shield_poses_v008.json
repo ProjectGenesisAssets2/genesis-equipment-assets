@@ -1,0 +1,29 @@
+{
+  "status": "V008_PROTOTYPE_ANIMATIONS_BUILT_NOT_GAME_TESTED",
+  "source_sha256": "39abc0750132e4ac2056dc8227269d4e769599b5dea743ea95faf6a5e27110f8",
+  "output_sha256": "867a3729ab01306ac014cf5153b0d0c11b3017f478b1cc57e06e4195f6f50c63",
+  "original_animation_count": 10,
+  "new_animation_count": 2,
+  "total_animation_count": 12,
+  "new_clips": [
+    {
+      "name": "GENESIS_SWORD_SHIELD_IDLE_V008",
+      "duration_sec": 2.0,
+      "frames": 41,
+      "channels": 72,
+      "in_place": true
+    },
+    {
+      "name": "GENESIS_SWORD_SHIELD_WALK_V008",
+      "duration_sec": 1.2,
+      "frames": 37,
+      "channels": 72,
+      "in_place": true
+    }
+  ],
+  "mesh_skin_material_texture_data_unchanged": true,
+  "finger_bones_added": false,
+  "shield_asset_baked_or_replaced": false,
+  "in_place_walk_not_yet_tested_in_playcanvas": true,
+  "human_visual_approved": false
+}

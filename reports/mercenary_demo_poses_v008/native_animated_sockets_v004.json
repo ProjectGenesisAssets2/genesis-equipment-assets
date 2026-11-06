@@ -1,0 +1,81 @@
+{
+  "status": "PASS_ALL_TEN_ANIMATED_SOCKETS",
+  "rig_sha256": "39abc0750132e4ac2056dc8227269d4e769599b5dea743ea95faf6a5e27110f8",
+  "animations": [
+    {
+      "clip": "Idle_02",
+      "duration_sec": 1.867,
+      "right_socket_motion_m": 0.0245,
+      "left_socket_motion_m": 0.0183,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Agree_Gesture",
+      "duration_sec": 13.0,
+      "right_socket_motion_m": 0.7687,
+      "left_socket_motion_m": 0.646,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Talk_Passionately",
+      "duration_sec": 10.267,
+      "right_socket_motion_m": 0.4152,
+      "left_socket_motion_m": 0.4314,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Stand_Talking_Angry",
+      "duration_sec": 20.8,
+      "right_socket_motion_m": 0.5381,
+      "left_socket_motion_m": 0.4957,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Victory_Fist_Pump",
+      "duration_sec": 1.5,
+      "right_socket_motion_m": 0.148,
+      "left_socket_motion_m": 0.2481,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Hand_on_Hip_Gesture",
+      "duration_sec": 5.0,
+      "right_socket_motion_m": 0.2629,
+      "left_socket_motion_m": 0.552,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Angry_Stomp",
+      "duration_sec": 8.0,
+      "right_socket_motion_m": 0.6577,
+      "left_socket_motion_m": 0.5058,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Finger_Wag_No",
+      "duration_sec": 5.0,
+      "right_socket_motion_m": 0.6103,
+      "left_socket_motion_m": 0.1324,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "Formal_Bow",
+      "duration_sec": 7.667,
+      "right_socket_motion_m": 0.177,
+      "left_socket_motion_m": 0.1946,
+      "all_four_samples_follow_bones_exactly": true
+    },
+    {
+      "clip": "victory",
+      "duration_sec": 8.533,
+      "right_socket_motion_m": 0.7738,
+      "left_socket_motion_m": 0.7559,
+      "all_four_samples_follow_bones_exactly": true
+    }
+  ],
+  "right_joint": "RightHand",
+  "left_joint": "LeftHand",
+  "offset_m": 0.06,
+  "all_clips_follow_skeletal_joints": true,
+  "game_playcanvas_not_yet_tested": true
+}
