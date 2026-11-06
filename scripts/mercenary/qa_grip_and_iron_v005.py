@@ -48,23 +48,23 @@ def render_v005(output,person,sword,hand,blade_meshes):
     Specular is produced by actual light reflection; no Photoshop/relighting the sword albedo.
     """
     scene=bpy.context.scene
-    scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.cycles.samples=64
+    scene.render.engine='CYCLES';scene.cycles.device='CPU';scene.cycles.samples=72
     scene.render.resolution_percentage=100
     scene.render.image_settings.file_format='PNG'
     scene.view_settings.view_transform='AgX'
     scene.view_settings.look='AgX - Medium High Contrast'
-    scene.view_settings.exposure=.05
+    scene.view_settings.exposure=-.32
     all_actors=ms(person)+ms(sword)
-    pmin,pmax=bnd(ms(person));char_center=(pmin+pmax)*.5
+    pmin,pmax=bnd(all_actors);char_center=(pmin+pmax)*.5
     char_height=(pmax-pmin).z
     bmin,bmax=bnd(blade_meshes);blade_center=(bmin+bmax)*.5
     # A neutral frontal softbox + a thin vertical highlight reveal the approved
     # V175 metal. They add lighting, never replace its albedo, normals or roughness.
-    lamp('V005_CHARACTER_KEY',char_center+Vector((-2.0,-2.2,2.1)),char_center,135,2.7,3.0)
-    lamp('V005_CHARACTER_RIM',char_center+Vector((1.7,1.6,1.9)),char_center,100,2.1,2.8)
-    lamp('V005_IRON_LARGE_REFLECTION',blade_center+Vector((-.48,-1.04,1.15)),blade_center,250,1.45,2.2)
-    lamp('V005_IRON_FINE_HIGHLIGHT',blade_center+Vector((.62,-.9,.53)),blade_center,185,.23,2.0)
-    lamp('V005_IRON_LOWER_FILL',blade_center+Vector((-.4,-1.0,-.2)),blade_center,68,1.1,1.1)
+    lamp('V005_CHARACTER_KEY',char_center+Vector((-2.0,-2.2,2.1)),char_center,90,2.7,3.0)
+    lamp('V005_CHARACTER_RIM',char_center+Vector((1.7,1.6,1.9)),char_center,48,2.1,2.8)
+    lamp('V005_IRON_LARGE_REFLECTION',blade_center+Vector((-.48,-1.04,1.15)),blade_center,78,1.45,2.2)
+    lamp('V005_IRON_FINE_HIGHLIGHT',blade_center+Vector((.62,-.9,.53)),blade_center,46,.23,2.0)
+    lamp('V005_IRON_LOWER_FILL',blade_center+Vector((-.4,-1.0,-.2)),blade_center,20,1.1,1.1)
     def frame(name,location,target,height,width=1220,rows=1520):
         cam=bpy.data.objects.new('CAM_V005_'+name,bpy.data.cameras.new('CAM_V005_'+name))
         bpy.context.scene.collection.objects.link(cam);scene.camera=cam
@@ -79,8 +79,8 @@ def render_v005(output,person,sword,hand,blade_meshes):
         return {'name':dest.name,'bytes':dest.stat().st_size,'sha256':sha(dest)}
     views=[]
     scene.frame_set(1);bpy.context.view_layer.update()
-    views.append(frame('V005_01_tres_cuartos_espada_metal',char_center+Vector((.72,-1,.19)).normalized()*char_height*2.8,char_center,char_height*1.10))
-    views.append(frame('V005_02_frente_espada_metal',char_center+Vector((0,-1,.10)).normalized()*char_height*2.8,char_center,char_height*1.10))
+    views.append(frame('V005_01_tres_cuartos_espada_metal',char_center+Vector((.72,-1,.19)).normalized()*char_height*2.8,char_center,char_height*1.15,1400,1400))
+    views.append(frame('V005_02_frente_espada_metal',char_center+Vector((0,-1,.10)).normalized()*char_height*2.8,char_center,char_height*1.15,1400,1400))
     grip_target=hand+Vector((0,-.03,-.08))
     views.append(frame('V005_03_detalle_agarre_real',grip_target+Vector((.72,-1,.30)).normalized()*2.3,grip_target,.76,1320,1080))
     blade_target=blade_center
