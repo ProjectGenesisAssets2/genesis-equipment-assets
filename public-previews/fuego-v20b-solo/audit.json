@@ -1,0 +1,139 @@
+{
+  "schema": "Genesis_V20B_OrganicSurfaceFlameTongues_Experimental",
+  "status": {
+    "fuego": "V20B EXPERIMENT, NOT APPROVED",
+    "otherAffinities": "NOT ENABLED"
+  },
+  "originalSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source": {
+    "originalLoaded": true,
+    "sourceSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "triangles": 2150,
+    "meshes": 2,
+    "materials": [
+      "DefaultMaterial",
+      "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+    ],
+    "fuegoSpec": {
+      "id": "Genesis_Fuego_V20B_Organico",
+      "approved": false,
+      "range": [
+        0,
+        100
+      ],
+      "placements": "two cutting edges + two inner heat veins on real sword",
+      "visualTarget": "V18 V06 Blender flame thin envelope, flowing orange warm body; V20B WebGL runtime approximation, not Cycles",
+      "haloWidthScaleVsLegacyWebGLV01": 0.4,
+      "haloWidthReductionPercent": 60,
+      "shaderVersion": "V20B_Organic_ThinPlusInteriorTongues",
+      "isolatedTest": true,
+      "reversible": true,
+      "baseSwordUntouched": true,
+      "animated": true,
+      "metalUnchanged": true,
+      "sourceV03Preserved": true,
+      "shader": "fragmentGLSL",
+      "notATextureMask": true
+    },
+    "fireTriangles": 2208,
+    "fireVeins": {
+      "ribbons": 4,
+      "segments": 220,
+      "haloWidthScale": 0.4,
+      "haloWidthReductionPercent": 60,
+      "animated": true,
+      "soloEffect": true,
+      "geomWidths": [
+        0.0044,
+        0.0044,
+        0.004,
+        0.004
+      ],
+      "flameTongues": 14,
+      "tongueTriangles": 448,
+      "tonguePosition": "front face inside edge bands, outside orbit reserved for Rayo",
+      "triangles": 2208,
+      "bladeOnly": true,
+      "intensityRange": [
+        0,
+        100
+      ],
+      "yStart": -0.38,
+      "yEnd": 0.865,
+      "material": "Untitled",
+      "depthTest": true
+    },
+    "rayoTriangles": 0,
+    "soleEffect": "Fuego",
+    "sourceGLBEdited": false,
+    "bloom": true,
+    "fireStandalone": true,
+    "composable": true
+  },
+  "originalGeometryUntouched": true,
+  "originalV175PBRUntouched": true,
+  "modules": [
+    "vfx/experimental/Genesis_Fuego_V20B_Organico.mjs"
+  ],
+  "otherEffectsPresent": false,
+  "shaderTimeIndependent": true,
+  "visualReference": "V18 V06 Blender Cycles HDRI 32 bit; V20B WebGL preview uses matching thin silhouette, separate non-HDRI lighting",
+  "flameIsApproximationOfBlenderV18": true,
+  "notIdenticalToCyclesV12B": true,
+  "sameCameraAndLightingAsV19": true,
+  "realPlayCanvasWebGL2": true,
+  "fps": 12,
+  "framesPerMode": 24,
+  "samples": [
+    {
+      "mode": "Fuego_025",
+      "fire": 25,
+      "ray": 0,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego_050",
+      "fire": 50,
+      "ray": 0,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego_060",
+      "fire": 60,
+      "ray": 0,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego_075",
+      "fire": 75,
+      "ray": 0,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego_100",
+      "fire": 100,
+      "ray": 0,
+      "frames": 24
+    }
+  ],
+  "checks": {
+    "noEffectBackground": 54.799400000000006,
+    "untouchedBlade": 64.2848,
+    "fire60": {
+      "warm": 8940,
+      "blue": 0,
+      "changed": 4288
+    },
+    "fire100": {
+      "warm": 28603,
+      "blue": 0,
+      "changed": 13374
+    },
+    "fire25": {
+      "warm": 3115,
+      "blue": 0,
+      "changed": 2574
+    }
+  },
+  "errors": []
+}
