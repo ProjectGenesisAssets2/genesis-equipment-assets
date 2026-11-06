@@ -41,7 +41,7 @@ function set(time,fire,ray){
  return {time,fire:f,ray:r,source:'V03 original + V175, preview lighting V19 (not identical to Cycles V12B)'};
 }
 function loadSword(){
- app.assets.loadFromUrlAndFilename('/tests/fire-rayo-v19/source_original_v03.glb','Genesis_original_V03.glb','container',(err,asset)=>{
+ app.assets.loadFromUrlAndFilename('/tests/fire-ray-v19/source_original_v03.glb','Genesis_original_V03.glb','container',(err,asset)=>{
   if(err){window.__genesisError=String(err);console.error('GENESIS_V19_SOURCE_ERROR',err);return;}
   const e=asset.resource.instantiateRenderEntity();e.name='ORIGINAL_SOURCE_V03_UNMODIFIED';app.root.addChild(e);
   let meshes=0,tris=0,bladeAabb=null;const materials=[];
