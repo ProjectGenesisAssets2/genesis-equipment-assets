@@ -29,11 +29,22 @@ jobs:
           python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v20-original.glb
           echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v20-original.glb' | sha256sum -c
           cp /tmp/genesis-v20-original.glb tests/fuego-v20/source_original_v03.glb
-      - name: Install PlayCanvas, Playwright and ffmpeg
+      - name: Install PlayCanvas and Chromium headless shell
+        timeout-minutes: 5
         run: |
-          npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
-          npx playwright install chromium
-          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+          timeout 180s npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          timeout 120s npx playwright install chromium --only-shell
+      - name: Install stand-alone ffmpeg binary (avoid apt-get dependency)
+        timeout-minutes: 3
+        run: |
+          set -e
+          if ! command -v ffmpeg >/dev/null; then
+            python3 -m venv /tmp/genesis-ffmpeg-venv
+            /tmp/genesis-ffmpeg-venv/bin/pip install --disable-pip-version-check --quiet imageio-ffmpeg==0.6.0
+            mkdir -p /tmp/genesis-ffmpeg-bin
+            ln -s "$(/tmp/genesis-ffmpeg-venv/bin/python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')" /tmp/genesis-ffmpeg-bin/ffmpeg
+            echo /tmp/genesis-ffmpeg-bin >> "$GITHUB_PATH"
+          fi
       - name: Serve original sword and standalone V20 fire
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v20-http.log 2>&1 &
