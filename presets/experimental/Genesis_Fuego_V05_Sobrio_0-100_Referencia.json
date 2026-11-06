@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "id": "Genesis_Fuego_V05_Sobrio_Fluido_0_100",
+  "status": "experimental_pending_user_visual_approval",
+  "source": {
+    "original_sword": "Genesis_Espada_V03_Hierro_V175_V12B",
+    "glb_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "approved_base_preset": "presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json",
+    "geometry_and_original_pbr_untouched": true,
+    "blade_real_triangles": 98
+  },
+  "style": {
+    "user_reference": "2026-11-05 user-supplied vertical medieval sword with continuous elegant curved and entwined translucent orange flames",
+    "render_target": "subtle realistic medieval PBR, fluid long S curling fire veils rising around blade, actual iron remains protagonist",
+    "avoid": [
+      "repetitive short sparks",
+      "white lines",
+      "glowing orange circles",
+      "large pyrotechnic fire"
+    ],
+    "max_count_of_continuous_wisps": 4
+  },
+  "flame_source": {
+    "provider": "Unity Labs Paris",
+    "license": "CC0",
+    "file": "SmallFlame01-mini-flipbooks.zip",
+    "archive_sha256": "a9585630cdfa568849f82b62fe1dac93045012f90963cc21ee909cceaa23953e",
+    "texture": "SmallFlame01-mini_16x4.tga",
+    "texture_sha256": "99a3ccc79d94cb71b87f6a7ae1fee0578ad132701f76f5bec86f3253b4cf34db",
+    "atlas": [
+      16,
+      4
+    ],
+    "frames": 64,
+    "exr_decoding_note": "Original Unity Labs EXR frames were downloaded/hashed but Blender 4.5.13 did not decode that variant; uses original CC0 RGBA TGA for VFX. HDRI lighting remains original 32bpc EXR."
+  },
+  "engine": {
+    "blender": "4.5.13 LTS",
+    "render": "Cycles",
+    "samples": 96,
+    "hdri": "studio_small_09_4k.exr",
+    "hdri_32bpc_RGB": true,
+    "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "intensity": {
+    "min": 0,
+    "max": 100,
+    "type": "continuous clamped float",
+    "at_zero": "no VFX geometry; original V12B",
+    "at_nonzero": "same 4 serpentine translucent fire streams, no threshold transitions",
+    "opacity_formula": "(0.13 + 0.76 * (intensity / 100)^1.30) * sourceCC0_alpha_noise * geometric soft taper",
+    "width_formula": "0.029 + 0.037 * (intensity / 100)",
+    "phase_amplitude_formula": "0.078 + 0.039 * (intensity / 100)",
+    "flow_time_seconds": "continuous frame-time driven sine displacement plus asynchronous CC0 source frame selection",
+    "comparison_renders": [
+      0,
+      25,
+      50,
+      60,
+      75,
+      100
+    ]
+  },
+  "implementation": {
+    "script": "scripts/fab_sword/render_v17_v12b_fuego_v05_flow_cycles.py",
+    "gallery": "public-previews/espada-v03-v175-v12b-fuego-v05-v17/README.md",
+    "validated_playcanvas_glsl": false,
+    "integrated_main": false,
+    "prior_version": "V16 CC0 SmallFlame repeated separate flames, rejected visual"
+  },
+  "approval": {
+    "base_v12b_approved": true,
+    "fire_v05_approved": false,
+    "requires_visual_rating_at_least": 8
+  }
+}
