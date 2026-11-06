@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Assert V07 approved GLSL remains unchanged
-        run: python3 tests/fire-ray-v19/check_rayo_approved.py
+        run: python3 tests/fire-rayo-v08/check_rayo_approved.py
       - name: Recover exact original V03 GLB locally and validate
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -32,14 +32,14 @@ jobs:
           if ! command -v ffmpeg >/dev/null; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
       - name: Serve original sword and modular VFX
         run: |
-          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v08-http.log 2>&1 &
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v19-http.log 2>&1 &
           sleep 2
           curl -fsS -o /dev/null http://127.0.0.1:8765/tests/fire-ray-v19/
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/fire-ray-v19/source_original_v03.glb)" = 200
-      - name: Render five fire-only and fire-ray samples in real PlayCanvas WebGL2
+      - name: Render six fire-only and fire-ray samples in real PlayCanvas WebGL2
         run: |
           set -o pipefail
-          node tests/fire-ray-v19/record.cjs | tee /tmp/genesis-v08-browser.log
+          node tests/fire-ray-v19/record.cjs | tee /tmp/genesis-v19-browser.log
           test "$(find fire-ray-v19-output -maxdepth 1 -name '*_frame_*.png' | wc -l)" -eq 144
           test -s fire-ray-v19-output/audit.json
           test -s fire-ray-v19-output/Proof_Fuego_060.png
