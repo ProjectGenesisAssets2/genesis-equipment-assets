@@ -11,7 +11,7 @@ const {PNG}=require('pngjs');
  page.on('pageerror',e=>{errors.push(String(e));console.error('GENESIS_V20_PAGE_ERROR',e.stack||e.message)});
  page.on('console',m=>{if(m.type()==='error'){errors.push(m.text());console.error('GENESIS_V20_BROWSER_ERROR',m.text())}else if(m.text().includes('GENESIS_V20'))console.log(m.text())});
  page.on('requestfailed',r=>{errors.push(r.url());console.error('GENESIS_V20_NETWORK_ERROR',r.url(),r.failure()?.errorText)});
- await page.goto('http://127.0.0.1:8765/tests/fire-ray-v20/',{waitUntil:'domcontentloaded',timeout:90000});
+ await page.goto('http://127.0.0.1:8765/tests/fuego-v20/',{waitUntil:'domcontentloaded',timeout:90000});
  await page.waitForFunction(()=>window.__genesisReady||window.__genesisError,null,{timeout:120000});
  const init=await page.evaluate(()=>window.__genesisReady||window.__genesisError);
  if(!init||init.originalLoaded!==true||init.triangles!==2150||init.meshes!==2||
