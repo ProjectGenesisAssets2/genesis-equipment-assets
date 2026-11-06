@@ -1,0 +1,157 @@
+{
+  "status": "V015_CC0_QUATERNIUS_REAL_CYCLES_POSE_QA_PENDING_HUMAN_VISUAL_APPROVAL",
+  "target_original_bones": 24,
+  "total_actions": 15,
+  "real_cc0_animation_clips": [
+    "Sword_Idle",
+    "Walk_Loop",
+    "Sword_Attack",
+    "Jog_Fwd_Loop"
+  ],
+  "authentic_original_sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "metal_v175_v12b": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "sword_length_m": 0.8925,
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "sword_attached_to_real_bone_socket": true,
+  "no_placeholder_shield": true,
+  "approved_shield_model_mounted": false,
+  "game_tested": false,
+  "human_visual_approved": false,
+  "renders": [
+    {
+      "image": "V015_02_cc0_sword_idle_combat_forward.png",
+      "bytes": 1513460,
+      "sha256": "f19bd9b5f0843afca529c2bd07eaeecd1eacf1c515f980a42d4582cd26dfd2a4",
+      "clip": "GENESIS_CC0_SWORD_STANDING_IDLE_V015",
+      "frame": 0,
+      "sword_variant": "combat_forward",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.18,
+        -0.68,
+        0.71
+      ],
+      "socket_relative_matrix": [
+        [
+          -26.051300048828125,
+          -32.983619689941406,
+          14.993422508239746,
+          9.466253280639648
+        ],
+        [
+          7.884862422943115,
+          -23.18543243408203,
+          -37.304893493652344,
+          -20.413227081298828
+        ],
+        [
+          35.36313247680664,
+          -19.128738403320312,
+          19.363162994384766,
+          15.967325210571289
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V015_04_cc0_walk_sword_guard.png",
+      "bytes": 1550091,
+      "sha256": "35fa2b708197fc2efbb360f12d646a15fc847be988a8219db234b359afc2a00f",
+      "clip": "GENESIS_CC0_WALK_SWORD_GUARD_V015",
+      "frame": 8,
+      "sword_variant": "combat_forward",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.18,
+        -0.68,
+        0.71
+      ],
+      "socket_relative_matrix": [
+        [
+          -26.051300048828125,
+          -32.983619689941406,
+          14.993422508239746,
+          9.466253280639648
+        ],
+        [
+          7.884862422943115,
+          -23.18543243408203,
+          -37.304893493652344,
+          -20.413227081298828
+        ],
+        [
+          35.36313247680664,
+          -19.128738403320312,
+          19.363162994384766,
+          15.967325210571289
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V015_06_cc0_sword_attack.png",
+      "bytes": 1565821,
+      "sha256": "d546b7e3098b68bb9ca17dd9c045bf279c553d27b939a13b84515a329bfc3207",
+      "clip": "GENESIS_CC0_SWORD_ATTACK_V015",
+      "frame": 17,
+      "sword_variant": "combat_forward",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.18,
+        -0.68,
+        0.71
+      ],
+      "socket_relative_matrix": [
+        [
+          -26.051300048828125,
+          -32.983619689941406,
+          14.993422508239746,
+          9.466253280639648
+        ],
+        [
+          7.884862422943115,
+          -23.18543243408203,
+          -37.304893493652344,
+          -20.413227081298828
+        ],
+        [
+          35.36313247680664,
+          -19.128738403320312,
+          19.363162994384766,
+          15.967325210571289
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ]
+}
