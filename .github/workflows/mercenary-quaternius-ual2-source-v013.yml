@@ -1,0 +1,70 @@
+name: Genesis | V013 Quaternius UAL2 CC0 real shield sword motion audit
+on:
+  push:
+    branches: [experiment/mercenary-quaternius-ual2-shield-v013]
+    paths:
+      - .github/workflows/mercenary-quaternius-ual2-source-v013.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch actual 2026 Quaternius Universal Animation Library 2 CC0 GLB
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v013 reports/mercenary_ual2_v013
+          curl -fSL --retry 4 --max-time 180 \
+            'https://raw.githubusercontent.com/Barbatos6669/elderforge/main/assets/animations/universal_animation_library_2/UAL2_Standard.glb' \
+            -o /tmp/genesis-v013/UAL2_Standard_CC0.glb
+          test "$(wc -c </tmp/genesis-v013/UAL2_Standard_CC0.glb)" -gt 7000000
+          curl -fSL --retry 3 --max-time 60 \
+            'https://raw.githubusercontent.com/Barbatos6669/elderforge/main/assets/animations/README.md' \
+            -o reports/mercenary_ual2_v013/SOURCE_ANIMATION_CREDITS.md
+          sha256sum /tmp/genesis-v013/UAL2_Standard_CC0.glb | tee reports/mercenary_ual2_v013/UAL2_SOURCE_SHA256.txt
+      - name: Restore existing 24-bone mercenary sockets without changing character
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 180 -A 'ProjectGenesis-Asset-Review/1.0' \
+            'https://vibeassets.io/download/9h7odik5fl' -o /tmp/genesis-v013/meshy_cc0.glb
+          python3 scripts/mercenary/build_socket_rig_v004.py \
+            --source /tmp/genesis-v013/meshy_cc0.glb --out /tmp/genesis-v013
+      - name: Audit real UAL2 rig compatibility and list all sword/shield animation clips
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/audit_quaternius_cc0_v012.py \
+            --character /tmp/genesis-v013/mercenary_meshy_cc0_rig_sockets_v004.glb \
+            --source /tmp/genesis-v013/UAL2_Standard_CC0.glb \
+            --out reports/mercenary_ual2_v013/UAL2_SOURCE_AUDIT.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('reports/mercenary_ual2_v013/UAL2_SOURCE_AUDIT.json').read_text())
+          s=x['quaternius']
+          assert x['mercenary']['skin_joint_count']==24
+          assert s['animations_total']>=40
+          names=s['animation_name_index']
+          print('UAL2_EXACT_CLIPS',names)
+          assert any('Shield' in c for c in names)
+          assert any('Sword' in c for c in names)
+          PY
+      - name: Commit small UAL2 source audit only, no uncontrolled substitution in main
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/mercenary_ual2_v013
+          git diff --cached --quiet || git commit -m 'UAL2 CC0 real sword and shield animations audit; preserve approved game'
+          git fetch origin experiment/mercenary-quaternius-ual2-shield-v013
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-quaternius-ual2-shield-v013
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: genesis-v013-quaternius-real-shield-animation-audit
+          path: reports/mercenary_ual2_v013
+          if-no-files-found: warn
+          retention-days: 7
