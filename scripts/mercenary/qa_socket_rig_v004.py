@@ -5,6 +5,7 @@ Shield geometry deliberately NOT replaced by the previous placeholder.
 import sys,hashlib,json,math,argparse
 from pathlib import Path
 import bpy
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 from mathutils import Matrix,Vector
 from mercy_v12b_captures_v003 import impt,ms,bnd,surface_v12b,lighting,photo,sha
 
