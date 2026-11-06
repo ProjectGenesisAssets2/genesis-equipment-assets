@@ -1,0 +1,68 @@
+name: Genesis | V011 package real Cycles 12-frame motion previews
+on:
+  push:
+    branches: [experiment/demo-sword-shield-v011-animated-review]
+    paths: [.github/workflows/mercenary-motion-v011-package-existing.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve the 12 ACTUAL Blender renders from preceding V011 Actions run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v011-frames
+          curl -fSL --retry 3 --max-time 240 \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/13536863173/zip" \
+            -o /tmp/genesis_v011_frames.zip
+          unzip -q /tmp/genesis_v011_frames.zip -d /tmp/genesis-v011-frames
+          test "$(find /tmp/genesis-v011-frames -name 'V011_WALK_*.png' | wc -l)" -eq 12
+          test -s /tmp/genesis-v011-frames/POSE_QA_V011.json
+      - name: Install self-contained FFmpeg and Pillow (Ubuntu runner has no ffmpeg by default)
+        run: python3 -m pip install --disable-pip-version-check imageio-ffmpeg==0.6.0 Pillow==11.3.0
+      - name: Make real-frame enlarged H264 MP4 and GIF
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary-motion-v011
+          python3 - <<'PY'
+          from PIL import Image
+          import imageio_ffmpeg,subprocess
+          from pathlib import Path
+          root=Path('/tmp/genesis-v011-frames')
+          dst=Path('output/mercenary-motion-v011')
+          imgs=[]
+          for i in range(12):
+            src=root/('V011_WALK_%02d.png'%i)
+            frame=Image.open(src).convert('RGB')
+            assert frame.size==(800,800),frame.size
+            frame=frame.crop((166,130,567,764)).resize((802,1268),Image.Resampling.LANCZOS)
+            frame.save(dst/('V011_FRAME_%02d.png'%i),optimize=True)
+            imgs.append(frame.resize((640,1012),Image.Resampling.LANCZOS).quantize(colors=224,method=Image.Quantize.MEDIANCUT))
+          gif=dst/'V011_walk_sword_shield_Cycles_real.gif'
+          imgs[0].save(gif,save_all=True,append_images=imgs[1:],duration=100,loop=0,optimize=True,disposal=2)
+          movie=dst/'V011_walk_sword_shield_Cycles_real.mp4'
+          exe=imageio_ffmpeg.get_ffmpeg_exe()
+          subprocess.run([exe,'-hide_banner','-loglevel','error','-y','-framerate','10',
+            '-start_number','0','-i',str(dst/'V011_FRAME_%02d.png'),
+            '-c:v','libx264','-preset','medium','-crf','18','-pix_fmt','yuv420p',
+            '-movflags','+faststart',str(movie)],check=True)
+          assert gif.stat().st_size>100000 and movie.stat().st_size>100000
+          print('EXACT_BLENDER_FRAMES_ASSEMBLED',gif.stat().st_size,movie.stat().st_size)
+          PY
+          rm output/mercenary-motion-v011/V011_FRAME_*.png
+      - name: Upload motion previews without licensed source sword file
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v011-actual-blender-walk-video-gif
+          path: output/mercenary-motion-v011
+          if-no-files-found: error
+          retention-days: 7
