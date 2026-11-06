@@ -4,7 +4,7 @@ const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
 const {PNG}=require('pngjs');
 (async()=>{
- const root='affinidades-v21-output';fs.mkdirSync(root,{recursive:true});
+ const root='afinidades-v21-output';fs.mkdirSync(root,{recursive:true});
  const fps=24,loopFrames=40,overlapFrames=8,frames=loopFrames+overlapFrames;
  const modes=['hielo','luz','sombra','naturaleza','tierra'];
  const browser=await chromium.launch({headless:true,args:[
