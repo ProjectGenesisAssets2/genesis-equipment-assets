@@ -1,6 +1,6 @@
 // V21 seamless previews: real PlayCanvas frames with crossfade at the last/first seam.
 const {PNG}=require('pngjs'),fs=require('fs'),path=require('path');
-const folder='affinidades-v21-output',frames=40,overlap=8;
+const folder='afinidades-v21-output',frames=40,overlap=8;
 const modes=['hielo','luz','sombra','naturaleza','tierra'];
 const frame=(id,type,n)=>path.join(folder,id+'_'+type+'_frame_'+String(n).padStart(3,'0')+'.png');
 function read(id,n){return PNG.sync.read(fs.readFileSync(frame(id,'source',n)));}
