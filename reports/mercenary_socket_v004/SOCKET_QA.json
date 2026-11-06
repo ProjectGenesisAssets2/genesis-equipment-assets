@@ -1,0 +1,138 @@
+{
+  "status": "V004_EXPERIMENTAL_SOCKET_QA",
+  "avatar": "Meshy CC0 candidate unapproved",
+  "source_socket_glb_sha256": "39abc0750132e4ac2056dc8227269d4e769599b5dea743ea95faf6a5e27110f8",
+  "source_sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "sword": "V03 V175 V12B authentic original",
+  "sword_material": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "shield": "approved shield model not present in this public QA runner; left-hand socket tested structurally",
+  "bones": 24,
+  "animation_action_count": 10,
+  "wrist_to_socket_m": {
+    "GENESIS_SOCKET_WEAPON_R": 0.06,
+    "GENESIS_SOCKET_SHIELD_L": 0.06
+  },
+  "blender_importer_joint_child_offset_m": {
+    "GENESIS_SOCKET_WEAPON_R": 21.22611,
+    "GENESIS_SOCKET_SHIELD_L": 21.58296
+  },
+  "palm_mesh_centroids": {
+    "right": {
+      "skinned_vertices": 519,
+      "palm_centroid_distance_m": 0.0491
+    },
+    "left": {
+      "skinned_vertices": 516,
+      "palm_centroid_distance_m": 0.0596
+    }
+  },
+  "socket_world_positions": {
+    "right_rest": [
+      -0.3663463592529297,
+      -0.15075111389160156,
+      1.316899299621582
+    ],
+    "left_rest": [
+      0.34503817558288574,
+      0.003975391387939453,
+      1.1236495971679688
+    ]
+  },
+  "socket_names": [
+    "GENESIS_SOCKET_WEAPON_R",
+    "GENESIS_SOCKET_SHIELD_L"
+  ],
+  "animated_clip_probes": [
+    {
+      "clip": "Agree_Gesture",
+      "right_socket_delta_m": 0.58754,
+      "left_socket_delta_m": 0.11135
+    },
+    {
+      "clip": "Angry_Stomp",
+      "right_socket_delta_m": 0.17041,
+      "left_socket_delta_m": 0.14169
+    },
+    {
+      "clip": "Finger_Wag_No",
+      "right_socket_delta_m": 0.63017,
+      "left_socket_delta_m": 0.14229
+    },
+    {
+      "clip": "Formal_Bow",
+      "right_socket_delta_m": 0.04796,
+      "left_socket_delta_m": 0.13054
+    },
+    {
+      "clip": "Hand_on_Hip_Gesture",
+      "right_socket_delta_m": 0.21925,
+      "left_socket_delta_m": 0.05818
+    },
+    {
+      "clip": "Idle_02",
+      "right_socket_delta_m": 0.0136,
+      "left_socket_delta_m": 0.01857
+    },
+    {
+      "clip": "Stand_Talking_Angry",
+      "right_socket_delta_m": 0.28781,
+      "left_socket_delta_m": 0.25506
+    },
+    {
+      "clip": "Talk_Passionately",
+      "right_socket_delta_m": 0.46791,
+      "left_socket_delta_m": 0.07731
+    },
+    {
+      "clip": "victory",
+      "right_socket_delta_m": 0.52833,
+      "left_socket_delta_m": 0.56756
+    },
+    {
+      "clip": "Victory_Fist_Pump",
+      "right_socket_delta_m": 0.04519,
+      "left_socket_delta_m": 0.03232
+    }
+  ],
+  "sword_parent_object": "GENESIS_SOCKET_WEAPON_R",
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "renders": [
+    {
+      "name": "frente_MERCENARIO_ESPADA_V12B_HDRI32.png",
+      "bytes": 975668,
+      "sha256": "dfe8ebcc44d80d69f7f5eadd0da841f733257acd2629f0bb21627a9645197add"
+    },
+    {
+      "name": "tres_cuartos_MERCENARIO_ESPADA_V12B_HDRI32.png",
+      "bytes": 971101,
+      "sha256": "b54330589c2604fde8a390dc64ac61512e41caab3f5360d97ab533779e959d87"
+    },
+    {
+      "name": "perfil_MERCENARIO_ESPADA_V12B_HDRI32.png",
+      "bytes": 950292,
+      "sha256": "52eb4d9c7f701648f5cd77d6b5a8d380737a569faa3c570915fdd11007452673"
+    },
+    {
+      "name": "posterior_MERCENARIO_ESPADA_V12B_HDRI32.png",
+      "bytes": 926476,
+      "sha256": "fbf8b96b50ff1177268ed722de880997edd52c801ed21ab04941faa78a9b76f9"
+    }
+  ],
+  "game_integrated": false,
+  "shader_visual_approved": true
+}
