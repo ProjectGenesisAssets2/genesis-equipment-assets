@@ -2,6 +2,8 @@ name: Genesis V18 - Fuego V06 elegante CC0 ondas fluidas V12B HDRI32
 on:
   push:
     branches: [experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105]
+  pull_request:
+    branches: [experiment/v17-fuego-elegante-fluido-referencia-20261105]
     paths:
       - 'scripts/fab_sword/render_v18_v12b_fuego_v06_flow_cycles.py'
       - 'presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json'
