@@ -1,0 +1,73 @@
+name: Genesis | V012 audit retarget Quaternius CC0 sword shield
+on:
+  push:
+    branches: [experiment/mercenary-quaternius-retarget-v012]
+    paths:
+      - scripts/mercenary/audit_quaternius_cc0_v012.py
+      - .github/workflows/mercenary-quaternius-audit-v012.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  source-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download real Quaternius Universal Animation Library CC0 (public redistribution)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/quaternius-v012 reports/mercenary-quaternius-v012
+          curl -fSL --retry 4 --max-time 180 \
+            'https://raw.githubusercontent.com/Seyamalam/blood-league-kickoff/main/public/assets/vendor/quaternius/universal-animation-library.glb' \
+            -o /tmp/quaternius-v012/quaternius-universal-animation-library.glb
+          curl -fSL --retry 3 --max-time 60 \
+            'https://raw.githubusercontent.com/Seyamalam/blood-league-kickoff/main/public/assets/vendor/quaternius/LICENSE-ANIMATIONS.txt' \
+            -o reports/mercenary-quaternius-v012/LICENSE-ANIMATIONS.txt
+          echo '4c748767741a3e495d89667b9a218b690ba9810b9517a12e960780e3ca72c4e9  /tmp/quaternius-v012/quaternius-universal-animation-library.glb' | sha256sum -c
+          grep -Eqi 'cc0|creative commons zero' reports/mercenary-quaternius-v012/LICENSE-ANIMATIONS.txt
+          test "$(wc -c </tmp/quaternius-v012/quaternius-universal-animation-library.glb)" -gt 2000000
+      - name: Get original animated Meshy rig and preserve the existing actual sockets
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 180 -A 'ProjectGenesis-Asset-Review/1.0' \
+            'https://vibeassets.io/download/9h7odik5fl' \
+            -o /tmp/quaternius-v012/source_meshy_cc0.glb
+          python3 scripts/mercenary/build_socket_rig_v004.py \
+            --source /tmp/quaternius-v012/source_meshy_cc0.glb \
+            --out /tmp/quaternius-v012
+          echo '39abc0750132e4ac2056dc8227269d4e769599b5dea743ea95faf6a5e27110f8  /tmp/quaternius-v012/mercenary_meshy_cc0_rig_sockets_v004.glb' | sha256sum -c
+      - name: Inspect full original target skeleton and real source animated GLB metadata
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/audit_quaternius_cc0_v012.py \
+            --character /tmp/quaternius-v012/mercenary_meshy_cc0_rig_sockets_v004.glb \
+            --source /tmp/quaternius-v012/quaternius-universal-animation-library.glb \
+            --out reports/mercenary-quaternius-v012/RETARGET_SOURCE_AUDIT.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('reports/mercenary-quaternius-v012/RETARGET_SOURCE_AUDIT.json').read_text())
+          assert r['mercenary']['skin_joint_count']==24
+          assert r['quaternius']['animations_total']>=100
+          assert len(r['quaternius']['relevant_clips'])>=10
+          assert r['retarget_required']
+          PY
+      - name: Commit only small audit JSON, metadata and license on experimental branch
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/mercenary-quaternius-v012
+          git diff --cached --quiet || git commit -m 'V012 audited CC0 animation source and Meshy 24-joint retarget mapping'
+          git fetch origin experiment/mercenary-quaternius-retarget-v012
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-quaternius-retarget-v012
+      - name: Upload audit (without source GLB until a retargeted asset is validated)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v012-quaternius-source-and-mercenary-audit
+          path: reports/mercenary-quaternius-v012
+          if-no-files-found: warn
+          retention-days: 7
