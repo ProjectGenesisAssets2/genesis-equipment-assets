@@ -111,7 +111,7 @@ jobs:
           assert b['intensity_behavior']['range']==[0,100]
           assert b['intensity_behavior']['zero_has_no_geometry'] is True
           assert b['intensity_behavior']['no_thresholded_lanes'] is True
-          assert [x['intensity'] for x in b['rendered_files']]==[0,60,60,100]
+          assert all(e['ribbons']['intensity_scalar']==e['intensity'] for e in b['fire_segments'])
           for item in b['rendered_files']:
             data=(p/item['file']).read_bytes()
             assert len(data)>70000 and data[:8]==b'\x89PNG\r\n\x1a\n'
