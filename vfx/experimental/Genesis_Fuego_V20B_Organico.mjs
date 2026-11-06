@@ -49,12 +49,39 @@ void main(void){
 }
 `;
 
+
+const tongueFragmentGLSL=`
+precision highp float;
+varying vec2 vUv;
+uniform float uTime;
+uniform float uIntensity;
+void main(void){
+ float power=clamp(uIntensity*.01,0.,1.);
+ if(power<=.0001) discard;
+ float v=clamp(vUv.x,0.,1.),u=vUv.y,t=uTime;
+ float curl=.11*sin(v*10.2-t*3.8+.45*sin(v*18.-t*2.2))*v;
+ float dist=abs(u-.5-curl);
+ float radius=.35*(1.-.35*v);
+ float edge=1.-smoothstep(radius*.30,radius,dist);
+ float root=smoothstep(.01,.13,v);
+ float tip=1.-smoothstep(.66,.99,v);
+ float flicker=.68+.32*smoothstep(-.45,.68,
+     .63*sin(v*18.-t*5.9)+.37*sin(v*38.-t*8.4+u*3.));
+ float alpha=clamp(power*.58*edge*root*tip*flicker,0.,.56);
+ if(alpha<.008)discard;
+ vec3 ember=vec3(1.23,.22,.018);
+ vec3 center=vec3(1.68,.74,.095);
+ vec3 color=mix(center,ember,smoothstep(.05,.95,v));
+ gl_FragColor=vec4(color*(.8+1.25*power),alpha);
+}
+`;
+
 export const FUEGO_V20B_SPEC={
  id:'Genesis_Fuego_V20B_Organico',approved:false,range:[0,100],
  placements:'two cutting edges + two inner heat veins on real sword',
  visualTarget:'V18 V06 Blender flame thin envelope, flowing orange warm body; V20B WebGL runtime approximation, not Cycles',
  haloWidthScaleVsLegacyWebGLV01:0.40,haloWidthReductionPercent:60,
- shaderVersion:'V20B_Organic_Thermal_RootToTip',isolatedTest:true,
+ shaderVersion:'V20B_Organic_ThinPlusInteriorTongues',isolatedTest:true,
  reversible:true,baseSwordUntouched:true,
  animated:true,metalUnchanged:true,sourceV03Preserved:true,
  shader:'fragmentGLSL',notATextureMask:true
@@ -116,6 +143,53 @@ export function createFuegoV20B(pc,app,bladeAabb){
  entity.addComponent('render',{meshInstances:[new pc.MeshInstance(mesh,material)],
     castShadows:false,receiveShadows:false});
  app.root.addChild(entity);
+ const tongueMaterial=new pc.ShaderMaterial({
+  uniqueName:'Genesis_Fuego_V20B_InteriorTongs',
+  attributes:{aPosition:pc.SEMANTIC_POSITION,aUv0:pc.SEMANTIC_TEXCOORD0},
+  vertexGLSL,fragmentGLSL:tongueFragmentGLSL
+ });
+ tongueMaterial.blendType=pc.BLEND_ADDITIVEALPHA;
+ tongueMaterial.cull=pc.CULLFACE_NONE;
+ tongueMaterial.depthTest=true;
+ tongueMaterial.depthWrite=false;
+ tongueMaterial.setParameter('uTime',0);
+ tongueMaterial.setParameter('uIntensity',0);
+ tongueMaterial.update();
+ const tonguesPerSide=7,tongueSteps=16;
+ const tonguePositions=[],tongueUvs=[],tongueIndices=[];
+ for(const side of [-1,1])for(let n=0;n<tonguesPerSide;n++){
+  const originIndex=tonguePositions.length/3;
+  const begin=.065+.116*n+(side<0?.012:0);
+  const tongueHeight=.14+.045*(.5+.5*Math.sin(n*2.4+side*.6));
+  for(let j=0;j<=tongueSteps;j++){
+   const q=j/tongueSteps;
+   const u=Math.min(.975,begin+tongueHeight*q);
+   const y=yStart+u*(yEnd-yStart);
+   const taper=1.0-.46*Math.pow(Math.max(0,(u-.76)/.24),1.45);
+   const edgeX=.060*taper;
+   // Fit inside edge bands: do not intrude on Rayo V07 exterior orbit.
+   const inward=.020+.0025*Math.sin(q*4.3+n*2.9);
+   const sway=.002*Math.sin(q*3.1+n*1.6+side*2.7);
+   const x=centreX+side*(edgeX-inward+sway);
+   const width=.0092*Math.pow(Math.max(0,Math.sin(Math.PI*q)),.40);
+   const z=centreZ+.081+.0008*Math.sin(q*5.8+n*1.2);
+   tonguePositions.push(x-width,y,z,x+width,y,z);
+   tongueUvs.push(q,0,q,1);
+   if(j<tongueSteps){
+    const k=originIndex+2*j;
+    tongueIndices.push(k,k+1,k+2,k+1,k+3,k+2);
+   }
+  }
+ }
+ const tongueMesh=new pc.Mesh(app.graphicsDevice);
+ tongueMesh.setPositions(tonguePositions);
+ tongueMesh.setUvs(0,tongueUvs);
+ tongueMesh.setIndices(tongueIndices);
+ tongueMesh.update();
+ const tongueEntity=new pc.Entity('GENESIS_FUEGO_V20B_BLADE_FACE_TONGUES');
+ tongueEntity.addComponent('render',{meshInstances:[new pc.MeshInstance(tongueMesh,tongueMaterial)],
+   castShadows:false,receiveShadows:false});
+ app.root.addChild(tongueEntity);
  const fireLight=new pc.Entity('GENESIS_FUEGO_V20B_HEAT_LIGHT');
  fireLight.addComponent('light',{type:'omni',color:new pc.Color(1,.30,.055),
     intensity:0,range:1.65,castShadows:false});
@@ -125,14 +199,19 @@ export function createFuegoV20B(pc,app,bladeAabb){
   const seconds=Math.max(0,Number(time)||0);
   material.setParameter('uTime',seconds);
   material.setParameter('uIntensity',value);
+  tongueMaterial.setParameter('uTime',seconds);
+  tongueMaterial.setParameter('uIntensity',value);
   fireLight.light.intensity=.18*(value/100)*(.78+.22*Math.sin(seconds*8.3)**2);
  }
  set(0,0);
  const stats={ribbons:ribbonSpecs.length,segments:steps,
   haloWidthScale:0.40,haloWidthReductionPercent:60,
   animated:true,soloEffect:true,geomWidths:ribbonSpecs.map(s=>s.width),
-  triangles:steps*2*ribbonSpecs.length,
+  flameTongues:2*tonguesPerSide,
+  tongueTriangles:tongueSteps*2*tonguesPerSide*2,
+  tonguePosition:'front face inside edge bands, outside orbit reserved for Rayo',
+  triangles:steps*2*ribbonSpecs.length+tongueSteps*2*tonguesPerSide*2,
   bladeOnly:true,intensityRange:[0,100],
   yStart,yEnd,material:material.name,depthTest:true};
- return {material,entity,light:fireLight,stats,set};
+ return {material,entity,tongueMaterial,tongueEntity,light:fireLight,stats,set};
 }
