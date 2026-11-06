@@ -2,7 +2,7 @@ const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
 const {PNG}=require('pngjs');
 (async()=>{
- const root='fire-rayo-v19-output';fs.mkdirSync(root,{recursive:true});
+ const root='fire-ray-v19-output';fs.mkdirSync(root,{recursive:true});
  const browser=await chromium.launch({headless:true,args:[
   '--enable-webgl','--use-angle=swiftshader','--ignore-gpu-blocklist','--enable-unsafe-swiftshader'
  ]});
@@ -11,7 +11,7 @@ const {PNG}=require('pngjs');
  page.on('pageerror',e=>{errors.push(String(e));console.error('GENESIS_V19_PAGE_ERROR',e.stack||e.message)});
  page.on('console',m=>{if(m.type()==='error'){errors.push(m.text());console.error('GENESIS_V19_BROWSER_ERROR',m.text())}else if(m.text().includes('GENESIS_V19'))console.log(m.text())});
  page.on('requestfailed',r=>{errors.push(r.url());console.error('GENESIS_V19_NETWORK_ERROR',r.url(),r.failure()?.errorText)});
- await page.goto('http://127.0.0.1:8765/tests/fire-rayo-v19/',{waitUntil:'domcontentloaded',timeout:90000});
+ await page.goto('http://127.0.0.1:8765/tests/fire-ray-v19/',{waitUntil:'domcontentloaded',timeout:90000});
  await page.waitForFunction(()=>window.__genesisReady||window.__genesisError,null,{timeout:120000});
  const init=await page.evaluate(()=>window.__genesisReady||window.__genesisError);
  if(!init||init.originalLoaded!==true||init.triangles!==2150||init.meshes!==2||
