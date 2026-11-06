@@ -1,0 +1,175 @@
+{
+  "schema": "Genesis_V19_ModularRayoApproved_ExperimentalFuegoAndCombined",
+  "status": {
+    "rayo": "V07 APPROVED VISUAL (not integrated)",
+    "fuego": "EXPERIMENT, NOT APPROVED",
+    "combinations": "EXPERIMENT, NOT APPROVED"
+  },
+  "originalSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "source": {
+    "originalLoaded": true,
+    "sourceSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "triangles": 2150,
+    "meshes": 2,
+    "materials": [
+      "DefaultMaterial",
+      "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+    ],
+    "rayoApproved": {
+      "id": "Genesis_Rayo_Helicoidal_V07",
+      "approvedVisual": true,
+      "source": "experiment/v07-rayo-ciclo-completo-10-vs-100-20261104",
+      "intensityMin": 0,
+      "intensityMax": 100,
+      "originalSwordSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+      "description": "3.15-turn 3D helical path, GLSL emissive travelling arcs; original geometry preserved"
+    },
+    "fuegoSpec": {
+      "id": "Genesis_Fuego_HaloFino_V18_WebGL",
+      "approved": false,
+      "range": [
+        0,
+        100
+      ],
+      "placements": "two cutting edges + two inner heat veins on real sword",
+      "visualTarget": "Blender V18 V06 halo 60 percent thinner than V17; real-time GLSL approximation only",
+      "haloWidthScaleVsLegacyWebGLV01": 0.4,
+      "haloWidthReductionPercent": 60,
+      "animated": true,
+      "metalUnchanged": true,
+      "sourceV03Preserved": true,
+      "shader": "fragmentGLSL",
+      "notATextureMask": true
+    },
+    "rayoTriangles": 1160,
+    "fireTriangles": 1760,
+    "rayoHelix": {
+      "turns": 3.15,
+      "segments": 580,
+      "triangles": 1160,
+      "depthTest": true,
+      "bladeHeight": 2.0000000053666396,
+      "radiusX": 0.063,
+      "radiusZ": 0.064,
+      "yStart": -0.37,
+      "yEnd": 0.8300000022271554,
+      "placementBasis": "original-v03-blade-visual-landmarks",
+      "sourceBladeBounds": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          0.3444870114326477,
+          1.0000000026833198,
+          0.061387243619883236
+        ]
+      }
+    },
+    "fireVeins": {
+      "ribbons": 4,
+      "segments": 220,
+      "haloWidthScale": 0.4,
+      "haloWidthReductionPercent": 60,
+      "geomWidths": [
+        0.0044,
+        0.0044,
+        0.004,
+        0.004
+      ],
+      "triangles": 1760,
+      "bladeOnly": true,
+      "intensityRange": [
+        0,
+        100
+      ],
+      "yStart": -0.38,
+      "yEnd": 0.865,
+      "material": "Untitled",
+      "depthTest": true
+    },
+    "sourceGLBEdited": false,
+    "bloom": true,
+    "fireStandalone": true,
+    "composable": true
+  },
+  "originalGeometryUntouched": true,
+  "originalV175PBRUntouched": true,
+  "modules": [
+    "vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs",
+    "vfx/experimental/Genesis_Fuego_HaloFino_V18_WebGL.mjs"
+  ],
+  "originalRayoShaderUnchanged": true,
+  "shaderTimeIndependent": true,
+  "visualReference": "V18 V06 Blender Cycles HDRI 32 bit; V19 WebGL preview uses matching thin silhouette, separate non-HDRI lighting",
+  "flameIsApproximationOfBlenderV18": true,
+  "notIdenticalToCyclesV12B": true,
+  "sameCameraAndLightingAsV07": true,
+  "realPlayCanvasWebGL2": true,
+  "fps": 12,
+  "framesPerMode": 24,
+  "samples": [
+    {
+      "mode": "Fuego_060",
+      "fire": 60,
+      "ray": 0,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego_100",
+      "fire": 100,
+      "ray": 0,
+      "frames": 24
+    },
+    {
+      "mode": "Rayo_060",
+      "fire": 0,
+      "ray": 60,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego060_Rayo060",
+      "fire": 60,
+      "ray": 60,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego025_Rayo080",
+      "fire": 25,
+      "ray": 80,
+      "frames": 24
+    },
+    {
+      "mode": "Fuego080_Rayo025",
+      "fire": 80,
+      "ray": 25,
+      "frames": 24
+    }
+  ],
+  "checks": {
+    "noEffectBackground": 54.799400000000006,
+    "untouchedBlade": 64.2848,
+    "fire60": {
+      "warm": 577,
+      "blue": 0,
+      "changed": 529
+    },
+    "fire100": {
+      "warm": 1097,
+      "blue": 0,
+      "changed": 927
+    },
+    "rayo60": {
+      "warm": 65,
+      "blue": 5922,
+      "changed": 4004
+    },
+    "combined60": {
+      "warm": 516,
+      "blue": 5832,
+      "changed": 4430
+    }
+  },
+  "errors": []
+}
