@@ -1,19 +1,19 @@
-// Project Genesis - Experimental contract V01. Design/validation only.
-// These are semantic bindings, not a claim that 7 runtime VFX have been implemented.
+// Project Genesis - Experimental contract V01. Design/validation plus V21 experimental sword prototypes (not a seven-channel-combination implementation).
+// Five new isolated shader candidates now exist for the sword only. Seven-way compositing not implemented.
 // Objects provide semantic anchors + masks. No material/base GLB modifications.
 export const CHANNELS=Object.freeze([
  {id:'rayo',space:'external-orbit',motion:'helical-arcs',reference:'Rayo V07 approved'},
- {id:'fuego',space:'surface-edge',motion:'ascending-tongues',reference:'Fuego V20 experimental'},
- {id:'hielo',space:'surface-crystal',motion:'growing-frost',reference:'pending'},
- {id:'luz',space:'surface-points',motion:'short-radiant-pulses',reference:'pending'},
- {id:'sombra',space:'surface-recess',motion:'low-opacity-wisps',reference:'pending'},
- {id:'naturaleza',space:'surface-filaments',motion:'branching-growth',reference:'pending'},
- {id:'tierra',space:'surface-seams',motion:'mineral-vibrations',reference:'pending'}
+ {id:'fuego',space:'surface-edge',motion:'ascending-tongues',reference:'Fuego V20C.1 approved visually for this sword'},
+ {id:'hielo',space:'surface-crystal',motion:'growing-frost',reference:'V21 independent sword candidate, not approved'},
+ {id:'luz',space:'surface-points',motion:'short-radiant-pulses',reference:'V21 independent sword candidate, not approved'},
+ {id:'sombra',space:'surface-recess',motion:'low-opacity-wisps',reference:'V21 independent sword candidate, not approved'},
+ {id:'naturaleza',space:'surface-filaments',motion:'branching-growth',reference:'V21 independent sword candidate, not approved'},
+ {id:'tierra',space:'surface-seams',motion:'mineral-vibrations',reference:'V21 independent sword candidate, not approved'}
 ]);
 export const FAMILIES=Object.freeze({
  sword:Object.freeze({
   rayo:'orbit_around_blade',fuego:'edge_microband',hielo:'blade_upper_facet',
-  luz:'pommel_highlights',sombra:'fuller_recess',naturaleza:'blade_minor_filaments',
+  luz:'guard_highlights',sombra:'fuller_recess',naturaleza:'blade_minor_filaments',
   tierra:'guard_seam'
  }),
  shield:Object.freeze({

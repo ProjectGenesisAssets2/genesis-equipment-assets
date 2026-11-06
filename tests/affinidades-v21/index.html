@@ -1,0 +1,47 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Genesis V21 · Cinco afinidades nuevas</title>
+<script type="importmap">{"imports":{"playcanvas":"/node_modules/playcanvas/build/playcanvas.mjs"}}</script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10151c;color:#e5d8ba;font-family:Georgia,serif}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.overlay{position:absolute;inset:0;pointer-events:none}
+.overlay:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 14%,rgba(3,8,15,.40) 100%)}
+.top{position:absolute;top:30px;left:40px}
+.logo{font:23px Georgia,serif;letter-spacing:4px}
+.sub{font:11px/2 Arial,sans-serif;letter-spacing:2.5px;color:#a8b4bf}
+.detail{position:absolute;right:44px;top:36px;font:11px/2 Arial,sans-serif;letter-spacing:1.7px;color:#b7c5d2;text-align:right}
+.heading{position:absolute;top:268px;left:48px;max-width:420px}
+.heading h1{font:36px Georgia,serif;margin:0 0 12px;color:#eacda9}
+.heading p{font:11px/1.9 Arial,sans-serif;letter-spacing:1.4px;color:#c0bdac;margin:0}
+.controls{position:absolute;top:255px;right:48px;width:236px;pointer-events:auto;font:12px Arial,sans-serif;color:#dbdfeb}
+.controls label{display:block;margin-bottom:7px;letter-spacing:1.3px}
+.controls select{width:100%;padding:9px;background:#26303c;border:1px solid #667580;color:#f3e5c7;font:14px Georgia,serif}
+.controls input{width:100%;accent-color:#c2a77b;margin-top:10px}
+.controls .readout{font:29px Georgia,serif;color:#f4e5bf;text-align:right;margin-bottom:12px}
+.controls .desc{font:11px/1.6 Arial,sans-serif;color:#9bb4c9;margin-top:16px}
+.bottom{position:absolute;left:45px;right:45px;bottom:31px;border-top:1px solid #91836855;padding-top:12px;display:flex;justify-content:space-between;font:10px Arial,sans-serif;letter-spacing:1.6px;color:#92a3b4}
+#status{position:absolute;bottom:80px;left:47px;font:12px Arial,sans-serif;color:#d6dae2}
+</style></head><body>
+<canvas id="viewport" width="1280" height="720"></canvas>
+<div class="overlay">
+ <div class="top"><div class="logo">PROJECT GENESIS</div><div class="sub">CINCO AFINIDADES · PRUEBAS INDIVIDUALES</div></div>
+ <div class="detail">ESPADA ORIGINAL V03<br>MATERIAL ORIGINAL V175<br>PLAYCANVAS WEBGL2 · V21 EXPERIMENTAL</div>
+ <div class="heading"><h1 id="sceneCaption">AFINIDAD HIELO</h1>
+ <p>HIELO · LUZ · SOMBRA · NATURALEZA · TIERRA<br>EFECTOS INDEPENDIENTES · SIN FUEGO NI RAYO<br>ESPADA Y MATERIAL ORIGINALES INTACTOS</p></div>
+ <div class="controls">
+ <label for="channelSelect">AFINIDAD</label>
+ <select id="channelSelect">
+ <option value="hielo">Hielo</option><option value="luz">Luz</option>
+ <option value="sombra">Sombra</option><option value="naturaleza">Naturaleza</option>
+ <option value="tierra">Tierra</option>
+ </select>
+ <div class="readout"><span id="levelValue">60</span> / 100</div>
+ <label for="intensitySlider">INTENSIDAD</label>
+ <input id="intensitySlider" type="range" min="0" max="100" value="60" step="1">
+ <div class="desc" id="channelInfo">Cristalización en la hoja.</div>
+ <div class="desc">V21 · demostración experimental, todavía no aprobada</div>
+ </div>
+ <div class="bottom"><span>GLB V03 Y HIERRO V175 ORIGINALES</span><span>5 AFINIDADES · BANDAS SEPARADAS · REVISIÓN PENDIENTE</span></div>
+ <div id="status">Cargando espada y shaders originales...</div>
+</div><script type="module" src="./scene.js"></script></body></html>

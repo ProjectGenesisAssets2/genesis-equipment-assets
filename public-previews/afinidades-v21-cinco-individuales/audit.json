@@ -1,0 +1,350 @@
+{
+  "schema": "Genesis_V21_FiveDistinctSwordAffinityPrototypes_ActualWebGL2",
+  "originalSwordSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "originalTriangles": 2150,
+  "originalMaterials": [
+    "DefaultMaterial",
+    "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+  ],
+  "originalModelPreserved": true,
+  "originalMaterialsPreserved": true,
+  "approvedLightningShaderUnchanged": true,
+  "approvedFireShaderUnchanged": true,
+  "independentOnly": true,
+  "otherObjectFamiliesAdapted": false,
+  "combinedSevenVerified": false,
+  "fps": 24,
+  "loopFrames": 40,
+  "overlapFrames": 8,
+  "frames": 48,
+  "modes": [
+    "hielo",
+    "luz",
+    "sombra",
+    "naturaleza",
+    "tierra"
+  ],
+  "captured": [
+    {
+      "channel": "hielo",
+      "fps": 24,
+      "frames": 48,
+      "loopFrames": 40,
+      "overlapFrames": 8,
+      "band": [
+        0.755,
+        0.925
+      ],
+      "triangles": 240
+    },
+    {
+      "channel": "luz",
+      "fps": 24,
+      "frames": 48,
+      "loopFrames": 40,
+      "overlapFrames": 8,
+      "band": [
+        0.015,
+        0.105
+      ],
+      "triangles": 168
+    },
+    {
+      "channel": "sombra",
+      "fps": 24,
+      "frames": 48,
+      "loopFrames": 40,
+      "overlapFrames": 8,
+      "band": [
+        0.535,
+        0.69
+      ],
+      "triangles": 216
+    },
+    {
+      "channel": "naturaleza",
+      "fps": 24,
+      "frames": 48,
+      "loopFrames": 40,
+      "overlapFrames": 8,
+      "band": [
+        0.315,
+        0.475
+      ],
+      "triangles": 264
+    },
+    {
+      "channel": "tierra",
+      "fps": 24,
+      "frames": 48,
+      "loopFrames": 40,
+      "overlapFrames": 8,
+      "band": [
+        0.145,
+        0.265
+      ],
+      "triangles": 240
+    }
+  ],
+  "zones": [
+    {
+      "id": "luz",
+      "band": [
+        0.015,
+        0.105
+      ],
+      "exclusiveWithinFive": true
+    },
+    {
+      "id": "tierra",
+      "band": [
+        0.145,
+        0.265
+      ],
+      "exclusiveWithinFive": true
+    },
+    {
+      "id": "naturaleza",
+      "band": [
+        0.315,
+        0.475
+      ],
+      "exclusiveWithinFive": true
+    },
+    {
+      "id": "sombra",
+      "band": [
+        0.535,
+        0.69
+      ],
+      "exclusiveWithinFive": true
+    },
+    {
+      "id": "hielo",
+      "band": [
+        0.755,
+        0.925
+      ],
+      "exclusiveWithinFive": true
+    }
+  ],
+  "stats": {
+    "hielo": {
+      "channel": "hielo",
+      "patches": 10,
+      "triangles": 240,
+      "zoneRange": [
+        0.755,
+        0.925
+      ],
+      "occupiedY": [
+        0.761523,
+        0.881773
+      ],
+      "maxAbsX": 0.03741453139915649,
+      "centerOnly": true,
+      "bladeFace": true,
+      "onlySwordPrototype": true,
+      "originalMeshEdited": false,
+      "originalMaterialEdited": false,
+      "otherFiveSpatiallySeparatedByBand": true,
+      "fireAndRayoCoexistenceTested": false,
+      "intensityRange": [
+        0,
+        100
+      ]
+    },
+    "luz": {
+      "channel": "luz",
+      "patches": 7,
+      "triangles": 168,
+      "zoneRange": [
+        0.015,
+        0.105
+      ],
+      "occupiedY": [
+        0.019156,
+        0.069087
+      ],
+      "maxAbsX": 0.036832993475811635,
+      "centerOnly": true,
+      "bladeFace": true,
+      "onlySwordPrototype": true,
+      "originalMeshEdited": false,
+      "originalMaterialEdited": false,
+      "otherFiveSpatiallySeparatedByBand": true,
+      "fireAndRayoCoexistenceTested": false,
+      "intensityRange": [
+        0,
+        100
+      ]
+    },
+    "sombra": {
+      "channel": "sombra",
+      "patches": 9,
+      "triangles": 216,
+      "zoneRange": [
+        0.535,
+        0.69
+      ],
+      "occupiedY": [
+        0.53725,
+        0.6476449999999999
+      ],
+      "maxAbsX": 0.037807651893308716,
+      "centerOnly": true,
+      "bladeFace": true,
+      "onlySwordPrototype": true,
+      "originalMeshEdited": false,
+      "originalMaterialEdited": false,
+      "otherFiveSpatiallySeparatedByBand": true,
+      "fireAndRayoCoexistenceTested": false,
+      "intensityRange": [
+        0,
+        100
+      ]
+    },
+    "naturaleza": {
+      "channel": "naturaleza",
+      "patches": 11,
+      "triangles": 264,
+      "zoneRange": [
+        0.315,
+        0.475
+      ],
+      "occupiedY": [
+        0.319812,
+        0.43376800000000004
+      ],
+      "maxAbsX": 0.037368176284784546,
+      "centerOnly": true,
+      "bladeFace": true,
+      "onlySwordPrototype": true,
+      "originalMeshEdited": false,
+      "originalMaterialEdited": false,
+      "otherFiveSpatiallySeparatedByBand": true,
+      "fireAndRayoCoexistenceTested": false,
+      "intensityRange": [
+        0,
+        100
+      ]
+    },
+    "tierra": {
+      "channel": "tierra",
+      "patches": 10,
+      "triangles": 240,
+      "zoneRange": [
+        0.145,
+        0.265
+      ],
+      "occupiedY": [
+        0.149864,
+        0.245406
+      ],
+      "maxAbsX": 0.035679412973327176,
+      "centerOnly": true,
+      "bladeFace": true,
+      "onlySwordPrototype": true,
+      "originalMeshEdited": false,
+      "originalMaterialEdited": false,
+      "otherFiveSpatiallySeparatedByBand": true,
+      "fireAndRayoCoexistenceTested": false,
+      "intensityRange": [
+        0,
+        100
+      ]
+    }
+  },
+  "visibility": {
+    "hielo": {
+      "at60": {
+        "changedPixels": 817,
+        "deltaSum": 97015
+      },
+      "at100": {
+        "changedPixels": 2032,
+        "deltaSum": 231234
+      }
+    },
+    "luz": {
+      "at60": {
+        "changedPixels": 281,
+        "deltaSum": 31966
+      },
+      "at100": {
+        "changedPixels": 491,
+        "deltaSum": 69436
+      }
+    },
+    "sombra": {
+      "at60": {
+        "changedPixels": 768,
+        "deltaSum": 55176
+      },
+      "at100": {
+        "changedPixels": 877,
+        "deltaSum": 114276
+      }
+    },
+    "naturaleza": {
+      "at60": {
+        "changedPixels": 723,
+        "deltaSum": 39066
+      },
+      "at100": {
+        "changedPixels": 943,
+        "deltaSum": 103035
+      }
+    },
+    "tierra": {
+      "at60": {
+        "changedPixels": 477,
+        "deltaSum": 32248
+      },
+      "at100": {
+        "changedPixels": 636,
+        "deltaSum": 74640
+      }
+    }
+  },
+  "errors": [],
+  "userVisualApproval": false,
+  "shaderStatus": "five experimental candidates only",
+  "loopChecks": [
+    {
+      "id": "hielo",
+      "oldSeamMAD": 0.0987422694739768,
+      "newSeamMAD": 0.012681537071780975,
+      "firstTransitionMAD": 0.014905149051490514,
+      "seamImprovementFraction": 0.8715693173821253
+    },
+    {
+      "id": "luz",
+      "oldSeamMAD": 0.007226738934056007,
+      "newSeamMAD": 0.008998679730387047,
+      "firstTransitionMAD": 0.009902022097144048,
+      "seamImprovementFraction": -0.2451923076923077
+    },
+    {
+      "id": "sombra",
+      "oldSeamMAD": 0.11809464248488638,
+      "newSeamMAD": 0.015183100548954208,
+      "firstTransitionMAD": 0.01719824890556598,
+      "seamImprovementFraction": 0.8714327743453957
+    },
+    {
+      "id": "naturaleza",
+      "oldSeamMAD": 0.24966993259676187,
+      "newSeamMAD": 0.03116531165311653,
+      "firstTransitionMAD": 0.03158223889931207,
+      "seamImprovementFraction": 0.8751739493459505
+    },
+    {
+      "id": "tierra",
+      "oldSeamMAD": 0.053992078382322284,
+      "newSeamMAD": 0.006358140504481968,
+      "firstTransitionMAD": 0.007643666180251546,
+      "seamImprovementFraction": 0.8822393822393823
+    }
+  ]
+}

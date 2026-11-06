@@ -1,0 +1,115 @@
+name: Genesis V21 - Hielo Luz Sombra Naturaleza Tierra independent WebGL
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v20c1-intensidades-008-035-069-20261106]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v21-five-affinities-sword
+  cancel-in-progress: true
+jobs:
+  visual-previews:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check sources, manifests and original approved effects
+        run: |
+          set -e
+          node --check vfx/experimental/Genesis_AffinitySurfaceCore_V21.mjs
+          for part in Genesis_Hielo_V21_Cristalizacion Genesis_Luz_V21_Destellos Genesis_Sombra_V21_Brumas Genesis_Naturaleza_V21_Filamentos Genesis_Tierra_V21_Mineral; do
+            node --check "vfx/experimental/${part}.mjs"
+          done
+          node --check tests/affinidades-v21/scene.js
+          node --check tests/affinidades-v21/record.cjs
+          node --check tests/affinidades-v21/stitch_loop.cjs
+          node tests/affinity-slots-v01/validate.mjs
+          node tests/affinidades-v21/validate.mjs
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+          test "$(git hash-object vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs)" = fc4a3722e7c07b33d034b6d1ead5504f480a6345
+      - name: Reconstruct exact V03 V175 original for tests only
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v21-source.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v21-source.glb' | sha256sum -c
+          cp /tmp/genesis-v21-source.glb tests/affinidades-v21/source_original_v03.glb
+      - name: Install WebGL2 PlayCanvas Chromium and FFmpeg
+        timeout-minutes: 6
+        run: |
+          set -e
+          timeout 180s npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          timeout 120s npx playwright install chromium --only-shell
+          if ! command -v ffmpeg >/dev/null; then
+            python3 -m venv /tmp/genesis-v21-ffmpeg-venv
+            /tmp/genesis-v21-ffmpeg-venv/bin/pip install --disable-pip-version-check --quiet imageio-ffmpeg==0.6.0
+            mkdir -p /tmp/genesis-v21-ffmpeg-bin
+            ln -s "$(/tmp/genesis-v21-ffmpeg-venv/bin/python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')" /tmp/genesis-v21-ffmpeg-bin/ffmpeg
+            echo /tmp/genesis-v21-ffmpeg-bin >> "$GITHUB_PATH"
+          fi
+      - name: Serve original V03 and five effects in PlayCanvas
+        run: |
+          set -e
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-v21-http.log 2>&1 &
+          sleep 2
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tests/affinidades-v21/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/affinidades-v21/source_original_v03.glb)" = 200
+      - name: Capture five distinct WebGL2 shaders 240 frames
+        timeout-minutes: 22
+        run: |
+          set -o pipefail
+          node tests/affinidades-v21/record.cjs | tee /tmp/genesis-v21-capture.log
+          test "$(find afinidades-v21-output -maxdepth 1 -name '*_source_frame_*.png' | wc -l)" -eq 240
+          test "$(find afinidades-v21-output -maxdepth 1 -name 'Proof_*_060.png' | wc -l)" -eq 5
+          test "$(find afinidades-v21-output -maxdepth 1 -name 'Proof_*_100.png' | wc -l)" -eq 5
+      - name: Smooth loops and inspect five seams
+        timeout-minutes: 6
+        run: |
+          set -e
+          node tests/affinidades-v21/stitch_loop.cjs
+          test "$(find afinidades-v21-output -maxdepth 1 -name '*_loop_frame_*.png' | wc -l)" -eq 200
+          test -s afinidades-v21-output/audit.json
+      - name: Encode 5 MP4 at 24 fps and 5 GIF at 20 fps
+        timeout-minutes: 8
+        run: |
+          set -e
+          cd afinidades-v21-output
+          for mode in hielo luz sombra naturaleza tierra; do
+            ffmpeg -y -loglevel error -framerate 24 -i "${mode}_loop_frame_%03d.png" -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart "${mode}_Loop24fps.mp4"
+            ffmpeg -y -loglevel error -i "${mode}_Loop24fps.mp4" -vf 'fps=20,scale=960:-1:flags=lanczos,palettegen' "${mode}_palette.png"
+            ffmpeg -y -loglevel error -i "${mode}_Loop24fps.mp4" -i "${mode}_palette.png" -lavfi 'fps=20,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 "${mode}_Loop20fps.gif"
+            test -s "${mode}_Loop24fps.mp4"
+            test -s "${mode}_Loop20fps.gif"
+          done
+      - name: Stage review outputs only (never GLB or masters)
+        run: |
+          set -e
+          mkdir -p public-previews/afinidades-v21-cinco-individuales
+          cp afinidades-v21-output/*.mp4 afinidades-v21-output/*.gif afinidades-v21-output/Proof_*.png afinidades-v21-output/audit.json public-previews/afinidades-v21-cinco-individuales/
+          test "$(find public-previews/afinidades-v21-cinco-individuales -maxdepth 1 -name '*.mp4' | wc -l)" -eq 5
+          test "$(find public-previews/afinidades-v21-cinco-individuales -maxdepth 1 -name '*.gif' | wc -l)" -eq 5
+          ! find public-previews/afinidades-v21-cinco-individuales -type f \( -iname '*.glb' -o -iname '*.blend' -o -iname '*.exr' \) | grep -q .
+      - name: Save artifacts for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V21-Cinco-Afinidades-Experimentales
+          path: public-previews/afinidades-v21-cinco-individuales/
+          retention-days: 14
+      - name: Publish only into experimental V21 branch
+        run: |
+          set -e
+          git config user.name 'Genesis Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v21-cinco-afinidades-individuales-20261106
+          git checkout -B experiment/v21-cinco-afinidades-individuales-20261106 FETCH_HEAD
+          git add public-previews/afinidades-v21-cinco-individuales/
+          if git diff --cached --quiet; then echo 'Previews already current'; else
+            git commit -m 'preview(v21): five individual real PlayCanvas shader animations'
+            git push origin HEAD:experiment/v21-cinco-afinidades-individuales-20261106
+          fi
+      - name: Cleanup restored source
+        if: always()
+        run: rm -f /tmp/genesis-v21-source.glb tests/affinidades-v21/source_original_v03.glb
