@@ -17,7 +17,7 @@ const {PNG}=require('pngjs');
  if(!init||init.originalLoaded!==true||init.triangles!==2150||init.meshes!==2||
    init.rayoTriangles!==0||init.soleEffect!=='Fuego'||
    init.fireTriangles!==824||init.fireVeins?.flameTongues!==8||init.fireVeins?.tongueTriangles!==384||init.fireVeins?.heatTriangles!==440||init.fireVeins?.outerElectricalOrbitAbsent!==true||init.fireVeins?.noLegacyLongRibbons!==true||init.fuegoSpec?.approved!==false||
-   init.fuegoSpec?.haloWidthScaleVsLegacyWebGLV01!==0.40||init.fireVeins?.haloWidthReductionPercent!==60||
+   init.fuegoSpec?.noElectricLines!==true||init.fuegoSpec?.noHelicalOrbit!==true||init.fireVeins?.heatOnBladeFace!==true||
    init.sourceGLBEdited!==false||init.bloom!==true)
    throw Error('GENESIS_V20C_SOURCE_OR_VFX_INVALID '+JSON.stringify(init));
  const cases=[
