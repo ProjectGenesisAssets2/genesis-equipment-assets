@@ -125,7 +125,7 @@ def main():
    key=(ch['target']['node'],ch['target']['path'])
    out[key]=(times,vals,interp)
    end=max(end,times[-1][0])
-  assert end>.2
+  assert end>.2 or name=='A_TPose'
   return out,end
  def interpolate(track,t,path):
   times,vals,mode=track
