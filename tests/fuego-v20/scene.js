@@ -39,7 +39,7 @@ function set(time,fire){
  return {time,fire:f,ray:0,sliderFire:Number(getElement('fireSlider').value),source:'GLB V03 original; PBR V175; V20 WebGL realtime lighting not identical to Blender V12B Cycles EXR'};
 }
 function loadSword(){
- app.assets.loadFromUrlAndFilename('/tests/fire-ray-v19/source_original_v03.glb','Genesis_original_V03.glb','container',(err,asset)=>{
+ app.assets.loadFromUrlAndFilename('/tests/fuego-v20/source_original_v03.glb','Genesis_original_V03.glb','container',(err,asset)=>{
   if(err){window.__genesisError=String(err);console.error('GENESIS_V20_SOURCE_ERROR',err);return;}
   const e=asset.resource.instantiateRenderEntity();e.name='ORIGINAL_SOURCE_V03_UNMODIFIED';app.root.addChild(e);
   let meshes=0,tris=0,bladeAabb=null;const materials=[];
