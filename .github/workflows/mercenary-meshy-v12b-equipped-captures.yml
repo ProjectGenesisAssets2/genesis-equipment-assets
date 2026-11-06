@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Recover EXACT protected original V03/V175 GLB temporarily; no public source export
         env:
-          GITHUB_TOKEN: \${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis_original_v03_v175.glb
