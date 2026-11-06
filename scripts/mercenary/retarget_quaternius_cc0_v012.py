@@ -79,13 +79,35 @@ def main():
  def accessor(g,binary,ix):
   key=(id(g),ix)
   if key in reader_cache:return reader_cache[key]
-  info=g['accessors'][ix];view=g['bufferViews'][info['bufferView']]
+  info=g['accessors'][ix]
   typ=info['type'];count={'SCALAR':1,'VEC3':3,'VEC4':4}.get(typ)
   assert count and info['componentType']==5126,(info,ix)
   fmt='<'+count*'f'
-  offset=view.get('byteOffset',0)+info.get('byteOffset',0)
-  stride=view.get('byteStride',4*count)
-  data=[struct.unpack_from(fmt,binary,offset+k*stride) for k in range(info['count'])]
+  # Quaternius CC0 GLB is sparse-optimized: many channels have NO base
+  # bufferView, only sparse keyframe overrides. Per glTF 2.0, absent base
+  # bufferView means a zero-filled accessor before sparse patches.
+  if 'bufferView' in info:
+   view=g['bufferViews'][info['bufferView']]
+   offset=view.get('byteOffset',0)+info.get('byteOffset',0)
+   stride=view.get('byteStride',4*count)
+   data=[struct.unpack_from(fmt,binary,offset+k*stride) for k in range(info['count'])]
+  else:
+   data=[tuple([0.0]*count) for _ in range(info['count'])]
+  if 'sparse' in info:
+   sp=info['sparse'];ind=sp['indices'];val=sp['values']
+   itype=ind['componentType'];icode={5121:'B',5123:'H',5125:'I'}.get(itype)
+   assert icode,(ix,itype)
+   iview=g['bufferViews'][ind['bufferView']]
+   vview=g['bufferViews'][val['bufferView']]
+   isize=struct.calcsize('<'+icode)
+   io=iview.get('byteOffset',0)+ind.get('byteOffset',0)
+   vo=vview.get('byteOffset',0)+val.get('byteOffset',0)
+   istride=iview.get('byteStride',isize)
+   vstride=vview.get('byteStride',4*count)
+   for k in range(sp['count']):
+    pos=struct.unpack_from('<'+icode,binary,io+k*istride)[0]
+    assert 0<=pos<info['count'],(ix,pos)
+    data[pos]=struct.unpack_from(fmt,binary,vo+k*vstride)
   reader_cache[key]=data
   return data
  source_animations={x['name']:x for x in src['animations']}
