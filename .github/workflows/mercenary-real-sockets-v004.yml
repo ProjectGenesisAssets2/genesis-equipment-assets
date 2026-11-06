@@ -5,6 +5,7 @@ on:
     paths:
       - scripts/mercenary/build_socket_rig_v004.py
       - scripts/mercenary/qa_socket_rig_v004.py
+      - scripts/mercenary/validate_native_sockets_v004.py
       - .github/workflows/mercenary-real-sockets-v004.yml
   workflow_dispatch:
 permissions:
@@ -34,6 +35,13 @@ jobs:
           set -euo pipefail
           mkdir -p output/mercenary_socket_v004
           python3 scripts/mercenary/build_socket_rig_v004.py --source /tmp/mercenary_input/meshy_captain_cc0.glb --out output/mercenary_socket_v004
+      - name: Check 10 animated clips against native GLB hand-joint hierarchy (not Blender importer)
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/validate_native_sockets_v004.py \
+            --rig output/mercenary_socket_v004/mercenary_meshy_cc0_rig_sockets_v004.glb \
+            --out output/mercenary_socket_v004/native_animated_sockets_v004.json
+          test -s output/mercenary_socket_v004/native_animated_sockets_v004.json
       - name: Install official Blender 4.5.13 LTS
         run: |
           set -euo pipefail
@@ -77,7 +85,7 @@ jobs:
             image=Image.open(p).convert('RGB')
             image.thumbnail((750,850),Image.Resampling.LANCZOS)
             image.save(out/(p.stem+'.jpg'),quality=89,optimize=True)
-          for name in ('rig_integrity_v004.json','SOCKET_QA.json'):
+          for name in ('rig_integrity_v004.json','SOCKET_QA.json','native_animated_sockets_v004.json'):
             shutil.copy2(src/name,out/name)
           assert len(list(out.glob('*.jpg')))==4
           PY
