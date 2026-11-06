@@ -51,12 +51,12 @@ jobs:
           sleep 2
           curl -fsS -o /dev/null http://127.0.0.1:8765/tests/fuego-v20c1/
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/fuego-v20c1/source_original_v03.glb)" = 200
-      - name: Capture 168 real WebGL frames at 24fps
+      - name: Capture 252 real WebGL frames at 24fps
         timeout-minutes: 18
         run: |
           set -o pipefail
           node tests/fuego-intensidades-008-035-069/record.cjs | tee /tmp/genesis-v20c1-browser.log
-          test "$(find fuego-v20c1-intensidades-output -maxdepth 1 -name '*_source_frame_*.png' | wc -l)" -eq 352
+          test "$(find fuego-v20c1-intensidades-output -maxdepth 1 -name '*_source_frame_*.png' | wc -l)" -eq 252
           test -s fuego-v20c1-intensidades-output/capture_audit.json
           test -s fuego-v20c1-intensidades-output/Proof_Fuego_008.png
           test -s fuego-v20c1-intensidades-output/Proof_Fuego_035.png
@@ -66,7 +66,7 @@ jobs:
         run: |
           set -o pipefail
           node tests/fuego-intensidades-008-035-069/assemble_loop.cjs | tee /tmp/genesis-v20c1-seam.log
-          test "$(find fuego-v20c1-intensidades-output -maxdepth 1 -name 'Fuego_*_frame_*.png' ! -name '*source*' | wc -l)" -eq 316
+          test "$(find fuego-v20c1-intensidades-output -maxdepth 1 -name 'Fuego_*_frame_*.png' ! -name '*source*' | wc -l)" -eq 216
           test -s fuego-v20c1-intensidades-output/loop_audit.json
       - name: Encode looped 24fps MP4 and 20fps GIF from real PlayCanvas screenshots
         timeout-minutes: 5
