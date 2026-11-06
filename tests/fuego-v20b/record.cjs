@@ -16,7 +16,7 @@ const {PNG}=require('pngjs');
  const init=await page.evaluate(()=>window.__genesisReady||window.__genesisError);
  if(!init||init.originalLoaded!==true||init.triangles!==2150||init.meshes!==2||
    init.rayoTriangles!==0||init.soleEffect!=='Fuego'||
-   init.fireTriangles!==1760||init.fuegoSpec?.approved!==false||
+   init.fireTriangles!==2208||init.fireVeins?.flameTongues!==14||init.fireVeins?.tongueTriangles!==448||init.fuegoSpec?.approved!==false||
    init.fuegoSpec?.haloWidthScaleVsLegacyWebGLV01!==0.40||init.fireVeins?.haloWidthReductionPercent!==60||
    init.sourceGLBEdited!==false||init.bloom!==true)
    throw Error('GENESIS_V20B_SOURCE_OR_VFX_INVALID '+JSON.stringify(init));
@@ -76,7 +76,7 @@ const {PNG}=require('pngjs');
   throw Error('FIRE_025_MUST_BE_LESS_THAN_100 '+JSON.stringify(checks));
  if(errors.length)throw Error('GENESIS_V20B_CONSOLE_ERRORS '+JSON.stringify(errors.slice(0,8)));
  const audit={
-  schema:'Genesis_V20B_StandaloneOrganicFire_Experimental',
+  schema:'Genesis_V20B_OrganicSurfaceFlameTongues_Experimental',
   status:{fuego:'V20B EXPERIMENT, NOT APPROVED',otherAffinities:'NOT ENABLED'},
   originalSha256:init.sourceSha256,source:init,
   originalGeometryUntouched:true,originalV175PBRUntouched:true,
