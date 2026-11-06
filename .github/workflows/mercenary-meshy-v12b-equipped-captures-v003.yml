@@ -1,0 +1,75 @@
+name: Genesis | Mercenario V003 V12B HDRI32 sockets and improved shield
+on:
+  push:
+    branches:
+      - experiment/mercenary-v12b-equipped-captures-v003-20261106
+    paths:
+      - scripts/mercenary/mercy_v12b_captures_v003.py
+      - .github/workflows/mercenary-meshy-v12b-equipped-captures-v003.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  captures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover EXACT protected original V03/V175 GLB temporarily; no public source export
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis_original_v03_v175.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_original_v03_v175.glb' | sha256sum -c
+      - name: Download Meshy CC0 candidate, current TEMP game shield and genuine 32-bit EXR HDRI
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mercenary_input
+          curl -fSL --retry 4 --max-time 180 -A 'ProjectGenesis-Asset-Review/1.0' 'https://vibeassets.io/download/9h7odik5fl' -o /tmp/mercenary_input/meshy_captain_cc0.glb
+          curl -fSL --retry 3 'https://raw.githubusercontent.com/gburdesedev/Project-genesis/main/assets/vendor/genesis/externals/mercShield10/src/shield_round.glb' -o /tmp/mercenary_input/shield_game_temporary.glb
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/mercenary_input/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/mercenary_input/studio_small_09_4k.exr' | sha256sum -c
+          python3 - <<'PY'
+          import pathlib,struct,json
+          for f in ('meshy_captain_cc0.glb','shield_game_temporary.glb'):
+              b=(pathlib.Path('/tmp/mercenary_input')/f).read_bytes()
+              assert b[:4]==b'glTF' and struct.unpack_from('<I',b,4)[0]==2
+              size,fmt=struct.unpack_from('<I4s',b,12)
+              assert fmt==b'JSON'
+              j=json.loads(b[20:20+size])
+              if f.startswith('meshy'): assert len(j.get('animations',[]))>=10 and len(j.get('skins',[]))>=1
+          print('Meshy candidate skins/animations and legacy shield verified')
+          PY
+      - name: Use official Blender 4.5.13 LTS, no apt fallback
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          sudo mkdir -p /opt/genesis-blender
+          sudo tar -xJf /tmp/blender-4.5.13.tar.xz -C /opt/genesis-blender --strip-components=1
+          /opt/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render actual rig plus exact original V12B iron preset and shield
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_real_v12b_32bit_v003
+          /opt/genesis-blender/blender -b -t 4 --python-exit-code 1 --python scripts/mercenary/mercy_v12b_captures_v003.py -- \
+             --mercenary /tmp/mercenary_input/meshy_captain_cc0.glb \
+             --sword /tmp/genesis_original_v03_v175.glb \
+             --shield /tmp/mercenary_input/shield_game_temporary.glb \
+             --hdri /tmp/mercenary_input/studio_small_09_4k.exr \
+             --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+             --out output/mercenary_real_v12b_32bit_v003
+          test -s output/mercenary_real_v12b_32bit_v003/VALIDATION.json
+          test "$(find output/mercenary_real_v12b_32bit_v003 -name '*.png' | wc -l)" -eq 4
+          ! find output -name '*.glb' -o -name '*.blend' | grep -q .
+      - name: Upload ONLY rendered PNGs and JSON audit, no original licensed source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-mercenary-actual-sword-v12b-hdri32-v003
+          path: output/mercenary_real_v12b_32bit_v003
+          if-no-files-found: warn
+          retention-days: 3
+      - name: Remove sources in runner
+        if: always()
+        run: rm -f /tmp/genesis_original_v03_v175.glb /tmp/mercenary_input/*.glb /tmp/mercenary_input/*.exr
