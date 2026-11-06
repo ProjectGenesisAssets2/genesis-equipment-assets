@@ -33,7 +33,7 @@ const {PNG}=require('pngjs');
   for(let i=0;i<frames;i++){
    const t=i/frames*2.75;
    const frame=await page.evaluate(q=>window.__genesisStep(q),{time:t,fire:cfg.fire,ray:cfg.ray});
-   if(!Number.isFinite(frame.time)||frame.fire!==cfg.fire||frame.ray!==cfg.ray)
+   if(!Number.isFinite(frame.time)||frame.fire!==cfg.fire||frame.ray!==cfg.ray||frame.sliderFire!==cfg.fire||frame.sliderRay!==cfg.ray)
     throw Error('GENESIS_V19_INVALID_FRAME_'+cfg.id+'_'+i+' '+JSON.stringify(frame));
    const name=cfg.id+'_frame_'+String(i).padStart(3,'0')+'.png';
    await page.screenshot({path:path.join(root,name),timeout:60000});
