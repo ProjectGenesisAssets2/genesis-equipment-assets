@@ -148,7 +148,7 @@ def main():
  'no_placeholder_shield':True,'approved_shield_model_mounted':False,
  'game_tested':False,'human_visual_approved':False,
  'renders':frames}
- (a.out/'POSE_QA_CC0_V012.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
- print('GENESIS_CC0_QUATERNIUS_REAL_RENDERS_V012',json.dumps({'images':len(frames),
+ (a.out/'POSE_QA_CC0_V013.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+ print('GENESIS_CC0_QUATERNIUS_REAL_RENDERS_V013',json.dumps({'images':len(frames),
    'bones':24,'actions':len(bpy.data.actions),'authentic_sword':sha(a.sword)}),flush=True)
 if __name__=='__main__':main()
