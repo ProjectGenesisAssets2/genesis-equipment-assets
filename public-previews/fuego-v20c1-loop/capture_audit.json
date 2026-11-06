@@ -1,0 +1,104 @@
+{
+  "schema": "Genesis_V20C1_LoopCapture_24fps_UnchangedShader",
+  "source": {
+    "originalLoaded": true,
+    "sourceSha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+    "triangles": 2150,
+    "meshes": 2,
+    "materials": [
+      "DefaultMaterial",
+      "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL"
+    ],
+    "fuegoSpec": {
+      "id": "Genesis_Fuego_V20C_CalorYFlamas",
+      "approved": false,
+      "range": [
+        0,
+        100
+      ],
+      "reference": "V20B SHA 51b8f30fa81a215b2ddf4f556946f7b92cabcde0",
+      "source": "sword V03 original + PBR V175; HDRI Cycles V18 is distinct reference",
+      "visualDesign": "Mottled temperature on blade surface + isolated short organic flames",
+      "noElectricLines": true,
+      "noHelicalOrbit": true,
+      "disjointFromRayoOrbitByIntent": true,
+      "needsActualSpatialAndVisualProof": true,
+      "standalone": true,
+      "baseSwordUntouched": true,
+      "baseMaterialsUntouched": true,
+      "playcanvasShader": "GLSL procedural FBM",
+      "usesImagegen": false,
+      "runtimeApproved": false
+    },
+    "fireTriangles": 824,
+    "fireVeins": {
+      "modelUnmodified": true,
+      "baseV175Unmodified": true,
+      "heatPatches": 1,
+      "hotSteps": 220,
+      "heatTriangles": 440,
+      "flameTongues": 8,
+      "tongueSteps": 24,
+      "tongueTriangles": 384,
+      "triangles": 824,
+      "heatOnBladeFace": true,
+      "outerElectricalOrbitAbsent": true,
+      "noLegacyLongRibbons": true,
+      "intensityRange": [
+        0,
+        100
+      ],
+      "yStart": -0.38,
+      "yEnd": 0.865,
+      "depthTest": true,
+      "heatFrontZ": 0.08,
+      "flamesFrontZ": 0.082
+    },
+    "rayoTriangles": 0,
+    "soleEffect": "Fuego",
+    "sourceGLBEdited": false,
+    "bloom": true,
+    "fireStandalone": true,
+    "composable": true
+  },
+  "visualStatus": "experimental_user_review_required",
+  "shaderApproved": false,
+  "shaderEdited": false,
+  "originalModelEdited": false,
+  "sourceEffect": "Genesis_Fuego_V20C_CalorYFlamas.mjs original SHA fc4a3722e7c07b33d034b6d1ead5504f480a6345",
+  "originalLoop": {
+    "sourceFrames": 24,
+    "shadersNonPeriodic": true,
+    "gifFps": 10,
+    "loopDiscontinuity": true
+  },
+  "improvedLoop": {
+    "fps": 24,
+    "loopFrames": 72,
+    "overlapFrames": 12,
+    "sourceFrames": 84,
+    "periodSeconds": 3,
+    "seamMethod": "crossfade source window [T,T+overlap] to [0,overlap] at beginning; last frame to first follows real WebGL temporal progression",
+    "noFrameInterpolationBetweenRealCaptures": true
+  },
+  "cases": [
+    {
+      "mode": "Fuego_060",
+      "intensity": 60,
+      "sourceFrames": 84,
+      "loopFrames": 72,
+      "overlapFrames": 12,
+      "fps": 24
+    },
+    {
+      "mode": "Fuego_100",
+      "intensity": 100,
+      "sourceFrames": 84,
+      "loopFrames": 72,
+      "overlapFrames": 12,
+      "fps": 24
+    }
+  ],
+  "changedPixelsAt60": 6045,
+  "errors": []
+}
