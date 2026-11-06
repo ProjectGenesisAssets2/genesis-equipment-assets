@@ -76,7 +76,7 @@ const {PNG}=require('pngjs');
   throw Error('FIRE_025_MUST_BE_LESS_THAN_100 '+JSON.stringify(checks));
  if(errors.length)throw Error('GENESIS_V20_CONSOLE_ERRORS '+JSON.stringify(errors.slice(0,8)));
  const audit={
-  schema:'Genesis_V20_ModularRayoApproved_ExperimentalFuegoAndCombined',
+  schema:'Genesis_V20_StandaloneOrganicFire_Experimental',
   status:{fuego:'V20 EXPERIMENT, NOT APPROVED',otherAffinities:'NOT ENABLED'},
   originalSha256:init.sourceSha256,source:init,
   originalGeometryUntouched:true,originalV175PBRUntouched:true,
