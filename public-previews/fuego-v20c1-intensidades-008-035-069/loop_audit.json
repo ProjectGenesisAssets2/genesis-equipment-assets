@@ -1,0 +1,38 @@
+{
+  "schema": "Genesis_V20C1_8_35_69_RealWebGL24FPS_SeamCrossfade",
+  "sourceShaderUnmodified": true,
+  "sourceModelUnmodified": true,
+  "fps": 24,
+  "loopFrames": 72,
+  "overlapFrames": 12,
+  "note": "Crossfades real source time 3.0-3.5s to real source time 0-0.5s in FIRST 12 output frames. The preceding frame is t=2.958s, then frame 0 matches t=3.0s. No synthetic interpolation between game states.",
+  "modes": [
+    {
+      "mode": "Fuego_008",
+      "oldSeamMeanAbsRGB": 0.3346886529628812,
+      "correctedSeamMeanAbsRGB": 0.025939311798810386,
+      "firstTransitionMeanAbsRGB": 0.04608086740456262,
+      "handoffMeanAbsRGB": 0.019840373465853503,
+      "unchangedMidpointMeanAbsRGB": 0,
+      "relativeSeamImprovement": 0.9224971878515188
+    },
+    {
+      "mode": "Fuego_035",
+      "oldSeamMeanAbsRGB": 2.3094646487463053,
+      "correctedSeamMeanAbsRGB": 0.2263760259016622,
+      "firstTransitionMeanAbsRGB": 0.23172200888487224,
+      "handoffMeanAbsRGB": 0.11369625781191262,
+      "unchangedMidpointMeanAbsRGB": 0,
+      "relativeSeamImprovement": 0.9019790036515386
+    },
+    {
+      "mode": "Fuego_069",
+      "oldSeamMeanAbsRGB": 6.1717867630450804,
+      "correctedSeamMeanAbsRGB": 0.6062419998494079,
+      "firstTransitionMeanAbsRGB": 0.6347037120698712,
+      "handoffMeanAbsRGB": 0.27497929372788277,
+      "unchangedMidpointMeanAbsRGB": 0,
+      "relativeSeamImprovement": 0.9017720437978489
+    }
+  ]
+}
