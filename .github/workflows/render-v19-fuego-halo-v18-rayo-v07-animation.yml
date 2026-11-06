@@ -1,7 +1,7 @@
 name: Genesis V19 - Fuego V18 halo fino animado + Rayo V07 approved WebGL
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
     branches: [experiment/v18-fuego-halo-60pct-mas-fino-v12b-20261105]
   workflow_dispatch:
 concurrency:
