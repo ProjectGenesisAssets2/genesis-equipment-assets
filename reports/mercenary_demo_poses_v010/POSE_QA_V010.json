@@ -1,0 +1,229 @@
+{
+  "status": "V010_REAL_CYCLES_POSE_QA_PASSED_PENDING_HUMAN_REVIEW",
+  "original_animations_intact": true,
+  "new_clips": [
+    "GENESIS_SWORD_SHIELD_IDLE_V010",
+    "GENESIS_SWORD_SHIELD_WALK_V010"
+  ],
+  "joint_count": 24,
+  "blender_action_count": 12,
+  "shield_hand_raised_vertical_m": 0.1049,
+  "shield_hand_advanced_forward_m": 0.244,
+  "feet_positions": [
+    {
+      "fraction": 0,
+      "left": [
+        0.2639661431312561,
+        -0.12659931182861328,
+        0.10864745825529099
+      ],
+      "right": [
+        -0.2400083690881729,
+        0.13580740988254547,
+        0.08496153354644775
+      ]
+    },
+    {
+      "fraction": 0.25,
+      "left": [
+        0.2745734751224518,
+        -0.012401142157614231,
+        0.10179145634174347
+      ],
+      "right": [
+        -0.23469340801239014,
+        -0.14070087671279907,
+        0.12023678421974182
+      ]
+    },
+    {
+      "fraction": 0.5,
+      "left": [
+        0.26530635356903076,
+        -0.1034589558839798,
+        0.10590427368879318
+      ],
+      "right": [
+        -0.24011370539665222,
+        0.11174014955759048,
+        0.08365433663129807
+      ]
+    },
+    {
+      "fraction": 0.75,
+      "left": [
+        0.2530292570590973,
+        -0.3860626518726349,
+        0.2004004269838333
+      ],
+      "right": [
+        -0.24646703898906708,
+        0.24765348434448242,
+        0.12132959812879562
+      ]
+    }
+  ],
+  "max_left_foot_travel_m": 0.2754,
+  "max_right_foot_travel_m": 0.2788,
+  "sword_original_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "character_generated_sha256": "512e5b578d257315ee01cc50613685218f72fdf6f5a407bf266b47ab7b7c2718",
+  "sword_length_m": 0.8925,
+  "sword_iron_material": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "approved_shield_model_mounted": false,
+  "no_placeholder_shield": true,
+  "finger_bones_added": false,
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "renders": [
+    {
+      "image": "V010_01_espada_escudo_idle_frente.png",
+      "bytes": 2495022,
+      "sha256": "e6aedf3dd542efbe9d93a76e0548ad89487c0c07dce943912241eb0ab5814ea7",
+      "pose": {
+        "clip": "GENESIS_SWORD_SHIELD_IDLE_V010",
+        "frame": 0,
+        "source_frame_range": [
+          0.0,
+          48.0
+        ]
+      },
+      "right_hand_world_m": [
+        -0.3655110001564026,
+        -0.089088074862957,
+        1.2721359729766846
+      ],
+      "left_hand_world_m": [
+        0.17522546648979187,
+        -0.229066863656044,
+        1.2872521877288818
+      ]
+    },
+    {
+      "image": "V010_02_espada_escudo_idle_3cuartos.png",
+      "bytes": 2610714,
+      "sha256": "e1025ebdc28173148eb97b7453c49bd5d1024390a50298d9f1a9042ccc918194",
+      "pose": {
+        "clip": "GENESIS_SWORD_SHIELD_IDLE_V010",
+        "frame": 17,
+        "source_frame_range": [
+          0.0,
+          48.0
+        ]
+      },
+      "right_hand_world_m": [
+        -0.3765091896057129,
+        -0.07821285724639893,
+        1.2514386177062988
+      ],
+      "left_hand_world_m": [
+        0.1674300581216812,
+        -0.2248186320066452,
+        1.2856152057647705
+      ]
+    },
+    {
+      "image": "V010_03_caminata_apoyo.png",
+      "bytes": 2645480,
+      "sha256": "3432289487ef2182161449cb498dcb33642b02b0bde6392e5a353dfac4d0ce2c",
+      "pose": {
+        "clip": "GENESIS_SWORD_SHIELD_WALK_V010",
+        "frame": 6,
+        "source_frame_range": [
+          0.0,
+          28.80000114440918
+        ]
+      },
+      "right_hand_world_m": [
+        -0.3643433153629303,
+        -0.08470318466424942,
+        1.2766588926315308
+      ],
+      "left_hand_world_m": [
+        0.17880111932754517,
+        -0.21103787422180176,
+        1.2912845611572266
+      ]
+    },
+    {
+      "image": "V010_04_caminata_paso.png",
+      "bytes": 2598353,
+      "sha256": "baac22347367403c4f346eecb67c2bb57c9673f440f4528fe8816fc61eef7323",
+      "pose": {
+        "clip": "GENESIS_SWORD_SHIELD_WALK_V010",
+        "frame": 20,
+        "source_frame_range": [
+          0.0,
+          28.80000114440918
+        ]
+      },
+      "right_hand_world_m": [
+        -0.3771922290325165,
+        -0.06657329201698303,
+        1.2615126371383667
+      ],
+      "left_hand_world_m": [
+        0.1671634316444397,
+        -0.23966768383979797,
+        1.294453501701355
+      ]
+    },
+    {
+      "image": "V010_05_agarre_espada_macro.png",
+      "bytes": 1712997,
+      "sha256": "697c991e18a39b80d79490bc905d711d5cfe80eed8e69e15e9ec59818a39b895"
+    }
+  ],
+  "playcanvas_runtime_tested": false,
+  "human_visual_approved": false,
+  "studio_floor_z_m": -0.035,
+  "foot_sole_world_min_samples": [
+    {
+      "pose": "GENESIS_SWORD_SHIELD_IDLE_V010",
+      "fraction": 0.0,
+      "left_min_z_m": -0.04052,
+      "right_min_z_m": -0.06355,
+      "left_vertices": 456,
+      "right_vertices": 378
+    },
+    {
+      "pose": "GENESIS_SWORD_SHIELD_IDLE_V010",
+      "fraction": 0.35,
+      "left_min_z_m": -0.0416,
+      "right_min_z_m": -0.0648,
+      "left_vertices": 456,
+      "right_vertices": 378
+    },
+    {
+      "pose": "GENESIS_SWORD_SHIELD_WALK_V010",
+      "fraction": 0.2,
+      "left_min_z_m": -0.04737,
+      "right_min_z_m": -0.03343,
+      "left_vertices": 456,
+      "right_vertices": 378
+    },
+    {
+      "pose": "GENESIS_SWORD_SHIELD_WALK_V010",
+      "fraction": 0.7,
+      "left_min_z_m": 0.04602,
+      "right_min_z_m": -0.03132,
+      "left_vertices": 456,
+      "right_vertices": 378
+    }
+  ],
+  "root_vertical_offset_m": -0.065,
+  "root_grounding_modified_only_new_animation_clips": true
+}
