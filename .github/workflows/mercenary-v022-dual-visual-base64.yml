@@ -1,0 +1,38 @@
+name: Genesis | Real Cycles V022 dual-gear review for actual visual QA
+on:
+  push:
+    branches: [experiment/mercenary-natural-combat-v021]
+    paths: ['.github/workflows/mercenary-v022-dual-visual-base64.yml']
+permissions: {contents: write}
+jobs:
+  encode-real:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make exact JPEG image bytes viewable for visual assessment, no image modification
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,hashlib,json
+          from pathlib import Path
+          p=Path('reports/mercenary_natural_dual_v022')
+          report=json.loads((p/'POSE_QA_DUAL_NATURAL_V022.json').read_text())
+          jpgs=sorted(p.glob('*.jpg'))
+          assert len(jpgs)==6 and len(report['renders'])==6
+          dst=p/'inspection_b64';dst.mkdir(exist_ok=True)
+          for f in jpgs:
+           src=f.read_bytes();assert src[:3]==b'\xff\xd8\xff'
+           (dst/(f.name+'.base64.txt')).write_text(base64.b64encode(src).decode('ascii'))
+           print(f.name,len(src),hashlib.sha256(src).hexdigest())
+          PY
+      - name: Commit real render encodings on experimental branch only
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/mercenary_natural_dual_v022/inspection_b64
+          git diff --cached --quiet || git commit -m 'Authentic V022 Cycles dual equipped warrior image review, original bytes only'
+          git fetch origin experiment/mercenary-natural-combat-v021
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-natural-combat-v021
