@@ -1,0 +1,73 @@
+name: Genesis | V039 true Blender Cycles32 six animated poses from Meshy candidate1
+on:
+  push:
+    branches: [experiment/mercenary-meshy-candidate1-rig-v039-20261107]
+    paths:
+      - scripts/mercenary/qa_new_meshy_rig_v039.py
+      - .github/workflows/mercenary-meshy-candidate1-rig-render-v039.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  rendered-action-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch verified rigged candidate1 GLB from preceding successful experiment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_c1_v039_render output/meshy_candidate1_rig_render_v039
+          curl -fSL --retry 3 --max-time 180 \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13594734232/zip' \
+            -o /tmp/genesis_c1_v039_render/rig.zip
+          unzip -oq /tmp/genesis_c1_v039_render/rig.zip -d /tmp/genesis_c1_v039_render
+          echo 'e29d2d0e6e32936b0b1c11df53a40315da9360cea56212e9ea7e76327cf6fc15  /tmp/genesis_c1_v039_render/GENESIS_MESHY_CANDIDATE1_RIGGED_ANIMATED_V039.glb' | sha256sum -c
+      - name: Download exact 32bit HDRI EXR lighting reference
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_c1_v039_render/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_c1_v039_render/studio_small_09_4k.exr' | sha256sum -c
+      - name: Blender 4.5.13 LTS for actual 3D animation rendering
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_c1_v039_render/blender.tar.xz
+          mkdir -p /tmp/genesis_c1_v039_render/blender
+          tar -xJf /tmp/genesis_c1_v039_render/blender.tar.xz \
+            -C /tmp/genesis_c1_v039_render/blender --strip-components=1
+          /tmp/genesis_c1_v039_render/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render 6 genuine 3D poses, measure deformed bounds in each original clip
+        run: |
+          set -euo pipefail
+          /tmp/genesis_c1_v039_render/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_new_meshy_rig_v039.py -- \
+            --character /tmp/genesis_c1_v039_render/GENESIS_MESHY_CANDIDATE1_RIGGED_ANIMATED_V039.glb \
+            --hdri /tmp/genesis_c1_v039_render/studio_small_09_4k.exr \
+            --out output/meshy_candidate1_rig_render_v039
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('output/meshy_candidate1_rig_render_v039')
+          q=json.loads((p/'V039_VISUAL_QA_REAL_CYCLES.json').read_text())
+          assert len(q['rendered_clips'])==6 and q['render_engine']=='CYCLES'
+          assert q['bones']==24 and q['action_count']==5
+          assert q['individual_finger_bones']==0
+          assert len(list(p.glob('V039_*.png')))==6
+          print('ACTUAL_V039_CYCLES32_SIX_POSES_VERIFIED')
+          PY
+      - name: Preserve genuine Cycles32 frames and QA for human review only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-candidate1-v039-six-real-Cycles32-poses-unapproved
+          path: output/meshy_candidate1_rig_render_v039/
+          if-no-files-found: warn
+          retention-days: 7
