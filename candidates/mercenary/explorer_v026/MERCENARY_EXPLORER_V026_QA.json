@@ -1,0 +1,18 @@
+{
+  "status": "V026_EXPERIMENTAL_CYCLES_REVIEW_PENDING",
+  "source_v025_sha256": "b4a2efa48fc794428907df44ea2af9326690326463c626c5a12e5f201892eb1a",
+  "source_v023_sha256": "9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76",
+  "output_sha256": "67018a545a424aaf4ca3e049889a459b938097b3a552f24563c2ba9a1ea00db4",
+  "animations": [
+    "GENESIS_MERC_IDLE_V026",
+    "GENESIS_MERC_WALK_V026",
+    "GENESIS_MERC_INSPECT_SWORD_V026",
+    "GENESIS_MERC_INSPECT_SHIELD_V026",
+    "GENESIS_MERC_WALK_EQUIPPED_V026"
+  ],
+  "rig_bones": 24,
+  "changes": "subtle chest-height inspection gestures; retain grounded V025 gait and relaxed idle",
+  "meshes_unchanged": true,
+  "playcanvas_tested": false,
+  "human_approved": false
+}
