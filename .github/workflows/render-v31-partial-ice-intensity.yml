@@ -66,7 +66,7 @@ jobs:
           for pct,view in [(0,'Hero'),(50,'Hero'),(100,'Hero'),(100,'Detalle')]:
             p=root/f'V31_Escarcha_{pct}_{view}.png'
             raw=p.read_bytes()
-            assert raw[:8]==b'\\x89PNG\\r\\n\\x1a\\n' and struct.unpack_from('>II',raw,16)==(1200,1500)
+            assert raw[:8]==b'\x89PNG\r\n\x1a\n' and struct.unpack_from('>II',raw,16)==(1200,1500)
             assert len(raw)>90000
           print('V31_REAL_CYCLES_PRELIMINARY_PASS')
           PY
