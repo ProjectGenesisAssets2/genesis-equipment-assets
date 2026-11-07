@@ -1,0 +1,72 @@
+{
+  "status": "V029_CYCLES32_REAL_POSE_REVIEW_PENDING_HUMAN_APPROVAL",
+  "character_sha256": "694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa",
+  "sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "shield_sha256": "a169a827b70621ec21eeaa894b3cf10eebfacc0eb1ed5bb575d9ff8f275a6ec2",
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "bones": 24,
+  "clips": [
+    "GENESIS_MERC_IDLE_V029",
+    "GENESIS_MERC_WALK_V029",
+    "GENESIS_MERC_INSPECT_SWORD_V029",
+    "GENESIS_MERC_INSPECT_SHIELD_V029",
+    "GENESIS_MERC_WALK_EQUIPPED_V029"
+  ],
+  "sword_surface": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+  "shield_socket": "GENESIS_SOCKET_SHIELD_L",
+  "weapon_parent_correct": true,
+  "shield_parent_correct": true,
+  "playcanvas_tested": false,
+  "human_approved": false,
+  "renders": [
+    {
+      "file": "V029_03_inspeccion_inicio.png",
+      "sha256": "25a679083c0cd70acb800c3a1685245ebd6bb81903f5d44dade72155dad8ebdf",
+      "bytes": 1156712,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.15,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    },
+    {
+      "file": "V029_03_inspeccion_centro.png",
+      "sha256": "cab81aae95286e4516b4e091ebd7273836b46d7c27a46140ee1fc0671e2dde2b",
+      "bytes": 1157873,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.52,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    },
+    {
+      "file": "V029_03_inspeccion_final.png",
+      "sha256": "8effbd3b72b41d4311af218634d93a2cb0aba26d8c932b952260cf90eb8bbb47",
+      "bytes": 1157798,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.85,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    }
+  ]
+}
