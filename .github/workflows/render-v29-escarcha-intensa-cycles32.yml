@@ -1,0 +1,154 @@
+name: Genesis V29 - STRONG REAL frost on approved sword Cycles HDRI 32bpc EXR
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v28-dos-escarchas-reales-v12b-exr32-20261107]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: genesis-v29-intense-frost-real-cycles
+  cancel-in-progress: true
+jobs:
+  render-each-variant:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [B]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate existing approved sources unchanged
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v29_hielo_dendritico_real_cycles32.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          python3 -m py_compile scripts/fab_sword/render_v12_v175_j_roughness.py
+          test "$(git hash-object scripts/fab_sword/render_v25_hielo_cycles_hdri32.py)" = 683c921eb8f204beb110d267f0839b64421e16d8
+          test "$(git hash-object vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs)" = fc4a3722e7c07b33d034b6d1ead5504f480a6345
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+      - name: Restore exact V03 V175 original asset
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v29-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v29-original-v03.glb' | sha256sum -c
+      - name: Restore approved 4K 32bit per RGB-channel EXR HDRI, no PNG substitutes
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install exact Blender Foundation 4.5.13 LTS and Pillow for previews
+        timeout-minutes: 9
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-v29-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-v29-blender --strip-components=1
+          /tmp/genesis-v29-blender/blender --version | grep -F 'Blender 4.5.13'
+          python3 -m venv /tmp/genesis-v29-preview-env
+          /tmp/genesis-v29-preview-env/bin/pip install --quiet pillow
+      - name: Render genuine Cycles hero + macro with exactly the approved iron and HDRI
+        timeout-minutes: 37
+        run: |
+          set -euo pipefail
+          mkdir -p "/tmp/genesis-v29-${{ matrix.variant }}"
+          /tmp/genesis-v29-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v29_hielo_dendritico_real_cycles32.py -- --input /tmp/genesis-v29-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir "/tmp/genesis-v29-${{ matrix.variant }}" --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 72 --channels Hielo --variant "${{ matrix.variant }}"
+          test -s "/tmp/genesis-v29-${{ matrix.variant }}/Escarcha_${{ matrix.variant }}_V29_V12B_HDRI32_Hero.png"
+          test -s "/tmp/genesis-v29-${{ matrix.variant }}/Escarcha_${{ matrix.variant }}_V29_V12B_HDRI32_Detalle.png"
+          test -s "/tmp/genesis-v29-${{ matrix.variant }}/Escarcha_${{ matrix.variant }}_V29_Audit.json"
+      - name: Verify real 1200x1500 PNGs and original V175 V12B EXR RGB32
+        run: |
+          python3 - <<'PY'
+          import json,struct,os
+          from pathlib import Path
+          root=Path('/tmp/genesis-v29-'+os.environ['VARIANT'])
+          a=json.loads((root/('Escarcha_'+os.environ['VARIANT']+'_V29_Audit.json')).read_text())
+          preset=json.loads(Path('presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96 and a['hdri_size']==[4096,2048]
+          assert a['hdri_sha256']==preset['lighting']['hdri_sha256']
+          assert a['source_sha256']==preset['source_original']['sha256']
+          assert a['approved_base_preset']==preset['id'] and a['geometry_modified']==False and a['base_material_modified']==False
+          assert a['samples']==72
+          assert a['no_image_generation'] is True and a['no_concepts'] is True
+          stats=a['results'][0]['details']
+          assert stats['nucleation_sites']==66 and stats['feather_axes']==66 and stats['secondary_fern_arms']>=790
+          assert stats['no_flat_translucent_ice_sheets'] and stats['original_iron_ridge_uncovered']
+          assert a['selected_variant']==os.environ['VARIANT']
+          for view in ('Hero','Detalle'):
+            file=root/('Escarcha_'+os.environ['VARIANT']+'_V29_V12B_HDRI32_'+view+'.png')
+            data=file.read_bytes()
+            assert data[:8]==b'\x89PNG\r\n\x1a\n'
+            assert struct.unpack_from('>II',data,16)==(1200,1500) and len(data)>90000
+          print('GENESIS_V28_VERIFIED_REAL_CYCLES_HOARFROST',a['selected_variant'],stats)
+          PY
+        env:
+          VARIANT: ${{ matrix.variant }}
+      - name: Create 600x750 jpg previews from actual real Cycles renders only
+        run: |
+          VARIANT="${{ matrix.variant }}" /tmp/genesis-v29-preview-env/bin/python - <<'PY'
+          import os
+          from PIL import Image
+          from pathlib import Path
+          variant=os.environ['VARIANT'];root=Path('/tmp/genesis-v29-'+variant)
+          out=Path('public-previews/escarcha-v29-intensa-real-cycles-exr32')
+          out.mkdir(parents=True,exist_ok=True)
+          for view in ('Hero','Detalle'):
+            name='Escarcha_'+variant+'_V29_V12B_HDRI32_'+view
+            inp=root/(name+'.png')
+            with Image.open(inp) as im:
+              assert im.size==(1200,1500)
+              im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS).save(out/(name+'_preview.jpg'),'JPEG',quality=91,optimize=True)
+            (out/(name+'.png')).write_bytes(inp.read_bytes())
+          audit=root/('Escarcha_'+variant+'_V29_Audit.json')
+          (out/audit.name).write_bytes(audit.read_bytes())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V29-Frost-${{ matrix.variant }}
+          path: public-previews/escarcha-v29-intensa-real-cycles-exr32/
+          retention-days: 14
+      - name: Remove temp exact GLB and EXR
+        if: always()
+        run: rm -f /tmp/genesis-v29-original-v03.glb /tmp/studio_small_09_4k.exr
+  publish-for-visual-review:
+    runs-on: ubuntu-24.04
+    needs: [render-each-variant]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Genesis-V29-Frost-*
+          merge-multiple: true
+          path: public-previews/escarcha-v29-intensa-real-cycles-exr32/
+      - name: Compare verified A+B render outputs and only publish to experimental V28 branch
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('public-previews/escarcha-v29-intensa-real-cycles-exr32')
+          for variant in ('B',):
+            audit=json.loads((p/('Escarcha_'+variant+'_V29_Audit.json')).read_text())
+            assert audit['selected_variant']==variant and audit['hdri_RGB_bits_per_channel']==32
+            assert audit['approved_base_preset']=='Genesis_Espada_V03_Hierro_V175_V12B'
+            for view in ('Hero','Detalle'):
+              name='Escarcha_'+variant+'_V29_V12B_HDRI32_'+view
+              assert (p/(name+'.png')).stat().st_size>90000
+              assert (p/(name+'_preview.jpg')).stat().st_size>12000
+          print('GENESIS_V28_BOTH_REAL_CYCLES_RENDER_VARIANTS_VALIDATED')
+          PY
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v29-escarcha-intensa-espada-real-cycles32-20261107
+          git checkout -B experiment/v29-escarcha-intensa-espada-real-cycles32-20261107 FETCH_HEAD
+          git add public-previews/escarcha-v29-intensa-real-cycles-exr32/
+          if git diff --cached --quiet; then echo 'Already published'; else
+            git commit -m 'review(v28): two real Cycles V12B EXR32 hoarfrost candidate renders'
+            git push origin HEAD:experiment/v29-escarcha-intensa-espada-real-cycles32-20261107
+          fi
