@@ -1,0 +1,1 @@
+Render V33 on original V03 sword. Intensity constant per shot; independently looping animation time on material veins at 50%. Preview material NOT exact recovered V175 source Blender material. No changes to main.
