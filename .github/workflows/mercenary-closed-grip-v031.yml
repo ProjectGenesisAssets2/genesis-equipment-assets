@@ -1,0 +1,153 @@
+name: Genesis | V031 real right-hand glove closed grip Cycles HDRI32 (experimental)
+on:
+  push:
+    branches: [experiment/mercenary-v031-closed-right-grip-20261107]
+    paths:
+      - scripts/mercenary/sculpt_closed_right_grip_v031.py
+      - .github/workflows/mercenary-closed-grip-v031.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  real-grip-sculpt-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source SHA and sculpt actual RIGHT glove mesh without mirroring or swapping bones
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_grip_v031 /tmp/genesis_grip_v031
+          echo '694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa  candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb' | sha256sum -c
+          python3 scripts/mercenary/sculpt_closed_right_grip_v031.py \
+            --source candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb \
+            --out output/mercenary_grip_v031 --angle 2.05
+          python3 - <<'PY'
+          import struct,json,hashlib
+          from pathlib import Path
+          p=Path('output/mercenary_grip_v031/mercenary_grip_corrected_v031.glb')
+          raw=p.read_bytes();jlen=struct.unpack_from('<I',raw,12)[0]
+          gltf=json.loads(raw[20:20+jlen])
+          old=Path('candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb').read_bytes()
+          assert len(raw)==len(old) and raw[:20+jlen]==old[:20+jlen]
+          assert len(gltf['animations'])==5 and len(gltf['skins'][0]['joints'])==24
+          assert gltf['nodes'][8]['name']=='RightHand' and gltf['nodes'][4]['name']=='LeftHand'
+          assert 'GENESIS_SOCKET_WEAPON_R' in {x['name'] for x in gltf['nodes']}
+          assert all('ATTACK' not in a['name'] for a in gltf['animations'])
+          q=json.loads(Path('output/mercenary_grip_v031/MERCENARY_GRIP_V031_QA.json').read_text())
+          assert q['right_grip_vertices_edited']>100
+          assert q['left_hand_and_rig_unchanged']
+          assert hashlib.sha256(raw).hexdigest()==q['output_sha256']
+          print('V031_REAL_GLB_RIGHT_HAND_ONLY_PASS',q['output_sha256'])
+          PY
+      - name: Rehydrate actual protected V12B sword ephemerally
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_grip_v031/ORIGINAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_grip_v031/ORIGINAL_V12B_SWORD.glb' | sha256sum -c
+      - name: Fetch exact real HDRI studio_small_09 4K EXR32
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_grip_v031/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_grip_v031/studio_small_09_4k.exr' | sha256sum -c
+      - name: Blender 4.5.13 Foundation LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_grip_v031/blender.tar.xz
+          mkdir -p /tmp/genesis_grip_v031/blender
+          tar -xJf /tmp/genesis_grip_v031/blender.tar.xz -C /tmp/genesis_grip_v031/blender --strip-components=1
+          /tmp/genesis_grip_v031/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Prepare real Cycles QA from existing verified V024 equipment source, no concept art
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('scripts/mercenary/qa_explorer_v024.py').read_text()
+          s=src.replace('V024','V031').replace('v024','v031')
+          for clip in ('IDLE','WALK','INSPECT_SWORD','INSPECT_SHIELD','WALK_EQUIPPED'):
+            s=s.replace('GENESIS_MERC_'+clip+'_V031','GENESIS_MERC_'+clip+'_V029')
+          s=s.replace('cam.location=center+Vector(camdir).normalized()*5.5',
+                      "focus=anchor.matrix_world.translation if has_sword else native['GENESIS_SOCKET_SHIELD_L'].matrix_world.translation\n  cam.location=focus+Vector(camdir).normalized()*1.65")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.66")
+          s=s.replace("scene.cycles.samples=38","scene.cycles.samples=42")
+          s='\n'.join(line for line in s.splitlines() if not line.lstrip().startswith("render('V031_"))+'\n'
+          needle=" report={'status':"
+          assert needle in s
+          calls=(
+            " render('V031_01_RIGHT_HAND_FRONT',expected[2],.54,True,False,(.55,-1,.16))\n"
+            " render('V031_02_RIGHT_HAND_BACK',expected[2],.54,True,False,(-.60,1,.16))\n"
+            " render('V031_03_RIGHT_HAND_INSPECT_START',expected[2],.15,True,False,(.55,-1,.16))\n"
+            " render('V031_04_RIGHT_HAND_INSPECT_RETURN',expected[2],.85,True,False,(.55,-1,.16))\n"
+            " render('V031_05_LEFT_SHIELD_BACK',expected[3],.54,False,True,(-.55,1,.18))\n"
+          )
+          s=s.replace(needle,calls+needle)
+          assert s.count("render('V031_")==5 and 'GENESIS_MERC_INSPECT_SWORD_V029' in s
+          import ast
+          ast.parse(s)
+          Path('scripts/mercenary/qa_grip_closeups_v031.py').write_text(s)
+          print('V031_REAL_ANATOMICAL_HAND_SCRIPT_COMPILES')
+          PY
+      - name: Render actual front/back fist, two inspection poses and shield grip with original sword
+        run: |
+          set -euo pipefail
+          /tmp/genesis_grip_v031/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_grip_closeups_v031.py -- \
+            --character output/mercenary_grip_v031/mercenary_grip_corrected_v031.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --sword /tmp/genesis_grip_v031/ORIGINAL_V12B_SWORD.glb \
+            --hdri /tmp/genesis_grip_v031/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_grip_v031
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('output/mercenary_grip_v031')
+          q=json.loads((p/'MERCENARY_EXPLORER_V031_RENDER_QA.json').read_text())
+          assert len(q['renders'])==5 and q['weapon_parent_correct'] and q['shield_parent_correct']
+          assert len(list(p.glob('V031_*.png')))==5
+          print('V031_CYCLES_HDRI32_FIVE_RENDER_PASS')
+          PY
+      - name: Publish experimental review GLB, JPEGs and QA metrics to candidate folder only
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          mkdir -p candidates/mercenary/grip_v031
+          cp output/mercenary_grip_v031/mercenary_grip_corrected_v031.glb candidates/mercenary/grip_v031/
+          cp output/mercenary_grip_v031/*V031*QA.json candidates/mercenary/grip_v031/
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          root=Path('output/mercenary_grip_v031')
+          out=Path('candidates/mercenary/grip_v031')
+          for p in sorted(root.glob('V031_*.png')):
+            image=Image.open(p).convert('RGB')
+            image.thumbnail((900,1080),Image.Resampling.LANCZOS)
+            image.save(out/(p.stem+'.jpg'),quality=89,optimize=True)
+          assert len(list(out.glob('V031_*.jpg')))==5
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/grip_v031
+          git diff --cached --quiet || git commit -m 'V031 experimental sculpt of RIGHT glove only: actual V12B Cycles HDRI32 grip QA'
+          git fetch origin experiment/mercenary-v031-closed-right-grip-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-v031-closed-right-grip-20261107
+      - name: Upload exact original full resolution real Cycles render images and GLB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v031-corrected-right-glove-real-Cycles32
+          path: output/mercenary_grip_v031/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Delete temporary protected sword source
+        if: always()
+        run: rm -f /tmp/genesis_grip_v031/ORIGINAL_V12B_SWORD.glb
