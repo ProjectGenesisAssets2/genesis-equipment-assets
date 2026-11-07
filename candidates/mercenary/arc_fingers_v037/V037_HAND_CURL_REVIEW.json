@@ -1,0 +1,21 @@
+{
+  "status": "V037_EXPERIMENTAL_REAL_CYCLES_RIGHT_GLOVE_ARC_PENDING_USER_REVIEW",
+  "candidates": [
+    "A",
+    "B"
+  ],
+  "source": "original V029 rig, SHA-verified, NOT V031 or V035 previous damaged geometry",
+  "triangles_inverted_both": 0,
+  "normals": "rotated with continuous arc, no face winding flips",
+  "sword": "genuine original V12B V175 only ephemerally",
+  "hand_socket": "GENESIS_SOCKET_WEAPON_R",
+  "shield_socket": "GENESIS_SOCKET_SHIELD_L",
+  "mount_offset_world_m": [
+    0.047,
+    -0.013,
+    -0.048
+  ],
+  "render_count": 6,
+  "playcanvas_tested": false,
+  "human_approved": false
+}
