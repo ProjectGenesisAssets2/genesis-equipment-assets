@@ -1,0 +1,128 @@
+name: Genesis | Mercenary V024 explorer only (five motions, real Cycles HDRI32)
+on:
+  push:
+    branches:
+      - experiment/mercenary-explorer-v024-only-five-actions-20261107
+    paths:
+      - scripts/mercenary/build_explorer_v024.py
+      - scripts/mercenary/qa_explorer_v024.py
+      - scripts/mercenary/mercenary_explorer_runtime_v024.js
+      - .github/workflows/mercenary-explorer-v024.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  explorer-five-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify real V023 reference; build five explorer-only animation clips
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_explorer_v024 /tmp/genesis_v024
+          echo '9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76  candidates/mercenary/natural_equipped_v023/mercenary_equipment_natural_v023.glb' | sha256sum -c
+          python3 scripts/mercenary/build_explorer_v024.py \
+            --source candidates/mercenary/natural_equipped_v023/mercenary_equipment_natural_v023.glb \
+            --out output/mercenary_explorer_v024
+          python3 - <<'PY'
+          import json,hashlib,struct
+          from pathlib import Path
+          p=Path('output/mercenary_explorer_v024/mercenary_explorer_v024.glb')
+          raw=p.read_bytes()
+          n=struct.unpack_from('<I',raw,12)[0]
+          g=json.loads(raw[20:20+n])
+          assert [x['name'] for x in g['animations']]==[
+            'GENESIS_MERC_IDLE_V024','GENESIS_MERC_WALK_V024',
+            'GENESIS_MERC_INSPECT_SWORD_V024',
+            'GENESIS_MERC_INSPECT_SHIELD_V024',
+            'GENESIS_MERC_WALK_EQUIPPED_V024']
+          assert len(g['skins'][0]['joints'])==24
+          assert all('ATTACK' not in a['name'] and 'BLOCK' not in a['name'] for a in g['animations'])
+          r=json.loads(Path('output/mercenary_explorer_v024/MERCENARY_EXPLORER_V024_QA.json').read_text())
+          assert hashlib.sha256(raw).hexdigest()==r['output_sha256']
+          assert not r['weapons_embedded_in_character_glb']
+          print('V024_5_NONCOMBAT_ACTIONS_GLTF_OK',r['output_sha256'])
+          PY
+      - name: Restore genuine V12B sword source on ephemeral runner only
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_v024/ORIGINAL_V12B_PROTECTED.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_v024/ORIGINAL_V12B_PROTECTED.glb' | sha256sum -c
+      - name: Retrieve genuine 32-bit EXR lighting; never substitute JPG or PNG
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v024/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v024/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender Foundation 4.5.13 LTS on public GitHub Actions
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v024/blender.tar.xz
+          mkdir -p /tmp/genesis_v024/blender
+          tar -xJf /tmp/genesis_v024/blender.tar.xz -C /tmp/genesis_v024/blender --strip-components=1
+          /tmp/genesis_v024/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render authentic non-combat explorer with V12B sword and V015 shield (Cycles + EXR32)
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v024/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_explorer_v024.py -- \
+            --character output/mercenary_explorer_v024/mercenary_explorer_v024.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --sword /tmp/genesis_v024/ORIGINAL_V12B_PROTECTED.glb \
+            --hdri /tmp/genesis_v024/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_explorer_v024
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('output/mercenary_explorer_v024')
+          r=json.loads((p/'MERCENARY_EXPLORER_V024_RENDER_QA.json').read_text())
+          assert len(r['renders'])==6 and all(x['real_Cycles'] for x in r['renders'])
+          assert r['weapon_parent_correct'] and r['shield_parent_correct']
+          assert r['bones']==24 and len(r['clips'])==5
+          assert len(list(p.glob('V024_*.png')))==6
+          print('V024_CYCLES32_NONCOMBAT_SIX_RENDERS_VERIFIED')
+          PY
+      - name: Commit experimental preview JPEGs, rig, and QA metrics only
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          mkdir -p candidates/mercenary/explorer_v024
+          cp output/mercenary_explorer_v024/mercenary_explorer_v024.glb candidates/mercenary/explorer_v024/
+          cp output/mercenary_explorer_v024/*V024*QA.json candidates/mercenary/explorer_v024/
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          root=Path('output/mercenary_explorer_v024')
+          dst=Path('candidates/mercenary/explorer_v024')
+          for p in sorted(root.glob('V024_*.png')):
+            image=Image.open(p).convert('RGB')
+            image.thumbnail((880,1040),Image.Resampling.LANCZOS)
+            image.save(dst/(p.stem+'.jpg'),quality=88,optimize=True)
+          assert len(list(dst.glob('V024_*.jpg')))==6
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/explorer_v024
+          git diff --cached --quiet || git commit -m 'V024 experimental explorer: five noncombat animations and real HDRI32 Cycles visual QA'
+          git fetch origin experiment/mercenary-explorer-v024-only-five-actions-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-explorer-v024-only-five-actions-20261107
+      - name: Upload exact full-size real renders, rig and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-mercenary-explorer-v024-real-Cycles32
+          path: output/mercenary_explorer_v024/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Destroy temporary protected original sword
+        if: always()
+        run: rm -f /tmp/genesis_v024/ORIGINAL_V12B_PROTECTED.glb
