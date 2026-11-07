@@ -1,0 +1,138 @@
+name: Genesis V34 - vetas de escarcha en movimiento visible Cycles EXR32
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v34-escarcha-vetas-movimiento-visible-20261107]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: genesis-v34-ice-test-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  render-v34:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source scripts and approved presets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v34_visible_veins_motion.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          test -s presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json
+          test -s render-input/v03-blob-manifest.json
+      - name: Recover original V03 sword from existing repository blob manifest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/v34-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/v34-original-v03.glb' | sha256sum -c
+      - name: Recover 32-bit/channel HDRI EXR (never JPG)
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/v34-studio.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/v34-studio.exr' | sha256sum -c
+      - name: Install Blender Foundation 4.5.13 LTS
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/v34-blender.tar.xz
+          mkdir -p /tmp/v34-blender
+          tar -xJf /tmp/v34-blender.tar.xz -C /tmp/v34-blender --strip-components=1
+          /tmp/v34-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render independent ice motion at constant 50 pct and compare 20 50 100 pct
+        timeout-minutes: 66
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v34-render
+          /tmp/v34-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v34_visible_veins_motion.py -- --input /tmp/v34-original-v03.glb --hdri /tmp/v34-studio.exr --output-dir /tmp/v34-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 48 --channels Hielo
+          for name in V34_Escarcha_I20_T1_Hero.png V34_Escarcha_I50_T1_Hero.png V34_Escarcha_I100_T1_Hero.png V34_Escarcha_I50_T13_Hero.png V34_Escarcha_I50_T25_Hero.png V34_Escarcha_I50_T37_Hero.png V34_Escarcha_I50_T49_Hero.png V34_Escarcha_I50_T61_Hero.png V34_Escarcha_I50_T73_Hero.png V34_Escarcha_I50_T85_Hero.png V34_Escarcha_I50_T97_Hero.png V34_Escarcha_I100_T1_Detalle.png v34_escarcha_movimiento_audit.json; do test -s "/tmp/v34-render/$name"; done
+      - name: Verify real images and flag source material as preliminary not original
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,json
+          root=Path('/tmp/v34-render')
+          a=json.loads((root/'v34_escarcha_movimiento_audit.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
+          assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['geometry_modified'] is False and a['base_material_modified'] is False
+          assert a['material_source_exact_original_blend'] is False
+          assert a['intensity_animation_created_in_blender'] is False
+          assert a['continuous_ice_motion_animated_in_blender'] is True
+          assert a['intensity_and_motion_independent'] is True
+          assert a['results'][0]['details']['intensity_has_animation_keyframes'] is False
+          assert a['results'][0]['details']['intensity_and_time_independent'] is True
+          for intensity,frame,view in [(20,1,'Hero'),(50,1,'Hero'),(100,1,'Hero'),(50,13,'Hero'),(50,25,'Hero'),(50,37,'Hero'),(50,49,'Hero'),(50,61,'Hero'),(50,73,'Hero'),(50,85,'Hero'),(50,97,'Hero'),(100,1,'Detalle')]:
+            p=root/f'V34_Escarcha_I{intensity}_T{frame}_{view}.png'
+            raw=p.read_bytes()
+            assert raw[:8]==b'\x89PNG\r\n\x1a\n' and struct.unpack_from('>II',raw,16)==(1200,1500)
+            assert len(raw)>90000
+          print('V34_REAL_CYCLES_PRELIMINARY_PASS')
+          PY
+      - name: Assemble actual rendered frames into animated GIF (no synthetic frames)
+        run: |
+          python3 -m venv /tmp/v34-gif-env
+          /tmp/v34-gif-env/bin/pip install --quiet pillow
+          /tmp/v34-gif-env/bin/python - <<'PY'
+          from PIL import Image,ImageOps
+          from pathlib import Path
+          root=Path('/tmp/v34-render')
+          values=(1,13,25,37,49,61,73,85)
+          frames=[]
+          for v in values:
+              with Image.open(root/f'V34_Escarcha_I50_T{v}_Hero.png') as im:
+                  frames.append(im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS))
+          pingpong=frames
+          pingpong[0].save(root/'V34_Escarcha_I50_Movimiento_Visible_Loop.gif',save_all=True,
+                           append_images=pingpong[1:],duration=190,loop=0,optimize=True)
+          assert (root/'V34_Escarcha_I50_Movimiento_Visible_Loop.gif').stat().st_size>30000
+          # Quantify that the independent-time animation produces visible pixel
+          # changes in the steel blade, unlike V33 (virtually invisible).
+          from PIL import ImageChops,ImageStat
+          import json
+          p1=Image.open(root/'V34_Escarcha_I50_T1_Hero.png').convert('RGB')
+          p2=Image.open(root/'V34_Escarcha_I50_T49_Hero.png').convert('RGB')
+          # Blade-only ROI avoids counting motionless handle or dark background.
+          blade=(460,200,830,930)
+          delta=ImageChops.difference(p1.crop(blade),p2.crop(blade))
+          mean_delta=float(sum(ImageStat.Stat(delta).mean)/3)
+          print('V34_MOVING_VEINS_MEAN_RGB_DELTA_BLADE_RECT',round(mean_delta,5))
+          audit_path=root/'v34_escarcha_movimiento_audit.json'
+          data=json.loads(audit_path.read_text())
+          data['motion_pixel_difference_blade_rect_0_255']=mean_delta
+          data['motion_visibility_threshold_passed']=mean_delta>0.25
+          audit_path.write_text(json.dumps(data,indent=2,ensure_ascii=False))
+          assert mean_delta>0.25, 'V34_TOO_SUBTLE_REDO_ANIMATION'
+          PY
+      - name: Archive render previews
+        run: |
+          mkdir -p public-previews/v34-visible-veins-cycles-hdri32
+          cp /tmp/v34-render/V34_Escarcha_*.png public-previews/v34-visible-veins-cycles-hdri32/
+          cp /tmp/v34-render/V34_Escarcha_I50_Movimiento_Visible_Loop.gif public-previews/v34-visible-veins-cycles-hdri32/
+          cp /tmp/v34-render/v34_escarcha_movimiento_audit.json public-previews/v34-visible-veins-cycles-hdri32/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V34-Ice-Intensity-RealCycles-NotApproved
+          path: public-previews/v34-visible-veins-cycles-hdri32/
+          retention-days: 14
+      - name: Publish visual review images ONLY to V34 experimental branch
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v34-escarcha-vetas-movimiento-visible-20261107
+          git checkout -B experiment/v34-escarcha-vetas-movimiento-visible-20261107 FETCH_HEAD
+          mkdir -p public-previews/v34-visible-veins-cycles-hdri32
+          cp /tmp/v34-render/V34_Escarcha_*.png public-previews/v34-visible-veins-cycles-hdri32/
+          cp /tmp/v34-render/v34_escarcha_movimiento_audit.json public-previews/v34-visible-veins-cycles-hdri32/
+          cp /tmp/v34-render/V34_Escarcha_I50_Movimiento_Visible_Loop.gif public-previews/v34-visible-veins-cycles-hdri32/
+          git add public-previews/v34-visible-veins-cycles-hdri32/
+          if ! git diff --cached --quiet; then
+            git commit -m 'review(v34): real Cycles animated ice texture at constant 50 percent intensity'
+            git push origin HEAD:experiment/v34-escarcha-vetas-movimiento-visible-20261107
+          fi
