@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Project Genesis V22 - physically illuminated separate affinity lookdev (NOT approved).
+"""Project Genesis V23 - physically illuminated separate affinity lookdev (NOT approved).
 Reuses the unchanged V12B Cycles sword/lighting code, exact V03/V175 GLB, exact 32-bit/ch RGB EXR.
 Adds only independent procedural objects in memory. No ImageGen, no replacement material.
 Five distinct original visual effects - realistic crystal / light / shadows / living plant / fractured rock.
@@ -277,91 +277,102 @@ def shadow_ink(coord,along,side,normal,intensity):
             'smoke_alpha_max':.48,'not_opaque_lavender_paper':True}
 
 def organic_vines(coord,along,side,normal,intensity):
-    root=pbr('nature_branch_bark',(.06,.22,.055),roughness=.62,
-             emission=(.05,.10,.018),emission_power=.12)
-    fresh=pbr('nature_live_leaf',(.15,.38,.075),roughness=.33,
-              transmission=.13,emission=(.06,.26,.035),emission_power=.30+.18*intensity)
-    edges=emitter('nature_sap_glimmer',(.25,.83,.09),1.0+1.35*intensity)
-    stems=0;leaves=0
-    for lane in range(6):
-        start=.16+lane*.125
-        sgn=1 if lane%2 else -1
-        trail=[]
-        for j in range(24):
-            q=j/23
-            p,_=coord(start+q*.095,sgn*(.64-.23*q)+.15*math.sin(q*math.pi*2+lane)*q,
-                      .008+.002*math.sin(q*math.pi))
-            trail.append(p)
-        line('nature_vine_'+str(lane),trail,root,.0014)
-        if lane%2==0:line('nature_sap_'+str(lane),trail,edges,.00043)
-        stems+=1
-        for j in range(2,23,2):
-            q=j/23
-            p=trail[j]
-            direction=side*(sgn*((-.012 if j%4 else .013)))+along*(.005+.004*rng.random())
-            tip=p+direction+normal*(.001+.001*math.sin(j))
-            line('nature_branch_'+str(lane)+'_'+str(j),[p,tip],root,.00065)
-            v1=p-direction*.25-side*.0048
-            v2=p-direction*.25+side*.0048
-            v3=tip+along*.004
-            geo('nature_leaf_'+str(lane)+'_'+str(j),
-                [p,v1,v3,v2],[(0,1,2),(0,2,3)],fresh)
-            leaves+=1
-    for k in range(18):
-        t=.18+(k+.3)*.038
-        p,_=coord(t,(-.55 if k%2 else .52),.014)
-        ellipsoid('nature_micropollen_'+str(k),p,(.0018,.0018,.0018),edges)
-    return {'branching_vines':stems,'physical_leaves':leaves,'subtle_pollen':18,
-            'organic_real_geometry':True}
+    bark=pbr('nature_olive_creeping_stem',(.047,.145,.052),roughness=.66,
+             emission=(.027,.070,.018),emission_power=.09)
+    wet=pbr('nature_real_leaf_green',(.105,.285,.073),roughness=.29,
+            transmission=.14,emission=(.035,.11,.017),emission_power=.13)
+    forest=pbr('nature_olive_leaf',(.075,.19,.055),roughness=.45,transmission=.11)
+    pale=pbr('nature_new_sap_lamina',(.24,.39,.12),roughness=.32,transmission=.09)
+    sap=emitter('nature_muted_sap_bioluminescence',(.17,.58,.082),.60+.30*intensity)
+    leaves=0;trunks=0;twigs=0
+    # Asymmetric organic trunks creep diagonally from the lower blade toward the tip.
+    for lane,(start,sgn,span) in enumerate([(.14,-1,.26),(.41,1,.30),(.68,-1,.21)]):
+        backbone=[]
+        for j in range(50):
+            u=j/49
+            t=start+u*span
+            lateral=sgn*(.62-.31*u)+.10*math.sin(u*math.pi*2.6+lane)
+            p,_=coord(t,lateral,.007+.001*math.sin(u*math.pi*2.0))
+            backbone.append(p)
+        line('nature_primary_spiral_'+str(lane),backbone,bark,.00155+.0003*lane)
+        line('nature_sap_gloss_'+str(lane),backbone[2:45],sap,.00036)
+        trunks+=1
+        for j in [5,11,17,23,28,34,39,44]:
+            step=1 if (j//5)%2 else -1
+            sgn2=sgn*step
+            branch=[]
+            for k in range(9):
+                u=k/8
+                t=start+(j/49)*span+.010*u
+                lat=sgn*(.62-.31*j/49)+.10*math.sin((j/49)*math.pi*2.6+lane)
+                lat+=sgn2*.20*u+.034*math.sin(u*math.pi+lane+j)
+                pos,_=coord(t,lat,.008+.0018*u)
+                branch.append(pos)
+            line('nature_secondary_branch_'+str(lane)+'_'+str(j),branch,bark,.00074)
+            twigs+=1
+            for m in (4,7):
+                p=branch[m]
+                growth=side*sgn2*(.007+.003*rng.random())+along*(.010+.003*rng.random())
+                tip=p+growth+normal*.003
+                sidevec=side*(.004+.002*rng.random())-along*(.002*rng.random())
+                v=[p,p+growth*.50-sidevec,tip,p+growth*.48+sidevec]
+                geo('nature_actual_leaf_'+str(lane)+'_'+str(j)+'_'+str(m),v,[(0,1,2),(0,2,3)],
+                    wet if (j+m)%3 else forest)
+                leafvein=p+growth*.72
+                line('nature_leaf_vein_'+str(lane)+'_'+str(j)+'_'+str(m),
+                     [p,leafvein],pale,.00026)
+                leaves+=1
+    for j in range(15):
+        t=.15+.75*rng.random()
+        p,_=coord(t,(rng.random()-.5)*1.45,.015)
+        ellipsoid('nature_seed_spore_'+str(j),p,(.0011,.0013,.0010),sap)
+    return {'full_creeping_vines':trunks,'natural_secondary_branches':twigs,
+            'large_asymmetrical_leaves':leaves,'pollen':15,
+            'no_repetitive_grass_stitch_pattern':True}
 
 def earth_fractures(coord,along,side,normal,intensity):
-    crack=pbr('earth_dark_mineral_crack',(.07,.046,.025),roughness=.88,
-              metallic=.15)
-    bedrock=pbr('earth_rough_stone',(.29,.21,.12),roughness=.74,
-                metallic=.07)
-    quartz=pbr('earth_quartz',(.34,.28,.22),roughness=.38,metallic=.18,
-               emission=(.18,.10,.035),emission_power=.08)
-    ore=pbr('earth_veined_bronze',(.52,.34,.14),roughness=.30,metallic=.68)
-    fissures=0;rocks=0
-    for i in range(11):
-        start=.12+i*.070
-        sgn=-1 if i%2 else 1
-        trail=[]
-        for j in range(13):
-            q=j/12
-            t=start+q*.045
-            lat=sgn*(.13+.40*q)+.09*math.sin(j*3.4+i*1.77)
-            p,_=coord(t,lat,.007)
-            trail.append(p)
-        line('earth_main_fault_'+str(i),trail,crack,.0015+.0005*intensity)
-        alt=[p+side*(.0024*sgn) for p in trail]
-        line('earth_fault_golden_mineral_edge_'+str(i),alt,ore,.00048)
-        fissures+=1
-        for q in (3,7,10):
-            p=trail[q]
-            a=p+side*(sgn*.013)+along*(.008+rng.random()*.005)
-            b=p+side*(sgn*.020)+along*(.017+rng.random()*.003)
-            line('earth_tributary_crack_'+str(i)+'_'+str(q),[p,a,b],crack,.00085)
-        for j in range(5):
-            q=(j+.4)/5
-            p,_=coord(start+q*.035,sgn*(.30+.23*rng.random()),.008)
-            l=.0035+.002*rng.random()
-            h=.002+.005*rng.random()
-            geo('earth_rock_shard_'+str(i)+'_'+str(j),
-              [p-side*l,p+side*l,p+along*l,p+normal*h],
-              [(0,1,3),(1,2,3),(2,0,3),(0,2,1)],
-              bedrock if (i+j)%3 else quartz)
-            rocks+=1
-    return {'angular_faults':fissures,'branch_faults':33,'faceted_rock_fragments':rocks,
-            'earth_rough_non_emissive_material':True}
-
-BUILDERS={
- 'Hielo':crystal_cluster,
- 'Luz':radiant_gold,
- 'Sombra':shadow_ink,
- 'Naturaleza':organic_vines,
- 'Tierra':earth_fractures
-}
+    fracture=pbr('earth_black_subsurface_fault',(.036,.029,.023),roughness=.90,metallic=.12)
+    ochre=pbr('earth_raw_ochre_stone',(.31,.23,.14),roughness=.81)
+    slate=pbr('earth_grey_igneous_rock',(.17,.17,.16),roughness=.78)
+    bronze=pbr('earth_iron_pyrite',(.40,.32,.22),roughness=.36,metallic=.51)
+    matte=pbr('earth_dust_grey',(.28,.26,.22),roughness=.92)
+    fault_groups=0;plate_fragments=0;branches=0
+    for group,at in enumerate([.19,.37,.55,.71,.86]):
+        fault_groups+=1
+        start_lateral=(-.16 if group%2 else .17)
+        for arm in range(5):
+            angle=arm*math.tau/5 +.33*group
+            coords=[]
+            for j in range(17):
+                u=j/16
+                t=at+math.cos(angle)*(.018+.033*u)+u*.010*math.sin(u*14.+arm)
+                t=max(.075,min(.96,t))
+                lat=start_lateral+math.sin(angle)*(.31*u)+.06*u*math.sin(u*17.+arm*2.5)
+                p,_=coord(t,lat,.006)
+                coords.append(p)
+            line('earth_broken_fault_'+str(group)+'_'+str(arm),coords,fracture,
+                 .0011+.0010*math.sin(angle)**2)
+            if arm%2==0:
+                line('earth_subtle_pyrite_' +str(group)+'_'+str(arm),
+                     [p+side*.0017 for p in coords[2:11]],bronze,.00042)
+            branches+=1
+        for i in range(16):
+            offset=(rng.random()-.5)*.080
+            lateral=start_lateral+(rng.random()-.5)*.63
+            p,_=coord(at+offset,lateral,.006)
+            size=.003+.0065*rng.random()
+            h=.0015+.0045*rng.random()
+            a=p-side*size*.75-along*size*.35
+            b=p+side*size*.9-along*size*.2
+            c=p+along*size*1.3
+            apex=p+normal*h+along*size*.25
+            geo('earth_exposed_rock_'+str(group)+'_'+str(i),
+                [a,b,c,apex],[(0,1,3),(1,2,3),(2,0,3),(0,2,1)],
+                [ochre,slate,matte,bronze][(group+i)%4])
+            plate_fragments+=1
+    return {'nonuniform_fracture_centres':fault_groups,'black_fracture_branches':branches,
+            'raised_faceted_earth_stone':plate_fragments,
+            'not_just_glittering_gold_dots':True}
 
 def render(camera,output):
     scene=bpy.context.scene
@@ -422,7 +433,7 @@ def main():
         count_before=len([o for o in bpy.data.objects if o.type=='MESH' and not o.name.startswith(TAGS)])
         details=BUILDERS[ch](coord,along,side,normal,.75)
         bpy.context.view_layer.update()
-        renders=[render('CAM_hero',args.output_dir/(ch+'_V22_V12B_HDRI32_Hero.png'))]
+        renders=[render('CAM_hero',args.output_dir/(ch+'_V23_V12B_HDRI32_Hero.png'))]
         # Macro view is vital to inspect crystalline/organic shape, not just glowing pixels.
         renders.append(render('CAM_BLADE_MACRO',args.output_dir/(ch+'_V22_V12B_HDRI32_Detalle.png')))
         count_after=len([o for o in bpy.data.objects if o.type=='MESH' and not o.name.startswith(TAGS)])
@@ -431,13 +442,13 @@ def main():
            'vfx_objects':len([o for o in bpy.data.objects if o.name.startswith(TAGS)]),
            'approved':False,'human_visual_score':None})
         clear_effects()
-        print('GENESIS_V22_CYCLES_CHANNEL_RENDERED',ch,json.dumps(details),flush=True)
+        print('GENESIS_V23_CYCLES_CHANNEL_RENDERED',ch,json.dumps(details),flush=True)
     if bsdf.inputs['Base Color'].links[0].from_socket!=color_source:
         raise RuntimeError('Changed approved V175 base color!')
     if abs(rough.inputs[1].default_value-.34)>1e-6 or abs(oxide.inputs[1].default_value-.10)>1e-6:
         raise RuntimeError('Changed approved V12B look!')
-    audit={'schema':'Genesis_V22_RealCycles_32bitHDRI_AffinityLookdev',
-      'status':'experimental_not_approved_do_not_show_before_private_7_5_review',
+    audit={'schema':'Genesis_V23_RealCycles_32bitHDRI_PhysicalShapeRefine',
+      'status':'V23_internal_quality_review_pending_private_min_7_5',
       'source_sha256':ORIGINAL,'hdri_sha256':HDRI,
       'hdri_RGB_bits_per_channel':32,'hdri_bits_per_pixel':96,
       'hdri_size':[4096,2048],
@@ -449,6 +460,6 @@ def main():
       'exposure_ev':preset['lighting']['exposure_ev'],
       'agx_look':preset['lighting']['look'],'world_strength':preset['lighting']['world_strength'],
       'results':all_results}
-    (args.output_dir/'v22_affinities_real_cycles_audit.json').write_text(json.dumps(audit,indent=2,ensure_ascii=False))
-    print('GENESIS_V22_REAL_CYCLES_COMPLETE',json.dumps(audit),flush=True)
+    (args.output_dir/'v23_affinities_real_cycles_audit.json').write_text(json.dumps(audit,indent=2,ensure_ascii=False))
+    print('GENESIS_V23_REAL_CYCLES_COMPLETE',json.dumps(audit),flush=True)
 if __name__=='__main__':main()
