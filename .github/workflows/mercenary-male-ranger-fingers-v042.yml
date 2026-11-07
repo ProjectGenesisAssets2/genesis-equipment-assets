@@ -4,7 +4,7 @@ on:
     branches: [experiment/mercenary-ranger-original-finger-rig-v042-20261107]
     paths:
       - scripts/mercenary/fetch_official_quaternius_knight_v041.cjs
-      - scripts/mercenary/audit_official_knight_fingers_v041.py
+      - scripts/mercenary/audit_actual_ranger_v042.py
       - .github/workflows/mercenary-male-ranger-fingers-v042.yml
   workflow_dispatch:
 permissions:
@@ -32,18 +32,17 @@ jobs:
       - name: Audit pre-existing hand/finger joint bones, choose source medieval rig
         run: |
           set -euo pipefail
-          python3 scripts/mercenary/audit_official_knight_fingers_v041.py
+          python3 scripts/mercenary/audit_actual_ranger_v042.py
           python3 - <<'PY'
           import json
           from pathlib import Path
-          p=Path('output/mercenary_ranger_v042/V042_OFFICIAL_RIG_CHECK.json')
+          p=Path('output/mercenary_ranger_v042/V042_ORIGINAL_MALE_RANGER_FINGER_QA.json')
           r=json.loads(p.read_text())
-          assert r['model_entries']>0,'The Standard pack does not contain skinned characters'
-          if not r['qualified_medieval_models']:
-            raise RuntimeError('No pre-rigged medieval male Ranger with individual digit chains')
-          else:
-            print('V042_ACTUAL_FULL_FINGER_RIG_MEDIEVAL_CANDIDATE',r.get('selected_original'),r.get('selected_file_count'))
-            assert r['skin_influence_verified'],'Finger names exist but source skin does not deform with individual finger bones'
+          assert r['status']=='ORIGINAL_FINGER_RIG_SKIN_QA_PASS'
+          assert r['bone_count']==65 and r['finger_skinning_verified']
+          assert r['left_weighted_vertices']>25 and r['right_weighted_vertices']>25
+          assert len(r['left_finger_bone_names'])>=15 and len(r['right_finger_bone_names'])>=15
+          print('V042_REAL_QUATERNIUS_MALE_RANGER_FINGER_SKIN_PASS',r['source_path'])
           PY
       - name: Upload only the qualified unmodified original model and report, no source ZIP or main
         if: always()
