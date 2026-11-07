@@ -1,0 +1,73 @@
+name: Genesis | Real downloaded Meshy candidate1 Blender Cycles EXR32 visual QA
+on:
+  push:
+    branches: [experiment/mercenary-meshy-candidate1-downloader-test-20261107]
+    paths:
+      - scripts/mercenary/render_weary_warrior_original_v002.py
+      - .github/workflows/mercenary-meshy-candidate1-original-render-v002.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect-original-rigless-mesh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 42
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve the precise original candidate1 GLB downloaded by requested GitHub tool
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_candidate1_real output/meshy_candidate1_visual_qa
+          curl -fSL --retry 3 --max-time 200 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13594319410/zip' \
+            -o /tmp/genesis_candidate1_real/original_download.zip
+          unzip -oq /tmp/genesis_candidate1_real/original_download.zip -d /tmp/genesis_candidate1_real
+          echo '0452096d35bb41d992bc3508ee05f9cdc2a6ee34bb472a60c33eb9b22b66f005  /tmp/genesis_candidate1_real/MESHY_CANDIDATE1_ORIGINAL.glb' | sha256sum -c
+      - name: Use verified real studio HDRI 32-bit EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_candidate1_real/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_candidate1_real/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_candidate1_real/blender.tar.xz
+          mkdir -p /tmp/genesis_candidate1_real/blender
+          tar -xJf /tmp/genesis_candidate1_real/blender.tar.xz -C /tmp/genesis_candidate1_real/blender --strip-components=1
+          /tmp/genesis_candidate1_real/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Produce authentic Cycles five-view character/hand test with no invented rig
+        run: |
+          set -euo pipefail
+          /tmp/genesis_candidate1_real/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/render_weary_warrior_original_v002.py -- \
+            --source /tmp/genesis_candidate1_real/MESHY_CANDIDATE1_ORIGINAL.glb \
+            --hdri /tmp/genesis_candidate1_real/studio_small_09_4k.exr \
+            --out output/meshy_candidate1_visual_qa
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('output/meshy_candidate1_visual_qa')
+          q=json.loads((p/'MESHY_CANDIDATE1_VISUAL_QA.json').read_text())
+          assert q['source_armatures']==0 and q['source_meshes']==1
+          assert len(q['renders'])==5
+          assert len(list(p.glob('MESHY_CANDIDATE1_*.png')))==5
+          assert q['hdri_bits_per_rgb_channel']>=32
+          print('MESHY_CANDIDATE1_CYCLES32_FIVE_VIEWS_VERIFIED')
+          PY
+      - name: Upload original rendered evidence only for review, no approval
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-meshy-candidate1-unrigged-real-Cycles32-five-views
+          path: output/meshy_candidate1_visual_qa/
+          retention-days: 7
+          if-no-files-found: warn
