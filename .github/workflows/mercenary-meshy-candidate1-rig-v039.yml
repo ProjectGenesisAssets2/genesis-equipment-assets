@@ -1,0 +1,90 @@
+name: Genesis | Meshy candidate1 actual rig 24 bones and 5 explorer clips V039
+on:
+  push:
+    branches: [experiment/mercenary-meshy-candidate1-rig-v039-20261107]
+    paths:
+      - scripts/mercenary/rig_weary_warrior_candidate1_v039.py
+      - .github/workflows/mercenary-meshy-candidate1-rig-v039.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  actual-rig-and-animations:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover Meshy original CC0 GLB from previous verified download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_c1_v039 output/meshy_candidate1_rig_v039
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13594319410/zip' \
+            -o /tmp/genesis_c1_v039/source.zip
+          unzip -oq /tmp/genesis_c1_v039/source.zip -d /tmp/genesis_c1_v039
+          echo '0452096d35bb41d992bc3508ee05f9cdc2a6ee34bb472a60c33eb9b22b66f005  /tmp/genesis_c1_v039/MESHY_CANDIDATE1_ORIGINAL.glb' | sha256sum -c
+          echo '694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa  candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb' | sha256sum -c
+      - name: Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_c1_v039/blender.tar.xz
+          mkdir -p /tmp/genesis_c1_v039/blender
+          tar -xJf /tmp/genesis_c1_v039/blender.tar.xz \
+            -C /tmp/genesis_c1_v039/blender --strip-components=1
+          /tmp/genesis_c1_v039/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Make real rig of candidate1 and retarget original explorer clips
+        run: |
+          set -euo pipefail
+          /tmp/genesis_c1_v039/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/rig_weary_warrior_candidate1_v039.py -- \
+            --character /tmp/genesis_c1_v039/MESHY_CANDIDATE1_ORIGINAL.glb \
+            --motion_source candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb \
+            --out output/meshy_candidate1_rig_v039
+      - name: Validate native GLB 24-bone skin and five clips, sockets on correct anatomical side
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,struct
+          d=Path('output/meshy_candidate1_rig_v039')
+          p=d/'GENESIS_MESHY_CANDIDATE1_RIGGED_ANIMATED_V039.glb'
+          b=p.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<II',b,4)==(2,len(b))
+          n,t=struct.unpack_from('<I4s',b,12)
+          assert t==b'JSON'
+          g=json.loads(b[20:20+n])
+          assert len(g['skins'])==1 and len(g['skins'][0]['joints'])==24
+          assert len(g['animations'])==5 and len(g['meshes'])==1
+          assert all('GENESIS_MESHY_' in x['name'] for x in g['animations'])
+          attrs=g['meshes'][0]['primitives'][0]['attributes']
+          assert 'JOINTS_0' in attrs and 'WEIGHTS_0' in attrs
+          names={n.get('name'):i for i,n in enumerate(g['nodes'])}
+          assert all(k in names for k in ['RightHand','LeftHand','GENESIS_SOCKET_WEAPON_R','GENESIS_SOCKET_SHIELD_L'])
+          parent={c:i for i,node in enumerate(g['nodes']) for c in node.get('children',[])}
+          def ancestor(i,expected):
+            while i in parent:
+              i=parent[i]
+              if i==expected:return True
+            return False
+          assert ancestor(names['GENESIS_SOCKET_WEAPON_R'],names['RightHand'])
+          assert ancestor(names['GENESIS_SOCKET_SHIELD_L'],names['LeftHand'])
+          qa=json.loads((d/'GENESIS_MESHY_CANDIDATE1_RIG_V039_QA.json').read_text())
+          assert qa['weighted_vertices']==qa['mesh_vertices']
+          assert qa['human_approved'] is False and qa['playcanvas_tested'] is False
+          assert hashlib.sha256(b).hexdigest()==qa['output_sha256']
+          print('V039_REAL_RIG_GLB_TECHNICAL_PASS',qa['output_sha256'],[x['name'] for x in g['animations']])
+          PY
+      - name: Preserve GLB and rig report from actual Blender run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-meshy-candidate1-v039-real-rig-five-clips-UNAPPROVED
+          path: output/meshy_candidate1_rig_v039/
+          if-no-files-found: warn
+          retention-days: 7
