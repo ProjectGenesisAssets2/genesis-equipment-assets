@@ -89,7 +89,7 @@ def build_ice_overlay(coord, along, side, normal, intensity):
     links.new(move.outputs[0],noise.inputs['Vector'])
     warp=ns.new('ShaderNodeVectorMath');warp.operation='SCALE'
     links.new(noise.outputs['Color'],warp.inputs[0])
-    warp.inputs[3].default_value=.16
+    warp.inputs['Scale'].default_value=.16
     warped=ns.new('ShaderNodeVectorMath');warped.operation='ADD'
     links.new(move.outputs[0],warped.inputs[0])
     links.new(warp.outputs[0],warped.inputs[1])
