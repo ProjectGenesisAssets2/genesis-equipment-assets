@@ -1,0 +1,116 @@
+name: Genesis V32 - espada V03 escarcha parcial intensidad Cycles EXR32
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v32-hielo-escarcha-localizada-animacion-20261107]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: genesis-v32-ice-test-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  render-v32:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source scripts and approved presets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v32_local_ice_animated.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          test -s presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json
+          test -s render-input/v03-blob-manifest.json
+      - name: Recover original V03 sword from existing repository blob manifest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/v32-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/v32-original-v03.glb' | sha256sum -c
+      - name: Recover 32-bit/channel HDRI EXR (never JPG)
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/v32-studio.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/v32-studio.exr' | sha256sum -c
+      - name: Install Blender Foundation 4.5.13 LTS
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/v32-blender.tar.xz
+          mkdir -p /tmp/v32-blender
+          tar -xJf /tmp/v32-blender.tar.xz -C /tmp/v32-blender --strip-components=1
+          /tmp/v32-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render actual original V03 with limited frost at 0 50 and 100
+        timeout-minutes: 66
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v32-render
+          /tmp/v32-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v32_local_ice_animated.py -- --input /tmp/v32-original-v03.glb --hdri /tmp/v32-studio.exr --output-dir /tmp/v32-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 48 --channels Hielo
+          for name in V32_Escarcha_0_Hero.png V32_Escarcha_20_Hero.png V32_Escarcha_40_Hero.png V32_Escarcha_60_Hero.png V32_Escarcha_80_Hero.png V32_Escarcha_100_Hero.png V32_Escarcha_100_Detalle.png v32_escarcha_intensidad_audit.json; do test -s "/tmp/v32-render/$name"; done
+      - name: Verify real images and flag source material as preliminary not original
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,json
+          root=Path('/tmp/v32-render')
+          a=json.loads((root/'v32_escarcha_intensidad_audit.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
+          assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['geometry_modified'] is False and a['base_material_modified'] is False
+          assert a['material_source_exact_original_blend'] is False
+          assert a['intensity_animation_created_in_blender'] is True
+          for pct,view in [(0,'Hero'),(20,'Hero'),(40,'Hero'),(60,'Hero'),(80,'Hero'),(100,'Hero'),(100,'Detalle')]:
+            p=root/f'V32_Escarcha_{pct}_{view}.png'
+            raw=p.read_bytes()
+            assert raw[:8]==b'\x89PNG\r\n\x1a\n' and struct.unpack_from('>II',raw,16)==(1200,1500)
+            assert len(raw)>90000
+          print('V32_REAL_CYCLES_PRELIMINARY_PASS')
+          PY
+      - name: Assemble actual rendered frames into animated GIF (no synthetic frames)
+        run: |
+          python3 -m venv /tmp/v32-gif-env
+          /tmp/v32-gif-env/bin/pip install --quiet pillow
+          /tmp/v32-gif-env/bin/python - <<'PY'
+          from PIL import Image,ImageOps
+          from pathlib import Path
+          root=Path('/tmp/v32-render')
+          values=(0,20,40,60,80,100)
+          frames=[]
+          for v in values:
+              with Image.open(root/f'V32_Escarcha_{v}_Hero.png') as im:
+                  frames.append(im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS))
+          pingpong=frames+frames[-2:0:-1]
+          pingpong[0].save(root/'V32_Escarcha_Intensidad_0_a_100.gif',save_all=True,
+                           append_images=pingpong[1:],duration=260,loop=0,optimize=True)
+          assert (root/'V32_Escarcha_Intensidad_0_a_100.gif').stat().st_size>30000
+          PY
+      - name: Archive render previews
+        run: |
+          mkdir -p public-previews/v32-localized-ice-animation-cycles-hdri32
+          cp /tmp/v32-render/V32_Escarcha_*.png public-previews/v32-localized-ice-animation-cycles-hdri32/
+          cp /tmp/v32-render/V32_Escarcha_Intensidad_0_a_100.gif public-previews/v32-localized-ice-animation-cycles-hdri32/
+          cp /tmp/v32-render/v32_escarcha_intensidad_audit.json public-previews/v32-localized-ice-animation-cycles-hdri32/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V32-Ice-Intensity-RealCycles-NotApproved
+          path: public-previews/v32-localized-ice-animation-cycles-hdri32/
+          retention-days: 14
+      - name: Publish visual review images ONLY to V32 experimental branch
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v32-hielo-escarcha-localizada-animacion-20261107
+          git checkout -B experiment/v32-hielo-escarcha-localizada-animacion-20261107 FETCH_HEAD
+          mkdir -p public-previews/v32-localized-ice-animation-cycles-hdri32
+          cp /tmp/v32-render/V32_Escarcha_*.png public-previews/v32-localized-ice-animation-cycles-hdri32/
+          cp /tmp/v32-render/v32_escarcha_intensidad_audit.json public-previews/v32-localized-ice-animation-cycles-hdri32/
+          git add public-previews/v32-localized-ice-animation-cycles-hdri32/
+          if ! git diff --cached --quiet; then
+            git commit -m 'review(v32): real Cycles preview of 0/50/100 partial ice intensity'
+            git push origin HEAD:experiment/v32-hielo-escarcha-localizada-animacion-20261107
+          fi
