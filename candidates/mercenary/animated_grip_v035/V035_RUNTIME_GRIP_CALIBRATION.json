@@ -1,0 +1,23 @@
+{
+  "status": "V035_EXPERIMENTAL_NOT_APPROVED",
+  "character": "experimental V031 deformed hand; 5 original V029 noncombat clips",
+  "source_weapon": "real V12B original V175 (protected source not published)",
+  "weapon_handedness": "RightHand only",
+  "shield_handedness": "LeftHand only",
+  "right_weapon_world_x_delta_m_from_v031": 0.06,
+  "right_weapon_world_z_delta_m_from_v031": -0.045,
+  "right_weapon_original_world_hand_offset_m": [
+    -0.013,
+    -0.013,
+    -0.003
+  ],
+  "right_weapon_v035_world_hand_offset_m": [
+    0.047,
+    -0.013,
+    -0.048
+  ],
+  "note": "World-space fit derived only from static Blender render; PlayCanvas local transform must be calibrated separately",
+  "finger_geometry_source": "V031 experimental",
+  "playcanvas_tested": false,
+  "human_approved": false
+}
