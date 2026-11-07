@@ -1,0 +1,24 @@
+{
+  "status": "V024_EXPERIMENTAL_NOT_VISUALLY_APPROVED",
+  "scope": "walk, inspect sword, inspect shield, walk equipped, dynamic item attachment to hand sockets",
+  "source_sha256": "9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76",
+  "output_sha256": "16f89fadd6ef44e302da71ee770bfc137b13af8f2e2e13ac74a8198158ab12a2",
+  "source_actions": 19,
+  "export_actions": 5,
+  "export_clip_names": [
+    "GENESIS_MERC_IDLE_V024",
+    "GENESIS_MERC_WALK_V024",
+    "GENESIS_MERC_INSPECT_SWORD_V024",
+    "GENESIS_MERC_INSPECT_SHIELD_V024",
+    "GENESIS_MERC_WALK_EQUIPPED_V024"
+  ],
+  "bones": 24,
+  "source_mesh_geometry_and_materials_unchanged": true,
+  "socket_weapon_node": 26,
+  "socket_shield_node": 27,
+  "weapons_embedded_in_character_glb": false,
+  "equip_logic": "Attach existing inventory GLB instances to named sockets; calibrated local offsets needed for exact model grips",
+  "playcanvas_tested": false,
+  "human_visual_approved": false,
+  "source_glb_unmodified": true
+}
