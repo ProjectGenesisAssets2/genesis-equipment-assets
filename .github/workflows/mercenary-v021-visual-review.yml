@@ -1,0 +1,39 @@
+name: Genesis | V021 original Cycles JPEG encoded visual review
+on:
+  push:
+    branches: [experiment/mercenary-natural-combat-v021]
+    paths: ['.github/workflows/mercenary-v021-visual-review.yml']
+  workflow_dispatch:
+permissions: {contents: write}
+jobs:
+  visual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Encode actual already rendered V021 Cycles JPEGs unchanged for inspection
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,base64
+          p=Path('candidates/mercenary/natural_equipped_v021')
+          images=sorted(p.glob('V021_*.jpg'))
+          assert len(images)==6
+          d=p/'visual_review_b64';d.mkdir(exist_ok=True)
+          for f in images:
+           data=f.read_bytes()
+           assert data[:3]==b'\xff\xd8\xff' and len(data)>30000
+           (d/(f.name+'.base64.txt')).write_text(base64.b64encode(data).decode('ascii'))
+           print(f.name,hashlib.sha256(data).hexdigest(),len(data))
+          PY
+      - name: Commit only small encoded genuine photograph bytes, no generative concepts
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/natural_equipped_v021/visual_review_b64
+          git diff --cached --quiet || git commit -m 'V021 actual Blender Cycles review JPEGs encoded for owner inspection'
+          git fetch origin experiment/mercenary-natural-combat-v021
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-natural-combat-v021
