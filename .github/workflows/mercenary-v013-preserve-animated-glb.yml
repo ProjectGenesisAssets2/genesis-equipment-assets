@@ -1,0 +1,55 @@
+name: Genesis V013 | Preserve experimental animated mercenary rig in public organization branch
+on:
+  push:
+    branches: [experiment/mercenary-quaternius-ual2-shield-v013]
+    paths: [.github/workflows/mercenary-v013-preserve-animated-glb.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve previously verified 15-animation CC0 mercenary artifact
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_ual2
+          curl -fSL --retry 3 --max-time 180 \
+            -H "Authorization: Bearer \${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/\${GITHUB_REPOSITORY}/actions/artifacts/13549682852/zip" \
+            -o /tmp/genesis_v013_cc0.zip
+          unzip -q /tmp/genesis_v013_cc0.zip -d /tmp/genesis_ual2
+          test -s /tmp/genesis_ual2/mercenary_quaternius_ual2_shield_guard_v013.glb
+          test -s /tmp/genesis_ual2/RETARGET_QA_V013.json
+          python3 - <<'PY'
+          import hashlib,json,struct
+          from pathlib import Path
+          x=Path('/tmp/genesis_ual2/mercenary_quaternius_ual2_shield_guard_v013.glb')
+          data=x.read_bytes();n=struct.unpack_from('<I',data,12)[0]
+          g=json.loads(data[20:20+n])
+          report=json.loads(Path('/tmp/genesis_ual2/RETARGET_QA_V013.json').read_text())
+          assert len(g['animations'])==15 and len(g['skins'][0]['joints'])==24
+          assert hashlib.sha256(data).hexdigest()==report['retargeted_glb_sha256']
+          assert len(g['meshes'])>0
+          assert g['animations'][-1]['name']=='GENESIS_CC0_WALK_SHIELD_GUARD_V013'
+          print('AUTHENTIC_CC0_RIG_AUDIT_OK',len(data),report['retargeted_glb_sha256'])
+          PY
+      - name: Keep exact candidate GLB and proof in isolated assets-organization branch
+        run: |
+          set -euo pipefail
+          mkdir -p candidates/mercenary/quaternius_ual2_v013
+          cp /tmp/genesis_ual2/mercenary_quaternius_ual2_shield_guard_v013.glb candidates/mercenary/quaternius_ual2_v013/
+          cp /tmp/genesis_ual2/RETARGET_QA_V013.json candidates/mercenary/quaternius_ual2_v013/
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/quaternius_ual2_v013
+          git diff --cached --quiet || git commit -m 'CC0 candidate ONLY: 15-animation mercenary GLB retargeted from Quaternius UAL2'
+          git fetch origin experiment/mercenary-quaternius-ual2-shield-v013
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-quaternius-ual2-shield-v013
