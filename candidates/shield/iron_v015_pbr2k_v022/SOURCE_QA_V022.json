@@ -1,0 +1,19 @@
+{
+  "status": "V022_AUTHENTIC_3D_SHIELD_CANDIDATE_NOT_OWNER_APPROVED",
+  "original_V015_source_glb_sha256": "96f90bb8c836a92922d0961d243f57dbd43768bc1995161baee489ba30580711",
+  "candidate_sha256": "083f8c77e29e48964da5de638e4bc8f6a3507e8583c3dcfa4c5c9e512da3b84e",
+  "candidate_bytes": 3361820,
+  "mesh_count": 3,
+  "materials": 4,
+  "images": 9,
+  "gltf_extensions_used": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization",
+    "KHR_texture_transform"
+  ],
+  "original_blend_untouched": true,
+  "game_integrated": false,
+  "source": "gburdesedev/genesis-blender-render/experiment/escudo-v015-export-equipment-v018",
+  "geometry": "original 15 mesh forged iron + oak + goat leather V015; 66cm"
+}
