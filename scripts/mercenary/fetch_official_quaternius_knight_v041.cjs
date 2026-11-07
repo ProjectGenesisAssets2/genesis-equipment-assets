@@ -18,9 +18,13 @@ const DEST='/tmp/genesis_v041/quaternius_fantasy_standard.zip';
     const label=(await b.innerText()).trim();
     console.log('V041_FREE_BUTTON',label);
     if(!/no thanks|download/i.test(label))throw new Error('No free publisher-supported download route');
+    const navigation=page.waitForURL(url=>!/\/purchase(?:[?#]|$)/.test(url.toString()),{timeout:30000}).catch(err=>console.error('V041_URL_WAIT',String(err)));
     await b.click({timeout:18000});
-    await page.waitForLoadState('domcontentloaded',{timeout:45000}).catch(()=>{});
+    await navigation;
+    await page.waitForLoadState('domcontentloaded',{timeout:20000}).catch(()=>{});
+    await page.waitForTimeout(2500);
     console.log('V041_AFTER_FREE_PAGE',page.url());
+    console.log('V041_BODY',JSON.stringify((await page.locator('body').innerText()).slice(0,4000)));
     const links=await page.locator('a').evaluateAll(els=>els.map(e=>({
       label:(e.textContent||'').trim().replace(/\s+/g,' ').slice(0,170),
       href:e.href,
