@@ -292,6 +292,9 @@ def run():
     for variant in ('A','B'):
         d=build_frost(variant,coord,along,side,normal)
         bpy.context.view_layer.update()
+        # Pack the original HDRI and embedded V175 bitmaps into the editable candidate scene.
+        # This changes the experimental .blend only; source GLB and EXR are not overwritten.
+        bpy.ops.file.pack_all()
         blender_file=args.output_dir/('GENESIS_V28_Escarcha_'+variant+'_Real_3D.blend')
         bpy.ops.wm.save_as_mainfile(filepath=str(blender_file),compress=True)
         # Blender scene is real and editable; master sword comes from exact original GLB.
