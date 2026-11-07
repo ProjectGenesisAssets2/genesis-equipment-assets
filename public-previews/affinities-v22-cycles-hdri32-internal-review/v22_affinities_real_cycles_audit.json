@@ -1,0 +1,150 @@
+{
+  "schema": "Genesis_V22_RealCycles_32bitHDRI_AffinityLookdev",
+  "status": "experimental_not_approved_do_not_show_before_private_7_5_review",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_bits_per_pixel": 96,
+  "hdri_size": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 96,
+  "approved_base_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_triangles": 2150,
+  "blade_triangles": 98,
+  "geometry_modified": false,
+  "base_material_modified": false,
+  "approved_rayo_modified": false,
+  "approved_fire_modified": false,
+  "no_concepts": true,
+  "no_imagegen": true,
+  "vfx_not_yet_adapted_to_PlayCanvas": true,
+  "exposure_ev": 0.5,
+  "agx_look": "AgX - Medium High Contrast",
+  "world_strength": 0.9,
+  "results": [
+    {
+      "affinity": "Hielo",
+      "details": {
+        "faceted_crystals": 90,
+        "frost_lines": 36,
+        "color": "physically tinted pale blue translucent ice",
+        "visible_metal_central_ridge": true
+      },
+      "renders": [
+        {
+          "name": "Hielo_V22_V12B_HDRI32_Hero.png",
+          "bytes": 1916030,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Hielo_V22_V12B_HDRI32_Detalle.png",
+          "bytes": 2042747,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 138,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Luz",
+      "details": {
+        "radiant_glints": 24,
+        "cross_beam_glints": 12,
+        "diffuse_filigree": 5,
+        "not_a_single_yellow_paint_dot": true
+      },
+      "renders": [
+        {
+          "name": "Luz_V22_V12B_HDRI32_Hero.png",
+          "bytes": 1907390,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Luz_V22_V12B_HDRI32_Detalle.png",
+          "bytes": 2019112,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 58,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Sombra",
+      "details": {
+        "ink_wisps": 18,
+        "torn_smoke_veils": 13,
+        "colors": "dark charcoal + subtle purple",
+        "no_electricity_pulses": true
+      },
+      "renders": [
+        {
+          "name": "Sombra_V22_V12B_HDRI32_Hero.png",
+          "bytes": 1906826,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Sombra_V22_V12B_HDRI32_Detalle.png",
+          "bytes": 2006344,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 37,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Naturaleza",
+      "details": {
+        "branching_vines": 6,
+        "physical_leaves": 66,
+        "subtle_pollen": 18,
+        "organic_real_geometry": true
+      },
+      "renders": [
+        {
+          "name": "Naturaleza_V22_V12B_HDRI32_Hero.png",
+          "bytes": 1910929,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Naturaleza_V22_V12B_HDRI32_Detalle.png",
+          "bytes": 2032692,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 159,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Tierra",
+      "details": {
+        "angular_faults": 11,
+        "branch_faults": 33,
+        "faceted_rock_fragments": 55,
+        "earth_rough_non_emissive_material": true
+      },
+      "renders": [
+        {
+          "name": "Tierra_V22_V12B_HDRI32_Hero.png",
+          "bytes": 1911643,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Tierra_V22_V12B_HDRI32_Detalle.png",
+          "bytes": 2031219,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 110,
+      "approved": false,
+      "human_visual_score": null
+    }
+  ]
+}
