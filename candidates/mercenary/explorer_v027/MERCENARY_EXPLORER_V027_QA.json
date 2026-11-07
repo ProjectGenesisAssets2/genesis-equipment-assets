@@ -1,0 +1,18 @@
+{
+  "status": "V027_EXPERIMENTAL_CYCLES_REVIEW_PENDING",
+  "source_v026_sha256": "67018a545a424aaf4ca3e049889a459b938097b3a552f24563c2ba9a1ea00db4",
+  "source_v023_sha256": "9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76",
+  "output_sha256": "f3e2abe505a6c4b283ae122d248cfbe5fb06a2769a9b8956bc53000f162e657c",
+  "animations": [
+    "GENESIS_MERC_IDLE_V027",
+    "GENESIS_MERC_WALK_V027",
+    "GENESIS_MERC_INSPECT_SWORD_V027",
+    "GENESIS_MERC_INSPECT_SHIELD_V027",
+    "GENESIS_MERC_WALK_EQUIPPED_V027"
+  ],
+  "rig_bones": 24,
+  "changes": "lowered sword inspection arm (2-3.5% Agree Gesture); retain V026 shield and gait",
+  "meshes_unchanged": true,
+  "playcanvas_tested": false,
+  "human_approved": false
+}
