@@ -1,0 +1,152 @@
+{
+  "schema": "Genesis_V23_RealCycles_32bitHDRI_PhysicalShapeRefine",
+  "status": "V23_internal_quality_review_pending_private_min_7_5",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_bits_per_pixel": 96,
+  "hdri_size": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 96,
+  "approved_base_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_triangles": 2150,
+  "blade_triangles": 98,
+  "geometry_modified": false,
+  "base_material_modified": false,
+  "approved_rayo_modified": false,
+  "approved_fire_modified": false,
+  "no_concepts": true,
+  "no_imagegen": true,
+  "vfx_not_yet_adapted_to_PlayCanvas": true,
+  "exposure_ev": 0.5,
+  "agx_look": "AgX - Medium High Contrast",
+  "world_strength": 0.9,
+  "results": [
+    {
+      "affinity": "Hielo",
+      "details": {
+        "ice_colonies": 6,
+        "faceted_crystals": 42,
+        "frost_dendrites": 78,
+        "PBR_transmission": 0.77,
+        "original_ridge_visible": true
+      },
+      "renders": [
+        {
+          "name": "Hielo_V23_V12B_HDRI32_Hero.png",
+          "bytes": 1910119,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Hielo_V23_V12B_HDRI32_Detalle.png",
+          "bytes": 2030793,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 136,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Luz",
+      "details": {
+        "warm_white_radiance_centres": 14,
+        "diffuse_soft_halations": 14,
+        "curved_specular_accents": 7,
+        "no_cross_symbol": true
+      },
+      "renders": [
+        {
+          "name": "Luz_V23_V12B_HDRI32_Hero.png",
+          "bytes": 1898700,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Luz_V23_V12B_HDRI32_Detalle.png",
+          "bytes": 2007354,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 35,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Sombra",
+      "details": {
+        "dark_etched_tracks": 12,
+        "noise_masked_transparent_smoke_sheets": 12,
+        "smoke_alpha_max": 0.48,
+        "not_opaque_lavender_paper": true
+      },
+      "renders": [
+        {
+          "name": "Sombra_V23_V12B_HDRI32_Hero.png",
+          "bytes": 1904814,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Sombra_V23_V12B_HDRI32_Detalle.png",
+          "bytes": 2008577,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 30,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Naturaleza",
+      "details": {
+        "full_creeping_vines": 3,
+        "natural_secondary_branches": 24,
+        "large_asymmetrical_leaves": 48,
+        "pollen": 15,
+        "no_repetitive_grass_stitch_pattern": true
+      },
+      "renders": [
+        {
+          "name": "Naturaleza_V23_V12B_HDRI32_Hero.png",
+          "bytes": 1911401,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Naturaleza_V23_V12B_HDRI32_Detalle.png",
+          "bytes": 2024337,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 141,
+      "approved": false,
+      "human_visual_score": null
+    },
+    {
+      "affinity": "Tierra",
+      "details": {
+        "nonuniform_fracture_centres": 5,
+        "black_fracture_branches": 25,
+        "raised_faceted_earth_stone": 80,
+        "not_just_glittering_gold_dots": true
+      },
+      "renders": [
+        {
+          "name": "Tierra_V23_V12B_HDRI32_Hero.png",
+          "bytes": 1909452,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Tierra_V23_V12B_HDRI32_Detalle.png",
+          "bytes": 2022770,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 120,
+      "approved": false,
+      "human_visual_score": null
+    }
+  ]
+}
