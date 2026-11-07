@@ -18,7 +18,7 @@ jobs:
           import hashlib,json,struct
           from pathlib import Path
           rig=Path('candidates/mercenary/natural_equipped_v021/mercenary_equipment_natural_v021.glb')
-          shield=Path('candidates/shield/iron_v015_pbr2k_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb')
+          shield=Path('candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb')
           for p in (rig,shield):
            data=p.read_bytes();assert data[:4]==b'glTF'
            assert struct.unpack_from('<I',data,8)[0]==len(data)
@@ -28,7 +28,7 @@ jobs:
           r=json.loads(Path('candidates/mercenary/natural_equipped_v021/MERCENARY_NATURAL_MOTION_V021.json').read_text())
           assert hashlib.sha256(rig.read_bytes()).hexdigest()==r['output_sha256']
           assert r['total_animations']==19
-          assert hashlib.sha256(shield.read_bytes()).hexdigest()=='083f8c77e29e48964da5de638e4bc8f6a3507e8583c3dcfa4c5c9e512da3b84e'
+          assert hashlib.sha256(shield.read_bytes()).hexdigest()=='a169a827b70621ec21eeaa894b3cf10eebfacc0eb1ed5bb575d9ff8f275a6ec2'
           PY
       - name: Hydrate V12B iron material sword from protected original Git blobs only in ephemeral public runner
         env:
@@ -58,7 +58,7 @@ jobs:
           /tmp/genesis_v022/blender/blender -b -t 4 --python-exit-code 1 \
             --python scripts/mercenary/qa_natural_dual_real_v022.py -- \
             --character candidates/mercenary/natural_equipped_v021/mercenary_equipment_natural_v021.glb \
-            --shield candidates/shield/iron_v015_pbr2k_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
             --sword /tmp/genesis_v022/GENESIS_LICENSED_V12B_TEMP.glb \
             --hdri /tmp/genesis_v022/studio_small_09_4k.exr \
             --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
@@ -71,7 +71,8 @@ jobs:
           assert r['target_original_bones']==24 and r['total_actions']>=19
           assert r['approved_shield_model_mounted'] and r['sword_attached_to_real_bone_socket']
           assert r['shield_attached_to_real_left_hand_socket']
-          assert r['shield_v015_original_15_mesh_components']>=12
+          assert r['shield_v015_optimization_kept_15_real_parts']
+          assert r['shield_gltf_draw_mesh_groups']>=2
           assert len(r['renders'])==6 and all(x['shield_head_vertical_clearance_m']>.22 for x in r['renders'])
           print('V022_CYCLES_2_REAL_GEAR_POSES_VALIDATED',[(x['image'],x['shield_head_vertical_clearance_m']) for x in r['renders']])
           PY
