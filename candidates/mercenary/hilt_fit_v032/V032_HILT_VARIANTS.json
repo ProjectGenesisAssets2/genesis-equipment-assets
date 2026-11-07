@@ -1,0 +1,15 @@
+{
+  "status": "V032_CALIBRATION_SWEEP_PENDING_VISUAL_REVIEW",
+  "character": "V031 experimental glove, existing V029 5 action clips",
+  "source_weapon": "V12B real V175 exact SHA256 verified",
+  "anatomical_side": "RightHand only; LeftHand shield unchanged",
+  "sword_world_x_variants_m": [
+    0,
+    0.02,
+    0.04,
+    0.06
+  ],
+  "approved": false,
+  "playcanvas_tested": false,
+  "visual_score": null
+}
