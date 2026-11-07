@@ -30,6 +30,8 @@ jobs:
           print('V035_GLTF_RIGHT_LEFT_ANATOMY_AND_NONCOMBAT_MOTION_OK')
           PY
       - name: Restore real V12B original sword only within ephemeral public Action
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
