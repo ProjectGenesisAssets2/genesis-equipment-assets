@@ -5,7 +5,7 @@ on:
     paths:
       - scripts/mercenary/fetch_official_quaternius_knight_v041.cjs
       - scripts/mercenary/audit_official_knight_fingers_v041.py
-      - .github/workflows/mercenary-finger-knight-v042.yml
+      - .github/workflows/mercenary-male-ranger-fingers-v042.yml
   workflow_dispatch:
 permissions:
   contents: read
