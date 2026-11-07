@@ -44,6 +44,14 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/v28-animated
           /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/animate_v28_real_hoarfrost_a_b_cycles32.py -- --input /tmp/genesis-v28-sword.glb --hdri /tmp/studio_small_09_4k.exr --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --output-dir /tmp/v28-animated --samples 18 --setup-samples 12 --hero-samples 64 --resolution-pct 58 --intensity 100 --variant both
+      - name: Install FFmpeg system encoder on Ubuntu
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
       - name: Encode to MP4 and GIF from real Cycles frames
         timeout-minutes: 7
         run: |
