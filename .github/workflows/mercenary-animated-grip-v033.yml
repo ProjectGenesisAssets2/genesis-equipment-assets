@@ -1,0 +1,175 @@
+name: Genesis | V033 real animation inspection and equipped walk with V031 grip + V032 60mm sword fit
+on:
+  push:
+    branches: [experiment/mercenary-v033-animated-grip-20261107]
+    paths: [.github/workflows/mercenary-animated-grip-v033.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  original-animation-grip-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve exact previous experimental V031 rig, five V029 clips and both native sockets
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_animated_grip_v033 /tmp/genesis_anim_v033
+          echo '92c68a22d5917a5b731266500a46e232489ecdae2de8a60391bacf3675060076  candidates/mercenary/grip_v031/mercenary_grip_corrected_v031.glb' | sha256sum -c
+          python3 - <<'PY'
+          import json,struct
+          from pathlib import Path
+          p=Path('candidates/mercenary/grip_v031/mercenary_grip_corrected_v031.glb')
+          b=p.read_bytes();n=struct.unpack_from('<I',b,12)[0]
+          g=json.loads(b[20:20+n]);nodes={x.get('name'):i for i,x in enumerate(g['nodes'])}
+          assert len(g['animations'])==5 and len(g['skins'][0]['joints'])==24
+          assert nodes['GENESIS_SOCKET_WEAPON_R'] in g['nodes'][nodes['RightHand']]['children']
+          assert nodes['GENESIS_SOCKET_SHIELD_L'] in g['nodes'][nodes['LeftHand']]['children']
+          print('V033_GLTF_RIGHT_LEFT_ANATOMY_AND_NONCOMBAT_MOTION_OK')
+          PY
+      - name: Restore real V12B original sword only within ephemeral public Action
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_anim_v033/ORIGINAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_anim_v033/ORIGINAL_V12B_SWORD.glb' | sha256sum -c
+      - name: 32-bit EXR real environment lighting, verified SHA
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_anim_v033/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_anim_v033/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_anim_v033/blender.tar.xz
+          mkdir -p /tmp/genesis_anim_v033/blender
+          tar -xJf /tmp/genesis_anim_v033/blender.tar.xz -C /tmp/genesis_anim_v033/blender --strip-components=1
+          /tmp/genesis_anim_v033/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Create true native-rig 3D inspection and walk frame render script
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/mercenary/qa_explorer_v024.py').read_text().replace('V024','V033').replace('v024','v033')
+          for clip in ('IDLE','WALK','INSPECT_SWORD','INSPECT_SHIELD','WALK_EQUIPPED'):
+            s=s.replace('GENESIS_MERC_'+clip+'_V033','GENESIS_MERC_'+clip+'_V029')
+          s=s.replace("hand=right_palm+Vector((-.013,-.013,-.003))",
+                      "hand=right_palm+Vector((.047,-.013,-.003))") # +60 mm along world X from source pose
+          assert "hand=right_palm+Vector((.047,-.013,-.003))" in s
+          s=s.replace('scene.cycles.samples=38','scene.cycles.samples=14')
+          s=s.replace("cam.location=center+Vector(camdir).normalized()*5.5",
+                      "focus=anchor.matrix_world.translation if 'GRIP' in label else center\n  cam.location=focus+Vector(camdir).normalized()*5.5")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.68 if 'GRIP' in label else 2.5")
+          s=s.replace('scene.render.resolution_x=900;scene.render.resolution_y=1080',
+                      'scene.render.resolution_x=560;scene.render.resolution_y=680')
+          s='\n'.join(line for line in s.splitlines() if not line.lstrip().startswith("render('V033_"))+'\n'
+          needle=" report={'status':"
+          assert needle in s
+          calls=(
+            " for i in range(12):\n"
+            "  render('V033_INSPECT_%02d'%i,expected[2],i/11.,True,True,(.62,-1,.15))\n"
+            " for i in range(8):\n"
+            "  render('V033_WALK_%02d'%i,expected[4],i/8.,True,True,(.75,-1,.15))\n"
+            " render('V033_GRIP_REAR_60MM',expected[2],.54,True,False,(-.60,1,.16))\n"
+          )
+          s=s.replace(needle,calls+needle)
+          import ast
+          ast.parse(s)
+          Path('scripts/mercenary/qa_animated_grip_v033.py').write_text(s)
+          print('V033_SOURCE_REAL_ACTIONS_BLENDER_SCRIPT_COMPILED')
+          PY
+      - name: Render 12 authentic Cycles inspection poses and 8 equipped-walk poses plus rear grip
+        run: |
+          set -euo pipefail
+          /tmp/genesis_anim_v033/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_animated_grip_v033.py -- \
+            --character candidates/mercenary/grip_v031/mercenary_grip_corrected_v031.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --sword /tmp/genesis_anim_v033/ORIGINAL_V12B_SWORD.glb \
+            --hdri /tmp/genesis_anim_v033/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_animated_grip_v033
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          d=Path('output/mercenary_animated_grip_v033')
+          qa=json.loads((d/'MERCENARY_EXPLORER_V033_RENDER_QA.json').read_text())
+          assert qa['weapon_parent_correct'] and qa['shield_parent_correct']
+          assert len(qa['renders'])==21 and all(r['real_Cycles'] for r in qa['renders'])
+          assert len(list(d.glob('V033_INSPECT_*.png')))==12
+          assert len(list(d.glob('V033_WALK_*.png')))==8
+          assert (d/'V033_GRIP_REAR_60MM.png').exists()
+          print('V033_REAL_CYCLES_ANIMATION_FRAMES_21_QA_PASS')
+          PY
+      - name: Convert ONLY authentic Cycles PNG samples to playable GIF and MP4
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          d=Path('output/mercenary_animated_grip_v033')
+          for kind,duration in [('INSPECT',180),('WALK',130)]:
+            files=sorted(d.glob('V033_'+kind+'_*.png'))
+            expected=12 if kind=='INSPECT' else 8
+            assert len(files)==expected
+            frames=[Image.open(f).convert('RGB') for f in files]
+            frames[0].save(d/('V033_REAL_'+kind+'_CYCLES.gif'),save_all=True,append_images=frames[1:],
+                           optimize=True,duration=duration,loop=0)
+          import json
+          (d/'V033_RUNTIME_GRIP_CALIBRATION.json').write_text(json.dumps({
+            'status':'V033_EXPERIMENTAL_NOT_APPROVED',
+            'character':'experimental V031 deformed hand; 5 original V029 noncombat clips',
+            'source_weapon':'real V12B original V175 (protected source not published)',
+            'weapon_handedness':'RightHand only','shield_handedness':'LeftHand only',
+            'right_weapon_world_x_delta_m_from_v031':0.060,
+            'right_weapon_original_world_hand_offset_m':[-.013,-.013,-.003],
+            'right_weapon_v033_world_hand_offset_m':[.047,-.013,-.003],
+            'note':'World-space fit derived only from static Blender render; PlayCanvas local transform must be calibrated separately',
+            'finger_geometry_source':'V031 experimental',
+            'playcanvas_tested':False,'human_approved':False},indent=2))
+          PY
+          ffmpeg -hide_banner -loglevel error -y -framerate 7 \
+            -i 'output/mercenary_animated_grip_v033/V033_INSPECT_%02d.png' \
+            -c:v libx264 -pix_fmt yuv420p \
+            output/mercenary_animated_grip_v033/V033_REAL_INSPECT_CYCLES.mp4
+          ffmpeg -hide_banner -loglevel error -y -framerate 8 \
+            -i 'output/mercenary_animated_grip_v033/V033_WALK_%02d.png' \
+            -c:v libx264 -pix_fmt yuv420p \
+            output/mercenary_animated_grip_v033/V033_REAL_WALK_CYCLES.mp4
+          test -s output/mercenary_animated_grip_v033/V033_REAL_INSPECT_CYCLES.mp4
+          test -s output/mercenary_animated_grip_v033/V033_REAL_WALK_CYCLES.mp4
+          echo V033_REAL_VIDEO_FROM_CYCLES_VERIFIED
+      - name: Retain candidate JSON and 2 keyframes only (no master or sword)
+        run: |
+          set -euo pipefail
+          mkdir -p candidates/mercenary/animated_grip_v033
+          cp output/mercenary_animated_grip_v033/V033_RUNTIME_GRIP_CALIBRATION.json candidates/mercenary/animated_grip_v033/
+          cp output/mercenary_animated_grip_v033/V033_REAL_INSPECT_CYCLES.gif candidates/mercenary/animated_grip_v033/
+          cp output/mercenary_animated_grip_v033/V033_REAL_WALK_CYCLES.gif candidates/mercenary/animated_grip_v033/
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/animated_grip_v033
+          git diff --cached --quiet || git commit -m 'V033 exploratory authentic Cycles HDRI32 animation samples with actual right-hand grip'
+          git fetch origin experiment/mercenary-v033-animated-grip-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-v033-animated-grip-20261107
+      - name: Upload complete real 3D animation frames, GIF/MP4, QA (do not upload sword)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v033-real-mercenary-inspection-walk-gifs-Cycles32
+          path: output/mercenary_animated_grip_v033/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Destroy original protected temporary sword file
+        if: always()
+        run: rm -f /tmp/genesis_anim_v033/ORIGINAL_V12B_SWORD.glb
