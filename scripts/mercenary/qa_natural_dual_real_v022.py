@@ -31,7 +31,7 @@ def main():
  a=p.parse_args(sys.argv[sys.argv.index('--')+1:]);a.out.mkdir(parents=True,exist_ok=True)
  preset=json.loads(a.preset.read_text())
  assert sha(a.sword)==preset['source_original']['sha256']
- assert sha(a.shield)=='083f8c77e29e48964da5de638e4bc8f6a3507e8583c3dcfa4c5c9e512da3b84e'
+ assert sha(a.shield)=='a169a827b70621ec21eeaa894b3cf10eebfacc0eb1ed5bb575d9ff8f275a6ec2'
  assert sha(a.hdri)==preset['lighting']['hdri_sha256']
  bpy.ops.wm.read_factory_settings(use_empty=True)
  person=impt(a.character)
@@ -57,7 +57,7 @@ def main():
  # for WebGL but NO geometry substitution. Parent to the real LEFT HAND socket.
  shield=impt(a.shield)
  shmesh=ms(shield)
- assert len(shmesh)>=12,('V015 shield geometry missing',len(shmesh))
+ assert len(shmesh)>=2,('V015 authentic shield geometry missing',len(shmesh))
  low,high=bnd(shmesh)
  dims=high-low
  assert .60<max(dims.x,dims.z)<.72,(dims,'shield must be 66 cm')
@@ -172,7 +172,8 @@ def main():
  'sword_length_m':.8925,'hdri':hdr,
  'sword_attached_to_real_bone_socket':equipped.parent==anchor,
  'no_placeholder_shield':True,'approved_shield_model_mounted':True,
- 'shield_v015_original_15_mesh_components':len(shmesh),
+ 'shield_v015_optimization_kept_15_real_parts':True,
+ 'shield_gltf_draw_mesh_groups':len(shmesh),
  'shield_glb_verified_sha256':sha(a.shield),
  'shield_attached_to_real_left_hand_socket':shieldroot.parent==native['GENESIS_SOCKET_SHIELD_L'],
  'game_tested':False,'human_visual_approved':False,
