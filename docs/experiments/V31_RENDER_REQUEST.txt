@@ -1,0 +1,1 @@
+Trigger real Cycles V31 preview render using public GitHub Actions. Experiment only. Never merge into main. Material is preliminary approximation until exact original HIELO .blend is transferred.
