@@ -1,0 +1,44 @@
+name: Genesis | V022 inspection of actual Cycles double equipment renders
+on:
+  push:
+    branches: [experiment/mercenary-dual-equipment-v022]
+    paths: [.github/workflows/mercenary-v022-visual-review-b64.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify render provenance and encode original Cycles JPGs for pixel inspection
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,hashlib,json
+          from pathlib import Path
+          root=Path('candidates/mercenary/dual_equipment_v022')
+          info=json.loads((root/'MERCENARY_REAL_DOUBLE_EQUIPMENT_V022_QA.json').read_text())
+          imgs=sorted(root.glob('*.jpg'))
+          assert len(info['renders'])==4 and len(imgs)==4
+          out=root/'vision_review_b64';out.mkdir(exist_ok=True)
+          proof=[]
+          for image in imgs:
+              raw=image.read_bytes()
+              assert raw[:3]==bytes.fromhex('ffd8ff') and len(raw)>30000
+              (out/(image.name+'.base64.txt')).write_text(base64.b64encode(raw).decode('ascii'))
+              proof.append({'name':image.name,'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)})
+          (out/'manifest.json').write_text(json.dumps(proof,indent=2))
+          print('FOUR_AUTHENTIC_CYCLES_REAL_RENDER_SAMPLES',len(imgs))
+          PY
+      - name: Commit only byte-proven visual reference text to public experiment branch
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/dual_equipment_v022/vision_review_b64
+          git diff --cached --quiet || git commit -m 'V022 four actual Cycles real images for anatomy and grip review'
+          git fetch origin experiment/mercenary-dual-equipment-v022
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-dual-equipment-v022
