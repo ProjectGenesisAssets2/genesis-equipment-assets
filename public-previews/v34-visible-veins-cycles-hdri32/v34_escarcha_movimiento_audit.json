@@ -1,0 +1,103 @@
+{
+  "schema": "Genesis_V34_IndependentTimeIntensity_PRELIMINARY_Cycles32",
+  "status": "V25_ICE_ONLY_QUALITY_REVIEW_PENDING",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_bits_per_pixel": 96,
+  "hdri_size": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 48,
+  "approved_base_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_triangles": 2150,
+  "blade_triangles": 98,
+  "geometry_modified": false,
+  "base_material_modified": false,
+  "approved_rayo_modified": false,
+  "approved_fire_modified": false,
+  "no_concepts": true,
+  "no_imagegen": true,
+  "vfx_not_yet_adapted_to_PlayCanvas": true,
+  "exposure_ev": 0.5,
+  "agx_look": "AgX - Medium High Contrast",
+  "world_strength": 0.9,
+  "results": [
+    {
+      "affinity": "Hielo",
+      "details": {
+        "version": "V34",
+        "original_hielo_blend_applied": false,
+        "material": "provisional procedural lookdev, original .blend not yet transferred",
+        "limited_blade_length_fraction": 0.4,
+        "single_edge_patch": true,
+        "max_local_opacity_factor": 0.8,
+        "central_ridge_clear": true,
+        "geometric_crystals_added": 0,
+        "intensity_node": "V34_Ice_Intensity",
+        "intensity_has_animation_keyframes": false,
+        "animated_time_node": "V34_Ice_Animation_Time",
+        "time_loop_keyframes": {
+          "1": 0,
+          "97": 1
+        },
+        "moving_veins": true,
+        "moving_wave": true,
+        "intensity_and_time_independent": true,
+        "original_sword_mesh_modified": false,
+        "overlay_faces": 3120
+      },
+      "renders": [
+        {
+          "name": "V34_Escarcha_I100_T1_Detalle.png"
+        },
+        {
+          "name": "V34_Escarcha_I100_T1_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I20_T1_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T13_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T1_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T25_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T37_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T49_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T61_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T73_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T85_Hero.png"
+        },
+        {
+          "name": "V34_Escarcha_I50_T97_Hero.png"
+        }
+      ],
+      "vfx_objects": 1,
+      "approved": false,
+      "human_visual_score": null
+    }
+  ],
+  "intensity_animation_created_in_blender": false,
+  "continuous_ice_motion_animated_in_blender": true,
+  "intensity_and_motion_independent": true,
+  "material_source_exact_original_blend": false,
+  "not_approved": true,
+  "motion_pixel_difference_blade_rect_0_255": 0.35081204492163404,
+  "motion_visibility_threshold_passed": true
+}
