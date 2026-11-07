@@ -1,0 +1,179 @@
+name: Genesis | V037 continuous arc bent right glove - zero inverted triangles Cycles HDRI32
+on:
+  push:
+    branches: [experiment/mercenary-v037-arc-finger-bend-20261107]
+    paths:
+      - scripts/mercenary/arc_finger_bend_v037.py
+      - .github/workflows/mercenary-arc-fingers-v037.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  topological-and-real-cycles-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate two actual RIGHT-hand glove arcs with no inverted faces, preserving GLTF and source
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_arc_fingers_v037 /tmp/genesis_arc_v037/models
+          echo '694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa  candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb' | sha256sum -c
+          for VAR in A B; do
+            python3 scripts/mercenary/arc_finger_bend_v037.py \
+              --source candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb \
+              --out /tmp/genesis_arc_v037/models --variant "$VAR"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib,struct
+          root=Path('/tmp/genesis_arc_v037/models')
+          for v in 'AB':
+            p=root/f'mercenary_arc_fingers_{v}_v037.glb'
+            raw=p.read_bytes();jl=struct.unpack_from('<I',raw,12)[0]
+            g=json.loads(raw[20:20+jl]);names={n.get('name'):i for i,n in enumerate(g['nodes'])}
+            assert len(g['skins'][0]['joints'])==24 and len(g['animations'])==5
+            assert names['GENESIS_SOCKET_WEAPON_R'] in g['nodes'][names['RightHand']]['children']
+            assert names['GENESIS_SOCKET_SHIELD_L'] in g['nodes'][names['LeftHand']]['children']
+            qa=json.loads((root/f'MERCENARY_ARC_FINGERS_{v}_V037_QA.json').read_text())
+            assert qa['flipped_triangles']==0 and qa['collapsed_triangles']==0
+            assert qa['right_hand_edited_vertices']>190
+            assert hashlib.sha256(raw).hexdigest()==qa['output_sha256']
+          print('V037_BOTH_TRUE_RIGHT_GLOVES_ZERO_INVERTED_TOPOLOGY_PASS')
+          PY
+      - name: Restore original licensed V12B sword with authenticated GitHub API for transient render
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_arc_v037/ORIGINAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_arc_v037/ORIGINAL_V12B_SWORD.glb' | sha256sum -c
+      - name: Real Poly Haven EXR 32-bit environment lighting, source SHA verified
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_arc_v037/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_arc_v037/studio_small_09_4k.exr' | sha256sum -c
+      - name: Blender 4.5.13 Foundation LTS from official source
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_arc_v037/blender.tar.xz
+          mkdir -p /tmp/genesis_arc_v037/blender
+          tar -xJf /tmp/genesis_arc_v037/blender.tar.xz -C /tmp/genesis_arc_v037/blender --strip-components=1
+          /tmp/genesis_arc_v037/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Prepare identical source verified Cycles front/back hand cameras plus full-body inspection
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/mercenary/qa_explorer_v024.py').read_text().replace('V024','V037').replace('v024','v037')
+          for clip in ('IDLE','WALK','INSPECT_SWORD','INSPECT_SHIELD','WALK_EQUIPPED'):
+            s=s.replace('GENESIS_MERC_'+clip+'_V037','GENESIS_MERC_'+clip+'_V029')
+          s=s.replace("hand=right_palm+Vector((-.013,-.013,-.003))",
+                      "hand=right_palm+Vector((.047,-.013,-.048))")
+          assert "hand=right_palm+Vector((.047,-.013,-.048))" in s
+          s=s.replace("scene.cycles.samples=38","scene.cycles.samples=26")
+          s=s.replace("cam.location=center+Vector(camdir).normalized()*5.5",
+                      "focus=anchor.matrix_world.translation if 'GRIP' in label else center\n  cam.location=focus+Vector(camdir).normalized()*1.65")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.67 if 'GRIP' in label else 2.5")
+          s=s.replace("scene.render.resolution_x=900;scene.render.resolution_y=1080",
+                      "scene.render.resolution_x=720;scene.render.resolution_y=850")
+          s='\n'.join(x for x in s.splitlines() if not x.lstrip().startswith("render('V037_"))+'\n'
+          needle=" report={'status':"
+          calls=(
+            " render('V037_01_GRIP_FRONT',expected[2],.54,True,False,(.55,-1,.16))\n"
+            " render('V037_02_GRIP_BACK',expected[2],.54,True,False,(-.60,1,.16))\n"
+            " render('V037_03_INSPECTION_FULLBODY',expected[2],.54,True,True,(.65,-1,.16))\n"
+          )
+          assert needle in s
+          s=s.replace(needle,calls+needle)
+          import ast
+          ast.parse(s)
+          assert s.count("render('V037_")==3
+          Path('scripts/mercenary/qa_arc_fingers_v037.py').write_text(s)
+          print('V037_REAL_CYCLES_BLENDER_QA_COMPILED')
+          PY
+      - name: Render actual two geometries each in front/back closeup and one inspection pose, original V12B and V015
+        run: |
+          set -euo pipefail
+          for VAR in A B; do
+            mkdir -p "output/mercenary_arc_fingers_v037/$VAR"
+            /tmp/genesis_arc_v037/blender/blender -b -t 4 --python-exit-code 1 \
+              --python scripts/mercenary/qa_arc_fingers_v037.py -- \
+              --character "/tmp/genesis_arc_v037/models/mercenary_arc_fingers_${VAR}_v037.glb" \
+              --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+              --sword /tmp/genesis_arc_v037/ORIGINAL_V12B_SWORD.glb \
+              --hdri /tmp/genesis_arc_v037/studio_small_09_4k.exr \
+              --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+              --out "output/mercenary_arc_fingers_v037/$VAR"
+            python3 - "$VAR" <<'PY'
+          import sys,json
+          from pathlib import Path
+          out=Path('output/mercenary_arc_fingers_v037')/sys.argv[1]
+          r=json.loads((out/'MERCENARY_EXPLORER_V037_RENDER_QA.json').read_text())
+          assert len(r['renders'])==3 and r['weapon_parent_correct'] and r['shield_parent_correct']
+          assert r['bones']==24 and len(r['clips'])==5
+          print('V037_REAL_CYCLES_ARC_FINGER_'+sys.argv[1]+'_QA_PASS')
+          PY
+          done
+      - name: Preserve geometry candidate GLBs only in experimental branch, with six real QA renders and metrics
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          from pathlib import Path
+          import json,shutil
+          root=Path('output/mercenary_arc_fingers_v037')
+          stage=Path('candidates/mercenary/arc_fingers_v037')
+          stage.mkdir(parents=True,exist_ok=True)
+          out=Image.new('RGB',(650*2,750*3),'#e6e6e6')
+          views=('V037_01_GRIP_FRONT.png','V037_02_GRIP_BACK.png','V037_03_INSPECTION_FULLBODY.png')
+          for ci,var in enumerate('AB'):
+            src=Path('/tmp/genesis_arc_v037/models')
+            shutil.copy2(src/f'mercenary_arc_fingers_{var}_v037.glb',stage)
+            shutil.copy2(src/f'MERCENARY_ARC_FINGERS_{var}_V037_QA.json',stage)
+            for ri,name in enumerate(views):
+              image=Image.open(root/var/name).convert('RGB')
+              image.thumbnail((640,706),Image.Resampling.LANCZOS)
+              out.paste(image,(ci*650+(650-image.width)//2,ri*750+5))
+              ImageDraw.Draw(out).text((ci*650+12,ri*750+713),f'V037 {var}: {name}',fill='#111')
+          out.save(root/'V037_REAL_ARC_FINGER_COMPARISON.jpg',quality=91)
+          shutil.copy2(root/'V037_REAL_ARC_FINGER_COMPARISON.jpg',stage)
+          report={'status':'V037_EXPERIMENTAL_REAL_CYCLES_RIGHT_GLOVE_ARC_PENDING_USER_REVIEW',
+           'candidates':['A','B'],'source':'original V029 rig, SHA-verified, NOT V031 or V035 previous damaged geometry',
+           'triangles_inverted_both':0,'normals':'rotated with continuous arc, no face winding flips',
+           'sword':'genuine original V12B V175 only ephemerally','hand_socket':'GENESIS_SOCKET_WEAPON_R',
+           'shield_socket':'GENESIS_SOCKET_SHIELD_L',
+           'mount_offset_world_m':[.047,-.013,-.048],
+           'render_count':6,'playcanvas_tested':False,'human_approved':False}
+          (stage/'V037_HAND_CURL_REVIEW.json').write_text(json.dumps(report,indent=2))
+          print('V037_SIX_REAL_RENDER_REVIEW_READY')
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/arc_fingers_v037
+          git diff --cached --quiet || git commit -m 'V037 experimental arc bend of actual right glove, 0 inverted triangles, original Cycles HDRI32'
+          git fetch origin experiment/mercenary-v037-arc-finger-bend-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-v037-arc-finger-bend-20261107
+      - name: Upload real full-size Cycles six views and candidate GLBs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v037-actual-finger-arc-zero-inversions-Cycles32
+          path: |
+            output/mercenary_arc_fingers_v037/
+            /tmp/genesis_arc_v037/models/*.glb
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Delete licensed source sword from temporary runner
+        if: always()
+        run: rm -f /tmp/genesis_arc_v037/ORIGINAL_V12B_SWORD.glb
