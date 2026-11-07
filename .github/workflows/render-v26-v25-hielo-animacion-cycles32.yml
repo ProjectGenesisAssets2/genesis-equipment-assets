@@ -1,0 +1,131 @@
+name: Genesis V26 - V25 Hielo real Cycles animation 24fps HDRI32
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v25-hielo-bordes-cristal-refraccion-20261106]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v26-cycles-ice-animation
+  cancel-in-progress: true
+jobs:
+  animate-v25-ice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact V25 ice source, V12B iron and other approved channels unchanged
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/animate_v26_v25_ice_cycles32.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          test "$(git hash-object scripts/fab_sword/render_v25_hielo_cycles_hdri32.py)" = 683c921eb8f204beb110d267f0839b64421e16d8
+          test "$(git hash-object vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs)" = fc4a3722e7c07b33d034b6d1ead5504f480a6345
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+      - name: Restore exact original 2150-triangle sword V03/V175
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v26-original.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v26-original.glb' | sha256sum -c
+      - name: Restore original 4K 32-bits-per-RGB-channel EXR HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender Foundation 4.5.13 LTS and ffmpeg
+        timeout-minutes: 9
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-v26-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-v26-blender --strip-components=1
+          /tmp/genesis-v26-blender/blender --version | grep -F 'Blender 4.5.13'
+          if ! command -v ffmpeg >/dev/null; then
+            python3 -m venv /tmp/genesis-v26-ffmpeg-venv
+            /tmp/genesis-v26-ffmpeg-venv/bin/pip install --quiet imageio-ffmpeg==0.6.0
+            mkdir -p /tmp/genesis-v26-ffmpeg-bin
+            ln -s "$(/tmp/genesis-v26-ffmpeg-venv/bin/python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')" /tmp/genesis-v26-ffmpeg-bin/ffmpeg
+            echo /tmp/genesis-v26-ffmpeg-bin >> "$GITHUB_PATH"
+          fi
+      - name: Render genuine 48 sequential Cycles frames preserving V25 geometry and exact 32bpc HDRI
+        timeout-minutes: 42
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v26-ice
+          /tmp/genesis-v26-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/animate_v26_v25_ice_cycles32.py -- --input /tmp/genesis-v26-original.glb --hdri /tmp/studio_small_09_4k.exr --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --output-dir /tmp/genesis-v26-ice --setup-samples 16 --samples 18 --fps 24 --frames 48 --resolution-pct 60 --intensity 75
+          test "$(find /tmp/genesis-v26-ice/frames -name 'Ice_V25_Animated_*.png' | wc -l)" -eq 48
+          test -s /tmp/genesis-v26-ice/animation_audit.json
+      - name: Validate EXR HDRI material fidelity, loop continuity, and real animated pixels
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib,struct
+          p=Path('/tmp/genesis-v26-ice')
+          a=json.loads((p/'animation_audit.json').read_text())
+          preset=json.loads(Path('presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_depth_RGBbits_per_channel']==32 and a['hdri_exr_resolution']==[4096,2048]
+          assert a['hdri_exr_sha256']==preset['lighting']['hdri_sha256']
+          assert a['original_glb_sha256']==preset['source_original']['sha256']
+          assert a['approved_V12B_material_preserved'] and a['approved_V25_ice_model_reused_without_redesign']
+          assert a['frame_count']==48 and a['fps']==24 and a['duration_s']==2.
+          assert a['loop_parameter_difference']<1e-10 and a['effect_objects']>250
+          assert a['original_mesh_modified'] is False
+          assert a['fire_V20C1_modified'] is False and a['rayo_V07_modified'] is False
+          files=sorted((p/'frames').glob('Ice_V25_Animated_*.png'))
+          assert len(files)==48
+          for q in files:
+            data=q.read_bytes()
+            assert data[:8]==b'\x89PNG\r\n\x1a\n'
+            assert struct.unpack_from('>II',data,16)==(720,900)
+            assert len(data)>30000
+          h=lambda k:hashlib.sha256(files[k].read_bytes()).hexdigest()
+          assert len({h(k) for k in [0,12,24,36,47]})==5, 'no visually changing real frames'
+          print('GENESIS_V26_REAL_CYCLES_24FPS_EXR32_LOOP_VALIDATED',json.dumps({'frame_count':len(files),'sample_hashes':[h(i)[:12] for i in (0,12,24,36,47)],'effect_objects':a['effect_objects']}))
+          PY
+      - name: Encode real 24fps MP4 and 20fps GIF with representative real frames
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v26-publish
+          ffmpeg -y -loglevel error -framerate 24 -i /tmp/genesis-v26-ice/frames/Ice_V25_Animated_%03d.png -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4
+          ffmpeg -y -loglevel error -i /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4 -vf 'fps=20,scale=600:-1:flags=lanczos,palettegen' /tmp/genesis-v26-publish/ice_palette.png
+          ffmpeg -y -loglevel error -i /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4 -i /tmp/genesis-v26-publish/ice_palette.png -lavfi 'fps=20,scale=600:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3' -loop 0 /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Loop20fps.gif
+          cp /tmp/genesis-v26-ice/frames/Ice_V25_Animated_000.png /tmp/genesis-v26-publish/Keyframe_000.png
+          cp /tmp/genesis-v26-ice/frames/Ice_V25_Animated_012.png /tmp/genesis-v26-publish/Keyframe_012.png
+          cp /tmp/genesis-v26-ice/frames/Ice_V25_Animated_024.png /tmp/genesis-v26-publish/Keyframe_024.png
+          cp /tmp/genesis-v26-ice/animation_audit.json /tmp/genesis-v26-publish/animation_audit.json
+          test -s /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4
+          test -s /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Loop20fps.gif
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate,nb_frames -of default=nw=1 /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4
+      - name: Stage only experimental videos, original source untouched
+        run: |
+          set -euo pipefail
+          mkdir -p public-previews/hielo-v26-cycles32-animation-private-qa
+          cp /tmp/genesis-v26-publish/Hielo_*.mp4 /tmp/genesis-v26-publish/Hielo_*.gif /tmp/genesis-v26-publish/Keyframe_*.png /tmp/genesis-v26-publish/animation_audit.json public-previews/hielo-v26-cycles32-animation-private-qa/
+          ! find public-previews/hielo-v26-cycles32-animation-private-qa -type f \( -name '*.glb' -o -name '*.blend' -o -name '*.exr' \) | grep -q .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V26-Real-Cycles-HieloV25-24fps-Preview
+          path: public-previews/hielo-v26-cycles32-animation-private-qa/
+          retention-days: 14
+      - name: Publish only to isolated V26 experiment branch
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v26-hielo-v25-animacion-cycles24fps-20261106
+          git checkout -B experiment/v26-hielo-v25-animacion-cycles24fps-20261106 FETCH_HEAD
+          git add public-previews/hielo-v26-cycles32-animation-private-qa/
+          if git diff --cached --quiet; then echo 'No changes'; else
+            git commit -m 'preview(v26): real Cycles 24fps V25 ice animation with approved EXR32 HDRI'
+            git push origin HEAD:experiment/v26-hielo-v25-animacion-cycles24fps-20261106
+          fi
+      - name: Cleanup temp source and 32bit EXR
+        if: always()
+        run: rm -f /tmp/genesis-v26-original.glb /tmp/studio_small_09_4k.exr
