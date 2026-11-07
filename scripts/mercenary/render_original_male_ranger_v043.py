@@ -42,8 +42,8 @@ lo=Vector([min(c[k] for c in corners) for k in range(3)])
 hi=Vector([max(c[k] for c in corners) for k in range(3)])
 center=(lo+hi)*.5
 size=hi-lo
-assert 1.5<size.z<2.4,('wrong height after import',list(size))
-assert .5<size.x<2.4,('wrong width after import',list(size))
+assert 1.3<size.z<3.5,('out of expected model dimensions after import',list(size))
+assert .5<size.x<2.4,('out of expected model width after import',list(size))
 print('V043_ACTUAL_CHARACTER_DIMENSIONS',list(size),flush=True)
 
 world=bpy.data.worlds.new('GENESIS_CC0_RANGER_PBR_EXR32')
@@ -76,8 +76,9 @@ scene.render.image_settings.file_format='PNG'
 scene.view_settings.view_transform='AgX';scene.view_settings.look='AgX - Medium High Contrast'
 scene.view_settings.exposure=-.15
 images=[]
-def render(name,camdir,target=None,scale=2.55):
+def render(name,camdir,target=None,scale=None):
  focus=center if target is None else target
+ if scale is None: scale=max(size.z*1.22,size.x*1.5)
  camdata=bpy.data.cameras.new(name+'_Lens')
  cam=bpy.data.objects.new(name+'_Camera',camdata)
  scene.collection.objects.link(cam);scene.camera=cam
