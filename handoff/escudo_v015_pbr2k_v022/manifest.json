@@ -1,0 +1,12 @@
+{
+  "status": "V022_GAME_CANDIDATE_UNAPPROVED",
+  "input_sha256": "96f90bb8c836a92922d0961d243f57dbd43768bc1995161baee489ba30580711",
+  "output_sha256": "083f8c77e29e48964da5de638e4bc8f6a3507e8583c3dcfa4c5c9e512da3b84e",
+  "compressed_sha256": "4961fd0dce218102d2039c8f3af9186879228d683c9c4de86b3bfbef28d543b7",
+  "bytes": 3361820,
+  "compressed_bytes": 3091314,
+  "num_chunks": 8,
+  "chunk_raw_bytes": 400000,
+  "glb_filename": "escudo_hierro_v015_PBR2K_WEBP_v022.glb",
+  "note": "experimental, authentic model V015 with textures only optimized to 2K WebP. Original V015 4K master untouched"
+}
