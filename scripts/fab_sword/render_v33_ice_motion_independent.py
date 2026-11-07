@@ -191,7 +191,9 @@ def main():
     root=Path(opts.output_dir)
     audit=json.loads((root/'v25_hielo_cycles_audit.json').read_text())
     audit['schema']='Genesis_V33_IndependentTimeIntensity_PRELIMINARY_Cycles32'
-    audit['intensity_animation_created_in_blender']=False\n    audit['continuous_ice_motion_animated_in_blender']=True\n    audit['intensity_and_motion_independent']=True
+    audit['intensity_animation_created_in_blender']=False
+    audit['continuous_ice_motion_animated_in_blender']=True
+    audit['intensity_and_motion_independent']=True
     audit['material_source_exact_original_blend']=False
     audit['not_approved']=True
     audit['results'][0]['renders']=[{'name':p.name} for p in sorted(root.glob('V33_Escarcha_*.png'))]
