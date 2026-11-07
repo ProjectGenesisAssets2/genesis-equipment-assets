@@ -1,0 +1,112 @@
+name: Genesis | V030 actual mercenary handedness and grip anatomy audit
+on:
+  push:
+    branches:
+      - experiment/mercenary-v030-hand-anatomy-audit-20261107
+    paths:
+      - scripts/mercenary/qa_hand_anatomy_v030.py
+      - .github/workflows/mercenary-hand-anatomy-v030.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  hand-anatomy-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify V029 actual existing GLB and exact socket-to-hand parentage, signs and geometric hand centroids
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_hand_anatomy_v030 /tmp/genesis_hand_v030
+          echo '694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa  candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb' | sha256sum -c
+          python3 scripts/mercenary/qa_hand_anatomy_v030.py \
+            --character candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb \
+            --out output/mercenary_hand_anatomy_v030/ANATOMY_QA_V030.json
+      - name: Restore original V12B sword only temporarily (never add to git)
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_hand_v030/ORIGINAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_hand_v030/ORIGINAL_V12B_SWORD.glb' | sha256sum -c
+      - name: Retrieve authentic 32bit EXR and validate hash
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_hand_v030/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_hand_v030/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS for real Cycles three-angle diagnostic
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_hand_v030/blender.tar.xz
+          mkdir -p /tmp/genesis_hand_v030/blender
+          tar -xJf /tmp/genesis_hand_v030/blender.tar.xz -C /tmp/genesis_hand_v030/blender --strip-components=1
+          /tmp/genesis_hand_v030/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Derive independent close-up camera-only QA from proven V024 Cycles code
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path('scripts/mercenary/qa_explorer_v024.py').read_text()
+          s=source.replace('V024','V030').replace('v024','v030')
+          s=s.replace('_V030','_V029')
+          s=s.replace("cam.location=center+Vector(camdir).normalized()*5.5",
+             "focus=anchor.matrix_world.translation if has_sword else native['GENESIS_SOCKET_SHIELD_L'].matrix_world.translation\n  cam.location=focus+Vector(camdir).normalized()*1.65")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.68")
+          s=s.replace("scene.cycles.samples=38","scene.cycles.samples=44")
+          lines=[line for line in s.splitlines() if not line.lstrip().startswith("render('V030_")]
+          src='\n'.join(lines)
+          needle=" report={'status':"
+          assert needle in src
+          body=(
+           " render('V030_01_RIGHT_SWORD_PALM_FRONT',expected[2],.54,True,False,(.55,-1,.16))\n"
+           " render('V030_02_RIGHT_SWORD_PALM_BACK',expected[2],.54,True,False,(-.6,1,.16))\n"
+           " render('V030_03_LEFT_SHIELD_GRIP_FRONT',expected[3],.54,False,True,(-.6,-1,.15))\n"
+          )
+          src=src.replace(needle,body+needle)
+          assert 'GENESIS_MERC_INSPECT_SWORD_V029' in src and 'GENESIS_MERC_INSPECT_SHIELD_V029' in src
+          assert 'cam_data.ortho_scale=.68' in src
+          assert src.count("render('V030_")==3
+          dest=Path('/tmp/genesis_hand_v030/qa_v030_true_glove_closeups.py')
+          dest.write_text(src+'\n')
+          import ast
+          ast.parse(src)
+          print('V030_CYCLES_CLOSEUP_SCRIPT_OK')
+          PY
+      - name: Render actual right palm front/reverse and left shield grip with original sources
+        run: |
+          set -euo pipefail
+          /tmp/genesis_hand_v030/blender/blender -b -t 4 --python-exit-code 1 \
+            --python /tmp/genesis_hand_v030/qa_v030_true_glove_closeups.py -- \
+            --character candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --sword /tmp/genesis_hand_v030/ORIGINAL_V12B_SWORD.glb \
+            --hdri /tmp/genesis_hand_v030/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_hand_anatomy_v030
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('output/mercenary_hand_anatomy_v030')
+          r=json.loads((p/'MERCENARY_EXPLORER_V030_RENDER_QA.json').read_text())
+          assert len(r['renders'])==3 and r['weapon_parent_correct'] and r['shield_parent_correct']
+          assert len(list(p.glob('V030_*.png')))==3
+          print('V030_TRUE_GLOVE_CYCLES_CLOSEUP_QA_OK')
+          PY
+      - name: Upload original Cycles closeups and anatomical JSON only, not sword source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v030-anatomy-handness-actual-Cycles32
+          path: output/mercenary_hand_anatomy_v030/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Delete ephemeral protected sword
+        if: always()
+        run: rm -f /tmp/genesis_hand_v030/ORIGINAL_V12B_SWORD.glb
