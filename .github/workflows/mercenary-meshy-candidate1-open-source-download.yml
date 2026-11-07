@@ -1,0 +1,60 @@
+name: Genesis | Meshy candidate 1 - pinned open-source downloader GLB provenance QA
+on:
+  push:
+    branches: [experiment/mercenary-meshy-candidate1-downloader-test-20261107]
+    paths: [.github/workflows/mercenary-meshy-candidate1-open-source-download.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  mesh-candidate1-download:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python uv for pinned MIT-licensed Meshy community downloader
+        uses: astral-sh/setup-uv@v6
+      - name: Node 22 for exact upstream WASM viewer conversion
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run user-requested Shuvam-Banerji-Seal meshy-glb-downloader (locked SHA)
+        env:
+          MESHY_URL: https://www.meshy.ai/3d-models/a-3D-model-of-a-young-weary-warrior-clad-in-worn-leather-armor-and-a-hooded-cloak-The-character-should-have-a-gaunt-face-with-piercing-eyes-a-determined-jawline-and-a-few-days-growth-of-stubble-Their-expression-is-one-of-grim-resolve-hinting-at-a-difficult-past-The-style-should-be-heavily-influenced-by-Arthur-Rackham-with-intricate-linework-a-muted-color-palette-dominated-by-earthy-tones-and-a-touch-of-the-fantastical-Medieval-Fantasy-Hand-Painted-Highly-Detailed-Apose-Full-Body-v2-01969c2e-f1bb-7898-a9dd-c2104e943510
+        run: |
+          set -euo pipefail
+          mkdir -p output/meshy_candidate1_weary_warrior
+          uvx --from "git+https://github.com/Shuvam-Banerji-Seal/meshy-glb-downloader@c30d6a23768f2cd90a2cf5134e21a6620d7854e8" \
+             meshy-glb "$MESHY_URL" \
+             -o output/meshy_candidate1_weary_warrior/MESHY_CANDIDATE1_ORIGINAL.glb -v
+          sha256sum output/meshy_candidate1_weary_warrior/MESHY_CANDIDATE1_ORIGINAL.glb \
+            | tee output/meshy_candidate1_weary_warrior/ORIGINAL_SHA256.txt
+      - name: Run existing Genesis candidate1 anatomy and skin rig static audit
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/audit_weary_warrior_candidate1.py \
+             output/meshy_candidate1_weary_warrior/MESHY_CANDIDATE1_ORIGINAL.glb \
+             --out output/meshy_candidate1_weary_warrior/MESHY_CANDIDATE1_ANATOMY_QA.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('output/meshy_candidate1_weary_warrior')
+          r=json.loads((p/'MESHY_CANDIDATE1_ANATOMY_QA.json').read_text())
+          assert r['glb_version']==2 and r['mesh_count']>=1
+          print('MESHy_CANDIDATE1_REAL_GLB_DOWNLOADED',r['glb_sha256'],
+                'SKINS',r['skin_count'],'BONES',r['joint_count_per_skin'],
+                'RIGHT',r['right_hand_nodes'],'LEFT',r['left_hand_nodes'],
+                'FINGER_BONES',r['finger_bones_count'],
+                'ANIMATIONS',r['animation_names'])
+          if not r['skin_count']:
+            print('NEEDS_RIGGING: CC0 model is presently static and cannot equip via bone sockets until properly rigged')
+          PY
+      - name: Keep verifiable original bytes and QA in experimental workflow artifact only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-candidate1-meshy-original-glb-and-hand-rig-qa
+          path: output/meshy_candidate1_weary_warrior/
+          retention-days: 7
+          if-no-files-found: warn
