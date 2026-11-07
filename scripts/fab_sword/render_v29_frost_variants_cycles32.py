@@ -205,7 +205,8 @@ def build_frost(coord,along,side,normal,intensity,variant):
             powder_grains+=1
     # Light atmospheric frost is primarily matte, no neon electric edges.
     return {
-      'powder_coat_thin_noise_masked_pbr_strips':coats,\n      'variant':variant,'type':'real_hoarfrost' if variant=='A' else 'hoarfrost_slightly_enchanted',
+      'powder_coat_thin_noise_masked_pbr_strips':coats,
+      'variant':variant,'type':'real_hoarfrost' if variant=='A' else 'hoarfrost_slightly_enchanted',
       'principal_form':'feathery branching matte rime adherent to original steel',
       'nucleation_sites':48,'feather_axes':axes,'secondary_fern_arms':branches,
       'tertiary_dendrites':subbranches,'powder_rime_grains':powder_grains,
