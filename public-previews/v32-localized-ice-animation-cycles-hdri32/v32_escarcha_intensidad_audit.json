@@ -1,0 +1,84 @@
+{
+  "schema": "Genesis_V32_LocalizedIce_Animated_PRELIMINARY_Cycles32",
+  "status": "V25_ICE_ONLY_QUALITY_REVIEW_PENDING",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_bits_per_pixel": 96,
+  "hdri_size": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 48,
+  "approved_base_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_triangles": 2150,
+  "blade_triangles": 98,
+  "geometry_modified": false,
+  "base_material_modified": false,
+  "approved_rayo_modified": false,
+  "approved_fire_modified": false,
+  "no_concepts": true,
+  "no_imagegen": true,
+  "vfx_not_yet_adapted_to_PlayCanvas": true,
+  "exposure_ev": 0.5,
+  "agx_look": "AgX - Medium High Contrast",
+  "world_strength": 0.9,
+  "results": [
+    {
+      "affinity": "Hielo",
+      "details": {
+        "version": "V31",
+        "original_hielo_blend_applied": false,
+        "source_hielo_blend": "Library source identified, not yet in GitHub",
+        "material": "procedural preview of Hielo ingot colors/veins, NOT original node-tree",
+        "limited_blade_length_fraction": 0.27,
+        "max_local_opacity": 0.52,
+        "single_edge_patch": true,
+        "advancing_growth_front": true,
+        "central_ridge_clear": true,
+        "geometric_crystals_added": 0,
+        "animation_keyframes": {
+          "1": 0,
+          "21": 20,
+          "41": 40,
+          "61": 60,
+          "81": 80,
+          "101": 100
+        },
+        "original_sword_mesh_modified": false,
+        "overlay_faces": 3120
+      },
+      "renders": [
+        {
+          "name": "V32_Escarcha_0_Hero.png"
+        },
+        {
+          "name": "V32_Escarcha_100_Detalle.png"
+        },
+        {
+          "name": "V32_Escarcha_100_Hero.png"
+        },
+        {
+          "name": "V32_Escarcha_20_Hero.png"
+        },
+        {
+          "name": "V32_Escarcha_40_Hero.png"
+        },
+        {
+          "name": "V32_Escarcha_60_Hero.png"
+        },
+        {
+          "name": "V32_Escarcha_80_Hero.png"
+        }
+      ],
+      "vfx_objects": 1,
+      "approved": false,
+      "human_visual_score": null
+    }
+  ],
+  "intensity_animation_created_in_blender": true,
+  "material_source_exact_original_blend": false,
+  "not_approved": true
+}
