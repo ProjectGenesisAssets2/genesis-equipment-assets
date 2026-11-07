@@ -1,0 +1,22 @@
+[
+  {
+    "name": "V022_01_idle_frente_escudo_v015_espada_v12b.jpg",
+    "sha256": "34d189b6b2533cbb536d30421a9b780bfd4f61d123039f8cb006d1fe89c2bb27",
+    "bytes": 74088
+  },
+  {
+    "name": "V022_02_idle_3cuartos.jpg",
+    "sha256": "9b1baff9088a671ed43e104352fb1c05d39256d6fa6d21e579e5abb8c2f93bec",
+    "bytes": 63664
+  },
+  {
+    "name": "V022_03_walk_paso_1.jpg",
+    "sha256": "e9e428ae27fa4adc0618964e85ba95e1a06fcb23a071d291fc773ae5d330411f",
+    "bytes": 63928
+  },
+  {
+    "name": "V022_04_walk_paso_2.jpg",
+    "sha256": "98296e462cf6500b0018f9af833ab6571c3779d81fd88f1a21f04c2272fdec3b",
+    "bytes": 63890
+  }
+]
