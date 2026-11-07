@@ -102,7 +102,8 @@ jobs:
           cp /tmp/genesis-v26-ice/animation_audit.json /tmp/genesis-v26-publish/animation_audit.json
           test -s /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4
           test -s /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Loop20fps.gif
-          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate,nb_frames -of default=nw=1 /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4
+          # imageio-ffmpeg supplies ffmpeg only, not ffprobe; decode the published MP4 with ffmpeg itself.
+          ffmpeg -v error -i /tmp/genesis-v26-publish/Hielo_V25_Cycles32_Animacion24fps.mp4 -f null -
       - name: Stage only experimental videos, original source untouched
         run: |
           set -euo pipefail
