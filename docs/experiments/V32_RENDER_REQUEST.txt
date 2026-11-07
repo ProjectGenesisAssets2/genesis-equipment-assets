@@ -1,0 +1,1 @@
+Run V32 local ice, preserve V03 approved model, six intensity frames and GIF. Experimental only; no main merge.
