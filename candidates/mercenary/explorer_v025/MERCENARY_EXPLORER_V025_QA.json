@@ -1,0 +1,20 @@
+{
+  "status": "V025_CANDIDATE_REQUIRES_BLENDER_QA",
+  "source_v024_sha256": "16f89fadd6ef44e302da71ee770bfc137b13af8f2e2e13ac74a8198158ab12a2",
+  "source_v023_sha256": "9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76",
+  "output_sha256": "b4a2efa48fc794428907df44ea2af9326690326463c626c5a12e5f201892eb1a",
+  "actions": [
+    "GENESIS_MERC_IDLE_V025",
+    "GENESIS_MERC_WALK_V025",
+    "GENESIS_MERC_INSPECT_SWORD_V025",
+    "GENESIS_MERC_INSPECT_SHIELD_V025",
+    "GENESIS_MERC_WALK_EQUIPPED_V025"
+  ],
+  "meshes_unchanged": true,
+  "rig_bones": 24,
+  "hip_ground_adjustment_cm": -3.5,
+  "inspect_sword": "lower chest-height aim",
+  "inspect_shield": "subtle shield examination",
+  "playcanvas_tested": false,
+  "human_approved": false
+}
