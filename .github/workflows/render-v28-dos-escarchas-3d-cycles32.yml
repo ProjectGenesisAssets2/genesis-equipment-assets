@@ -86,7 +86,8 @@ jobs:
             assert struct.unpack_from('<I',d,8)[0]==len(d)
             assert hashlib.sha256(d).hexdigest()==v['overlay_glb']['sha256']
             scene=(p/v['blend_file']).read_bytes()
-            assert scene[:7]==b'BLENDER',len(scene)
+            # Blender .blend saved with compress=True may use GZip magic; both are valid editable scenes.
+            assert scene[:7]==b'BLENDER' or scene[:2]==bytes((31,139)),len(scene)
             assert len(v['renders'])==2
             for render in v['renders']:
               data=(p/render['file']).read_bytes()
