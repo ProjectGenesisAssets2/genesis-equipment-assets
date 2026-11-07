@@ -2,7 +2,7 @@ name: Genesis | Mercenary V026 subtle realistic noncombat inspections Cycles HDR
 on:
   push:
     branches:
-      - experiment/mercenary-explorer-v026-grounding-gestures-20261107
+      - experiment/mercenary-explorer-v026-subtle-inspection-20261107
     paths:
       - scripts/mercenary/tune_explorer_v026.py
       - .github/workflows/mercenary-explorer-v026.yml
