@@ -15,14 +15,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Retrieve previously verified 15-animation CC0 mercenary artifact
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p /tmp/genesis_ual2
           curl -fSL --retry 3 --max-time 180 \
-            -H "Authorization: Bearer \${GH_TOKEN}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
             -H 'Accept: application/vnd.github+json' \
-            "https://api.github.com/repos/\${GITHUB_REPOSITORY}/actions/artifacts/13549682852/zip" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/13549682852/zip" \
             -o /tmp/genesis_v013_cc0.zip
           unzip -q /tmp/genesis_v013_cc0.zip -d /tmp/genesis_ual2
           test -s /tmp/genesis_ual2/mercenary_quaternius_ual2_shield_guard_v013.glb
