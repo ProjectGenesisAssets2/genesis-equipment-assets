@@ -109,6 +109,7 @@ jobs:
           mkdir -p public-previews/v32-localized-ice-animation-cycles-hdri32
           cp /tmp/v32-render/V32_Escarcha_*.png public-previews/v32-localized-ice-animation-cycles-hdri32/
           cp /tmp/v32-render/v32_escarcha_intensidad_audit.json public-previews/v32-localized-ice-animation-cycles-hdri32/
+          cp /tmp/v32-render/V32_Escarcha_Intensidad_0_a_100.gif public-previews/v32-localized-ice-animation-cycles-hdri32/
           git add public-previews/v32-localized-ice-animation-cycles-hdri32/
           if ! git diff --cached --quiet; then
             git commit -m 'review(v32): real Cycles preview of 0/50/100 partial ice intensity'
