@@ -374,6 +374,14 @@ def earth_fractures(coord,along,side,normal,intensity):
             'raised_faceted_earth_stone':plate_fragments,
             'not_just_glittering_gold_dots':True}
 
+BUILDERS={
+ 'Hielo':crystal_cluster,
+ 'Luz':radiant_gold,
+ 'Sombra':shadow_ink,
+ 'Naturaleza':organic_vines,
+ 'Tierra':earth_fractures
+}
+
 def render(camera,output):
     scene=bpy.context.scene
     scene.camera=bpy.data.objects[camera]
