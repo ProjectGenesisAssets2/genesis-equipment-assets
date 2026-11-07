@@ -1,0 +1,21 @@
+{
+  "status": "V036_REAL_CYCLES_CLOSED_FIST_COMPARISON_PENDING_HUMAN_APPROVAL",
+  "source": "V035 original 3 experimental right-hand variants, SHA-verified",
+  "sword": "genuine V12B V175 licensed source, transient, no substitutes",
+  "shield": "actual V015 on correct anatomical LeftHand",
+  "hand": "RightHand with GENESIS_SOCKET_WEAPON_R, never swapped",
+  "world_mount_offset_m": [
+    0.047,
+    -0.013,
+    -0.048
+  ],
+  "variations": [
+    "A",
+    "B",
+    "C"
+  ],
+  "renders_per_variant": 2,
+  "finger_quality_approved": false,
+  "playcanvas_tested": false,
+  "human_approved": false
+}
