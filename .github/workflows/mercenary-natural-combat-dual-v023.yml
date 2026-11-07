@@ -1,0 +1,134 @@
+name: Genesis | V023 genuine medieval sword + shield combat motion real Cycles32 public org
+on:
+  push:
+    branches: [experiment/mercenary-natural-combat-v023-motion-polish]
+    paths:
+      - 'scripts/mercenary/build_equipped_natural_v023.py'
+      - 'scripts/mercenary/qa_natural_dual_real_v023.py'
+      - '.github/workflows/mercenary-natural-combat-dual-v023.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  natural-motion:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover verified V015 24 bone animated GLB from prior PUBLIC organization Blender run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v021 output/mercenary_natural_dual_v023
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/13549978363/zip" \
+            -o /tmp/genesis_v015_verified.zip
+          unzip -q /tmp/genesis_v015_verified.zip -d /tmp/genesis_v021
+          test -s /tmp/genesis_v021/mercenary_quaternius_cc0_grounded_guard_v015.glb
+          echo '102201356b718352cc09f3f354ccfa3d56118afdbc4ee505c69009bf791873a8  /tmp/genesis_v021/mercenary_quaternius_cc0_grounded_guard_v015.glb' | sha256sum -c
+      - name: Add upright natural genuine Meshy animation reference and four equipment clips preserving all 15 originals
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/build_equipped_natural_v023.py \
+            --source /tmp/genesis_v021/mercenary_quaternius_cc0_grounded_guard_v015.glb \
+            --out output/mercenary_natural_dual_v023
+          python3 - <<'PY'
+          import json,struct,hashlib
+          from pathlib import Path
+          p=Path('output/mercenary_natural_dual_v023/mercenary_equipment_natural_v023.glb')
+          data=p.read_bytes();length=struct.unpack_from('<I',data,12)[0];g=json.loads(data[20:20+length])
+          r=json.loads(Path('output/mercenary_natural_dual_v023/MERCENARY_NATURAL_MOTION_V023.json').read_text())
+          assert len(g['animations'])==19 and len(g['skins'][0]['joints'])==24
+          assert r['original_15_animations_untouched']
+          assert hashlib.sha256(data).hexdigest()==r['output_sha256']
+          assert g['animations'][-4]['name']=='GENESIS_MERC_EQUIPPED_IDLE_V023'
+          assert g['animations'][-3]['name']=='GENESIS_MERC_EQUIPPED_WALK_V023'
+          assert all(a['frames']>=36 for a in r['new_animations'])
+          print('V023_REAL_ANIMATION_QA_OK', r['output_sha256'])
+          PY
+      - name: Restore original V12B sword source in ephemeral runner only
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_v021/REAL_V12B_LICENSED_SOURCE.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_v021/REAL_V12B_LICENSED_SOURCE.glb' | sha256sum -c
+      - name: Retrieve real 32bit EXR Poly Haven studio for all angle comparisons
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v021/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v021/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender Foundation Blender 4.5.13 LTS on PUBLIC Actions runner
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v021/blender-4.5.13.tar.xz
+          mkdir -p /tmp/genesis_v021/blender
+          tar -xJf /tmp/genesis_v021/blender-4.5.13.tar.xz -C /tmp/genesis_v021/blender --strip-components=1
+          /tmp/genesis_v021/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render six ACTUAL full-body sword poses Cycles with authentic 32bit EXR
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v021/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_natural_dual_real_v023.py -- \
+            --character output/mercenary_natural_dual_v023/mercenary_equipment_natural_v023.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --sword /tmp/genesis_v021/REAL_V12B_LICENSED_SOURCE.glb \
+            --hdri /tmp/genesis_v021/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_natural_dual_v023
+          test "$(find output/mercenary_natural_dual_v023 -maxdepth 1 -name '*.png' | wc -l)" -eq 6
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('output/mercenary_natural_dual_v023/POSE_QA_DUAL_NATURAL_V023.json').read_text())
+          assert len(r['renders'])==6 and r['total_actions']>=19
+          assert r['sword_attached_to_real_bone_socket'] and r['approved_shield_model_mounted']
+          assert r['shield_attached_to_real_left_hand_socket']
+          assert all(x['shield_head_vertical_clearance_m']>.22 for x in r['renders'])
+          assert r['sword_length_m']==.8925
+          print('V023_REAL_NATIVE_CYCLES_SWORD_QA_OK')
+          PY
+      - name: Publish only experimental public review JPEGs and the new rig; never the original licensed sword
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          mkdir -p candidates/mercenary/natural_equipped_v023
+          cp output/mercenary_natural_dual_v023/mercenary_equipment_natural_v023.glb candidates/mercenary/natural_equipped_v023/
+          cp output/mercenary_natural_dual_v023/*V023.json candidates/mercenary/natural_equipped_v023/
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          root=Path('output/mercenary_natural_dual_v023')
+          review=Path('candidates/mercenary/natural_equipped_v023')
+          for f in sorted(root.glob('*.png')):
+           im=Image.open(f).convert('RGB');im.thumbnail((890,990),Image.Resampling.LANCZOS)
+           im.save(review/(f.stem+'.jpg'),quality=88,optimize=True)
+          assert len(list(review.glob('*.jpg')))==6
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/natural_equipped_v023
+          git diff --cached --quiet || git commit -m 'V023 experimental human review: upright Meshy + CC0 gait 19 actions, original V12B Cycles HDRI32'
+          git fetch origin experiment/mercenary-natural-combat-v023-motion-polish
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-natural-combat-v023-motion-polish
+      - name: Upload exact GLB and source-verified full-size render images from PUBLIC runner
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v023-real-sword-shield-natural-combat-Cycles32
+          path: output/mercenary_natural_dual_v023/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Destroy ephemeral protected V12B sword source
+        if: always()
+        run: rm -f /tmp/genesis_v021/REAL_V12B_LICENSED_SOURCE.glb
