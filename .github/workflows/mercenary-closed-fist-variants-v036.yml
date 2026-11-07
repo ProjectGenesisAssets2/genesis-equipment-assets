@@ -1,0 +1,170 @@
+name: Genesis | V036 authentic right fist A/B/C calibrated grip comparison Cycles HDRI32
+on:
+  push:
+    branches: [experiment/mercenary-v036-closed-finger-variants-20261107]
+    paths: [.github/workflows/mercenary-closed-fist-variants-v036.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  compare-real-closed-fist:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover exactly three V035 right glove experiments from prior Actions artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_fist_variants_v036 /tmp/genesis_fist_v036
+          curl -fSL --retry 3 --max-time 180 \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/13579435942/zip" \
+            -o /tmp/genesis_fist_v036/source_variants.zip
+          unzip -q /tmp/genesis_fist_v036/source_variants.zip -d /tmp/genesis_fist_v036/source
+          echo '3da594d7b0825419f04dc4da973d9b49394227408f39d0b7e3739fccb480a80a  /tmp/genesis_fist_v036/source/mercenary_grip_A_v035.glb' | sha256sum -c
+          echo '6a73dcb425845bef4e4f80f2e907b2044ae5e1b04d0ce6d22216aaa3e6cef909  /tmp/genesis_fist_v036/source/mercenary_grip_B_v035.glb' | sha256sum -c
+          echo '2ee94b4a29b5db96eb8204e2f1a9aa840ba39460de73f0dc5d0c34874c474d37  /tmp/genesis_fist_v036/source/mercenary_grip_C_v035.glb' | sha256sum -c
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,json
+          for v in 'ABC':
+            path=Path('/tmp/genesis_fist_v036/source/mercenary_grip_'+v+'_v035.glb')
+            b=path.read_bytes();n=struct.unpack_from('<I',b,12)[0]
+            g=json.loads(b[20:20+n]);names={node.get('name'):i for i,node in enumerate(g['nodes'])}
+            assert len(g['skins'][0]['joints'])==24 and len(g['animations'])==5
+            assert names['GENESIS_SOCKET_WEAPON_R'] in g['nodes'][names['RightHand']]['children']
+            assert names['GENESIS_SOCKET_SHIELD_L'] in g['nodes'][names['LeftHand']]['children']
+            assert all('ATTACK' not in x['name'] and 'BLOCK' not in x['name'] for x in g['animations'])
+          print('V036_THREE_ACTUAL_RIGHT_GLOVE_SOURCES_VERIFIED')
+          PY
+      - name: Restore real protected V12B iron V175 sword only in ephemeral runner
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_fist_v036/ORIGINAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_fist_v036/ORIGINAL_V12B_SWORD.glb' | sha256sum -c
+      - name: Real EXR 32-bit studio lighting exact SHA
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_fist_v036/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_fist_v036/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install official Blender 4.5.13 LTS public Ubuntu runner
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_fist_v036/blender.tar.xz
+          mkdir -p /tmp/genesis_fist_v036/blender
+          tar -xJf /tmp/genesis_fist_v036/blender.tar.xz -C /tmp/genesis_fist_v036/blender --strip-components=1
+          /tmp/genesis_fist_v036/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Prepare identical right-hand front-and-back QA cameras and sword fitting for A/B/C
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/mercenary/qa_explorer_v024.py').read_text().replace('V024','V036').replace('v024','v036')
+          for clip in ('IDLE','WALK','INSPECT_SWORD','INSPECT_SHIELD','WALK_EQUIPPED'):
+            s=s.replace('GENESIS_MERC_'+clip+'_V036','GENESIS_MERC_'+clip+'_V029')
+          s=s.replace("hand=right_palm+Vector((-.013,-.013,-.003))",
+                      "hand=right_palm+Vector((.047,-.013,-.048))")
+          assert "hand=right_palm+Vector((.047,-.013,-.048))" in s
+          s=s.replace('scene.cycles.samples=38','scene.cycles.samples=26')
+          s=s.replace("cam.location=center+Vector(camdir).normalized()*5.5",
+                      "focus=anchor.matrix_world.translation if has_sword else center\n  cam.location=focus+Vector(camdir).normalized()*1.65")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.65")
+          s=s.replace("scene.render.resolution_x=900;scene.render.resolution_y=1080",
+                      "scene.render.resolution_x=720;scene.render.resolution_y=850")
+          s='\n'.join(x for x in s.splitlines() if not x.lstrip().startswith("render('V036_"))+'\n'
+          needle=" report={'status':"
+          calls=(
+            " render('V036_01_RIGHT_HAND_FRONT',expected[2],.54,True,False,(.55,-1,.16))\n"
+            " render('V036_02_RIGHT_HAND_BACK',expected[2],.54,True,False,(-.60,1,.16))\n"
+          )
+          assert needle in s;s=s.replace(needle,calls+needle)
+          import ast
+          ast.parse(s)
+          assert s.count("render('V036_")==2
+          Path('scripts/mercenary/qa_closed_fist_variants_v036.py').write_text(s)
+          print('V036_IDENTICAL_REAL_CYCLES_CAMERAS_VALID')
+          PY
+      - name: Render 3 genuine right-hand geometries x 2 views; preserve left shield and all original clips
+        run: |
+          set -euo pipefail
+          for VAR in A B C; do
+            mkdir -p "output/mercenary_fist_variants_v036/$VAR"
+            /tmp/genesis_fist_v036/blender/blender -b -t 4 --python-exit-code 1 \
+              --python scripts/mercenary/qa_closed_fist_variants_v036.py -- \
+              --character "/tmp/genesis_fist_v036/source/mercenary_grip_${VAR}_v035.glb" \
+              --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+              --sword /tmp/genesis_fist_v036/ORIGINAL_V12B_SWORD.glb \
+              --hdri /tmp/genesis_fist_v036/studio_small_09_4k.exr \
+              --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+              --out "output/mercenary_fist_variants_v036/$VAR"
+            python3 - "$VAR" <<'PY'
+          import sys,json
+          from pathlib import Path
+          p=Path('output/mercenary_fist_variants_v036')/sys.argv[1]
+          r=json.loads((p/'MERCENARY_EXPLORER_V036_RENDER_QA.json').read_text())
+          assert len(r['renders'])==2 and r['weapon_parent_correct'] and r['shield_parent_correct']
+          assert r['bones']==24 and len(r['clips'])==5
+          print('V036_TRUE_RIGHT_HAND_'+sys.argv[1]+'_QA_PASS')
+          PY
+          done
+      - name: Compare real Cycles front/back grid, report without auto-approval
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          from pathlib import Path
+          import json
+          root=Path('output/mercenary_fist_variants_v036')
+          imout=Image.new('RGB',(600*3,670*2),'#e6e6e6')
+          for row,side in enumerate(('FRONT','BACK')):
+            for col,v in enumerate('ABC'):
+              path=root/v/('V036_01_RIGHT_HAND_FRONT.png' if side=='FRONT' else 'V036_02_RIGHT_HAND_BACK.png')
+              im=Image.open(path).convert('RGB');im.thumbnail((585,620),Image.Resampling.LANCZOS)
+              x=col*600+(600-im.width)//2;y=row*670+8
+              imout.paste(im,(x,y))
+              ImageDraw.Draw(imout).text((col*600+20,row*670+637),f'V036 {v} — {side}',fill='#181818')
+          imout.save(root/'V036_REAL_GLOVE_VARIANTS_FRONT_BACK.jpg',quality=91)
+          report={'status':'V036_REAL_CYCLES_CLOSED_FIST_COMPARISON_PENDING_HUMAN_APPROVAL',
+           'source':'V035 original 3 experimental right-hand variants, SHA-verified',
+           'sword':'genuine V12B V175 licensed source, transient, no substitutes',
+           'shield':'actual V015 on correct anatomical LeftHand',
+           'hand':'RightHand with GENESIS_SOCKET_WEAPON_R, never swapped',
+           'world_mount_offset_m':[.047,-.013,-.048],
+           'variations':['A','B','C'],'renders_per_variant':2,
+           'finger_quality_approved':False,'playcanvas_tested':False,'human_approved':False}
+          (root/'V036_COMPARISON_QA.json').write_text(json.dumps(report,indent=2))
+          PY
+          mkdir -p candidates/mercenary/closed_fist_variants_v036
+          cp output/mercenary_fist_variants_v036/V036_REAL_GLOVE_VARIANTS_FRONT_BACK.jpg candidates/mercenary/closed_fist_variants_v036/
+          cp output/mercenary_fist_variants_v036/V036_COMPARISON_QA.json candidates/mercenary/closed_fist_variants_v036/
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/closed_fist_variants_v036
+          git diff --cached --quiet || git commit -m 'V036 experimental authentic right-hand finger geometry A/B/C real Cycles HDRI32 comparison'
+          git fetch origin experiment/mercenary-v036-closed-finger-variants-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-v036-closed-finger-variants-20261107
+      - name: Upload 6 authentic render frames and 3D grip QA comparisons
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v036-right-hand-three-variants-real-Cycles32
+          path: output/mercenary_fist_variants_v036/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Destroy licensed original sword source in temp runner
+        if: always()
+        run: rm -f /tmp/genesis_fist_v036/ORIGINAL_V12B_SWORD.glb
