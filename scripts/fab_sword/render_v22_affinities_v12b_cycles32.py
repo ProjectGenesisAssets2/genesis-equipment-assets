@@ -89,111 +89,192 @@ def setup_frame(source):
         return np.array(p,dtype=float),.5*(right-left)
     return coord,along,side,normal
 
+
+def smoke_alpha_material(name,seed=0.):
+    """Transparent, spatially noisy charcoal smoke — avoids opaque purple paper strips."""
+    m=bpy.data.materials.new(TAGS+name);m.use_nodes=True
+    nodes=m.node_tree.nodes;nodes.clear();ln=m.node_tree.links
+    output=nodes.new('ShaderNodeOutputMaterial')
+    mix=nodes.new('ShaderNodeMixShader')
+    transparent=nodes.new('ShaderNodeBsdfTransparent')
+    tint=nodes.new('ShaderNodeBsdfPrincipled')
+    tint.inputs['Base Color'].default_value=(.009,.008,.014,1)
+    tint.inputs['Roughness'].default_value=.96
+    tint.inputs['Emission Color'].default_value=(.022,.012,.039,1)
+    tint.inputs['Emission Strength'].default_value=.12
+    tex=nodes.new('ShaderNodeTexCoord')
+    noise=nodes.new('ShaderNodeTexNoise');noise.noise_dimensions='3D'
+    noise.inputs['Scale'].default_value=9.8
+    noise.inputs['Detail'].default_value=4.2
+    noise.inputs['Roughness'].default_value=.73
+    ln.new(tex.outputs['Generated'],noise.inputs['Vector'])
+    shape=nodes.new('ShaderNodeMapRange')
+    shape.inputs['From Min'].default_value=.28
+    shape.inputs['From Max'].default_value=.73
+    shape.inputs['To Min'].default_value=.0
+    shape.inputs['To Max'].default_value=.48
+    shape.interpolation_type='SMOOTHSTEP'
+    ln.new(noise.outputs['Fac'],shape.inputs['Value'])
+    ln.new(shape.outputs['Result'],mix.inputs[0])
+    ln.new(transparent.outputs[0],mix.inputs[1])
+    ln.new(tint.outputs[0],mix.inputs[2])
+    ln.new(mix.outputs[0],output.inputs['Surface'])
+    return m
+
+def soft_radial_material(name,color,strength=.85):
+    """Physically soft diffuse luminosity, not star icons or drawn plus signs."""
+    m=bpy.data.materials.new(TAGS+name);m.use_nodes=True
+    nodes=m.node_tree.nodes;nodes.clear();ln=m.node_tree.links
+    transparent=nodes.new('ShaderNodeBsdfTransparent')
+    emission=nodes.new('ShaderNodeEmission')
+    emission.inputs['Color'].default_value=(*color,1)
+    emission.inputs['Strength'].default_value=strength
+    out=nodes.new('ShaderNodeOutputMaterial')
+    mix=nodes.new('ShaderNodeMixShader')
+    tc=nodes.new('ShaderNodeTexCoord')
+    sep=nodes.new('ShaderNodeSeparateXYZ')
+    ln.new(tc.outputs['Generated'],sep.inputs[0])
+    x=nodes.new('ShaderNodeMath');x.operation='SUBTRACT';x.inputs[1].default_value=.5
+    y=nodes.new('ShaderNodeMath');y.operation='SUBTRACT';y.inputs[1].default_value=.5
+    ln.new(sep.outputs['X'],x.inputs[0]);ln.new(sep.outputs['Y'],y.inputs[0])
+    xx=nodes.new('ShaderNodeMath');xx.operation='MULTIPLY'
+    yy=nodes.new('ShaderNodeMath');yy.operation='MULTIPLY'
+    ln.new(x.outputs[0],xx.inputs[0]);ln.new(x.outputs[0],xx.inputs[1])
+    ln.new(y.outputs[0],yy.inputs[0]);ln.new(y.outputs[0],yy.inputs[1])
+    a=nodes.new('ShaderNodeMath');a.operation='ADD'
+    ln.new(xx.outputs[0],a.inputs[0]);ln.new(yy.outputs[0],a.inputs[1])
+    root=nodes.new('ShaderNodeMath');root.operation='SQRT'
+    ln.new(a.outputs[0],root.inputs[0])
+    ramp=nodes.new('ShaderNodeMapRange');ramp.interpolation_type='SMOOTHSTEP'
+    ramp.clamp=True;ramp.inputs['From Min'].default_value=.015
+    ramp.inputs['From Max'].default_value=.67
+    ramp.inputs['To Min'].default_value=.40
+    ramp.inputs['To Max'].default_value=0.
+    ln.new(root.outputs[0],ramp.inputs['Value'])
+    ln.new(ramp.outputs['Result'],mix.inputs[0])
+    ln.new(transparent.outputs[0],mix.inputs[1])
+    ln.new(emission.outputs[0],mix.inputs[2])
+    ln.new(mix.outputs[0],out.inputs['Surface'])
+    return m
+
 def crystal_cluster(coord,along,side,normal,intensity):
-    ice=pbr('ice_glass',(.17,.52,.75),roughness=.13,transmission=.62)
-    frost=pbr('cold_ice_surface',(.43,.74,.83),roughness=.30,transmission=.20,
-              emission=(.04,.12,.20),emission_power=.10)
-    ridge=emitter('frozen_vein',(.20,.58,.86),1.6+2.1*intensity)
-    count=0
-    # True faceted prisms: triangular side walls, dark base and blue-lit facets.
-    for n in range(90):
-        t=.16+.74*(n+.4)/90
-        lateral=(-1 if n%2 else 1)*(.50+.30*rng.random())
-        pos,half=coord(t,lateral,.006)
-        size=(.0036+.0066*rng.random())*(.75+.38*intensity)
-        height=(.0040+.0120*rng.random())*(.7+.45*intensity)
-        up=along*(.006+.012*rng.random())+normal*height
-        angle=rng.random()*math.tau
-        xdir=side*math.cos(angle)+along*math.sin(angle)
-        v1=pos-xdir*size;v2=pos+xdir*size;v3=pos+normal*(size*.48)
-        tip=pos+up+(side*(rng.random()-.5)*size*.5)
-        geo('ice_faceted_'+str(n),[v1,v2,v3,tip],[(0,1,3),(1,2,3),(2,0,3),(0,2,1)],
-            ice if n%3 else frost)
-        count+=1
-    # Organic frost branching near crystal roots - never an opaque blue overlay on center ridge.
-    for k in range(18):
-        t=.18+k*.038
-        for sgn in (-1,1):
-            pts=[]
-            for j in range(6):
-                p,_=coord(t+j*.007,sgn*(.66-.08*j)+.05*math.sin(k+j),.006)
-                pts.append(p)
-            line('ice_frost_microridge_'+str(k)+'_'+str(sgn),pts,frost,.00065)
-            if k%3==0:line('ice_luminal_fissure_'+str(k)+'_'+str(sgn),pts,ridge,.00035)
-    return {'faceted_crystals':count,'frost_lines':36,'color':'physically tinted pale blue translucent ice',
-            'visible_metal_central_ridge':True}
+    ice=pbr('ice_faceted_translucent',(.27,.63,.82),roughness=.10,transmission=.77)
+    blue=pbr('ice_deep_aqua_glaze',(.14,.34,.50),roughness=.16,transmission=.53,
+             emission=(.06,.17,.25),emission_power=.08)
+    frost=pbr('ice_matt_frost',(.56,.79,.83),roughness=.52,transmission=.10)
+    crystal_count=0;frost_count=0
+    # Asymmetrical physical crystalline COLONIES, not rows of identical white needles.
+    colonies=[(.16,-.67),(.29,.68),(.43,-.61),(.56,.72),(.72,-.70),(.85,.58)]
+    for group,(at,offset) in enumerate(colonies):
+        m=5+(group%3)*2
+        for i in range(m):
+            phase=(i-(m-1)/2)/max(1,m-1)
+            t=at+phase*(.033+.012*rng.random())+.006*(rng.random()-.5)
+            lat=offset+phase*.20+.04*(rng.random()-.5)
+            pos,half=coord(t,lat,.007)
+            radius=(.005+.007*rng.random())*(.86+.20*intensity)
+            lift=.005+.011*rng.random()
+            length=.010+.020*rng.random()
+            tilt=along*(length*(.75+.28*rng.random()))+normal*lift
+            # Elongated faceted pyramid, each prism with a different glint orientation.
+            edge=side*(.6+(.5*rng.random()))+along*(.45*(rng.random()-.5))
+            vertices=[pos-edge*radius,pos+edge*radius,pos+normal*(radius*.65),pos+tilt]
+            geo('ice_crystal_colony_'+str(group)+'_'+str(i),vertices,
+                [(0,1,3),(1,2,3),(2,0,3),(0,2,1)],
+                ice if i%4 else blue)
+            crystal_count+=1
+        # Frost branches spread out from each crystal colony, thin and irregular.
+        for j in range(13):
+            seed=at+(j-6)*.006
+            sgn=-1 if offset<0 else 1
+            line_points=[]
+            for k in range(8):
+                q=k/7
+                t=seed+q*(.017+.015*math.sin(j*1.6)**2)
+                lateral=sgn*(.53+.31*q)+.05*math.sin(j+k*.7)
+                p,_=coord(t,lateral,.005)
+                line_points.append(p)
+            line('ice_frost_dendrite_'+str(group)+'_'+str(j),line_points,frost,.00055+.0003*rng.random())
+            frost_count+=1
+    # frost also collects faintly along irregular sections of the cutting edge.
+    for j in range(22):
+        t=.17+.70*(j+.45)/22
+        if j%4==0:continue
+        p,_=coord(t,(1 if j%2 else -1)*(.79+.10*rng.random()),.005)
+        ellipsoid('frost_grain_'+str(j),p,(.0016,.0027,.0005),frost)
+    return {'ice_colonies':len(colonies),'faceted_crystals':crystal_count,
+            'frost_dendrites':frost_count,'PBR_transmission':.77,
+            'original_ridge_visible':True}
 
 def radiant_gold(coord,along,side,normal,intensity):
-    gold=emitter('luz_soft_gold',(.78,.53,.17),2.6+3.5*intensity)
-    white=emitter('luz_white_core',(1,.94,.73),3.5+4.5*intensity)
-    halo=pbr('luz_metal',(.65,.50,.25),roughness=.17,metallic=.68,
-             emission=(1,.73,.30),emission_power=.28+.4*intensity)
-    glints=0
-    for k in range(24):
-        t=.11+.78*((k+.4)/24)
-        lateral=[-.72,.61,.13,-.35,.45][k%5]
-        pos,half=coord(t,lateral,.012)
-        size=.0025+(.0052+.003*rng.random())*intensity
-        ellipsoid('light_seed_'+str(k),pos,(size*.57,size*.60,size*.35),white if k%3==0 else gold)
-        glints+=1
-        if k%2==0:
-            beams=[
-                (along*(.010+.009*intensity), .00045),
-                (side*(.008+.007*intensity), .00040),
-            ]
-            for bi,(direction,w) in enumerate(beams):
-                line('luz_beam_'+str(k)+'_'+str(bi),
-                     [pos-direction,pos+direction],white if bi==0 else gold,w)
-        if k%5==0:
-            ellipsoid('light_metal_charm_'+str(k),
-                      pos-normal*.003,(size*1.5,size*1.5,.002),halo)
-    # Discrete curved optically convincing streaks rather than stripes.
-    for j in range(5):
-        pts=[]
-        for k in range(17):
-            t=.17+j*.13+k*.0032
-            p,_=coord(t,-.44+.05*k+.05*math.sin(k*.47+j),.008)
-            pts.append(p)
-        line('luz_gloss_filigree_'+str(j),pts,gold,.00055)
-    return {'radiant_glints':glints,'cross_beam_glints':12,'diffuse_filigree':5,
-            'not_a_single_yellow_paint_dot':True}
+    core=emitter('light_radial_white_core',(1.0,.90,.67),3.4+3.8*intensity)
+    gold=emitter('light_warm_edge',(.80,.53,.21),1.3+1.5*intensity)
+    halo=soft_radial_material('light_diffuse_agx_halo',(1.,.79,.40),2.2+1.5*intensity)
+    pearl=pbr('light_luminescent_metal_pearl',(.72,.65,.41),roughness=.19,metallic=.83,
+              emission=(.5,.37,.13),emission_power=.18)
+    spots=0
+    # Smooth luminous spots, soft bloom falloff. Not a repeated set of plus signs.
+    for i in range(14):
+        t=.14+.72*(i+.4)/14
+        lat=math.sin(i*2.1)*.63
+        pos,half=coord(t,lat,.012)
+        ellipsoid('light_photon_seed_'+str(i),pos,
+                  (.0021+.0015*rng.random(),.0034+.002*rng.random(),.0018),
+                  core if i%3 else pearl)
+        # Diffuse camera-facing pearl glow, soft edge in alpha shader.
+        radius=.014+.006*(.5+.5*math.sin(i*2.3))
+        verts=[pos-side*radius-along*radius,
+               pos+side*radius-along*radius,
+               pos+side*radius+along*radius,
+               pos-side*radius+along*radius]
+        geo('light_subtle_atmospheric_radial_'+str(i),verts,[(0,1,2,3)],halo)
+        spots+=1
+    # Elegant arcs follow the original iron ridge; not straight electrically oscillating lines.
+    for i in range(7):
+        begin=.14+i*.104
+        trail=[]
+        for j in range(24):
+            u=j/23
+            p,_=coord(begin+u*.061,.14+(.49*u)*math.sin(i*1.2+u*math.pi),.010)
+            trail.append(p)
+        line('light_curved_reflection_'+str(i),trail,gold,.00056)
+    return {'warm_white_radiance_centres':spots,'diffuse_soft_halations':spots,
+            'curved_specular_accents':7,'no_cross_symbol':True}
 
 def shadow_ink(coord,along,side,normal,intensity):
-    soot=pbr('shadow_cold_absorption',(.018,.016,.035),roughness=.92,
-             emission=(.045,.024,.075),emission_power=.18)
-    edge=pbr('shadow_purple_ash',(.10,.043,.16),roughness=.68,
-             emission=(.17,.08,.26),emission_power=.22+.2*intensity)
-    vapor=pbr('shadow_translucent_violet',(.08,.055,.12),roughness=.75,
-              transmission=.15)
-    n=0
-    # Broad, smoky, asymmetrical undulating bands shading portions of the iron surface.
-    for k in range(18):
-        t=.13+k*.044
-        lateral=(-.60 if k%2 else .48)
-        coords=[]
-        for j in range(11):
-            q=j/10
-            p,_=coord(t+q*.034,lateral+.11*math.sin(q*4.2+k*1.7),
-                      .009+.003*math.sin(q*math.pi))
-            coords.append(p)
-        line('shadow_feather_'+str(k),coords,soot,.002+.0012*intensity)
-        if k%3==0:
-            line('shadow_faint_edge_'+str(k),coords[2:9],edge,.00075)
-        n+=1
-    # Overlaid torn vapor sheets hovering just above the blade; no blue lightning.
-    for k in range(13):
-        t=.20+k*.047
+    shadow=pbr('shadow_charcoal_depth',(.008,.008,.013),roughness=.96,
+               emission=(.007,.006,.013),emission_power=.03)
+    violet=pbr('shadow_dim_indigo_edge',(.040,.020,.064),roughness=.85,
+               emission=(.10,.04,.14),emission_power=.06)
+    translucent=smoke_alpha_material('shadow_turbulent_soft_smoke')
+    # Elongated inky streaks curl around the fuller; make haze rather than paper decals.
+    trails=0;sheets=0
+    for k in range(12):
+        begin=.11+k*.067
+        sgn=(-1 if k%2 else 1)
+        pts=[]
+        for j in range(30):
+            u=j/29
+            t=begin+u*.082
+            lateral=sgn*(.24+.31*math.sin((u*.75+k*.3)*math.pi))+.10*math.sin(u*12.+k)
+            p,_=coord(t,lateral,.008+.006*math.sin(u*math.pi))
+            pts.append(p)
+        line('shadow_etched_ink_'+str(k),pts,shadow,.0015)
+        if k%2==0:
+            line('shadow_umbra_edge_'+str(k),pts[3:23],violet,.00068)
+        trails+=1
+        # A narrow ragged smoke veil crosses part of the iron, folds off to its dark edge.
         verts=[]
-        for j in range(12):
-            q=j/11
-            p,_=coord(t+q*.063,(-.54 if k%2 else .50)+.21*math.sin(q*3.+k),
-                      .016+q*.012)
-            width=.006+.007*math.sin(q*math.pi)**.8
-            verts.extend([p-side*width,p+side*width])
-        faces=[(2*j,2*j+1,2*j+3,2*j+2) for j in range(11)]
-        geo('shadow_ragged_veil_'+str(k),verts,faces,vapor if k%2 else soot)
-    return {'ink_wisps':n,'torn_smoke_veils':13,'colors':'dark charcoal + subtle purple',
-            'no_electricity_pulses':True}
+        for j in range(23):
+            u=j/22
+            p,_=coord(begin+u*.089,sgn*(.47+.08*math.sin(u*10.+k)),.014+u*.013)
+            w=(.007+.012*math.sin(math.pi*u)**.9)*(1.+.25*math.sin(u*17.+k))
+            verts.extend([p-side*w,p+side*w])
+        geo('shadow_noise_veils_'+str(k),verts,
+            [(2*j,2*j+1,2*j+3,2*j+2) for j in range(22)],translucent)
+        sheets+=1
+    return {'dark_etched_tracks':trails,'noise_masked_transparent_smoke_sheets':sheets,
+            'smoke_alpha_max':.48,'not_opaque_lavender_paper':True}
 
 def organic_vines(coord,along,side,normal,intensity):
     root=pbr('nature_branch_bark',(.06,.22,.055),roughness=.62,
