@@ -1,0 +1,52 @@
+{
+  "status": "V023_EXPERIMENTAL_REAL_NATIVE_ANIMATION_PENDING_CYCLES_HUMAN_REVIEW",
+  "input_sha256": "102201356b718352cc09f3f354ccfa3d56118afdbc4ee505c69009bf791873a8",
+  "output_sha256": "9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76",
+  "original_15_animations_untouched": true,
+  "new_animations": [
+    {
+      "name": "GENESIS_MERC_EQUIPPED_IDLE_V023",
+      "frames": 51,
+      "duration_seconds": 2.0,
+      "foot_correction_cm_min": -0.07,
+      "foot_correction_cm_max": 0.13,
+      "head_world_y_m": 1.6338,
+      "left_hand_y_m": 1.1823,
+      "right_hand_y_m": 1.3558
+    },
+    {
+      "name": "GENESIS_MERC_EQUIPPED_WALK_V023",
+      "frames": 45,
+      "duration_seconds": 1.45,
+      "foot_correction_cm_min": -5.09,
+      "foot_correction_cm_max": 0.94,
+      "head_world_y_m": 1.6377,
+      "left_hand_y_m": 1.1863,
+      "right_hand_y_m": 1.3598
+    },
+    {
+      "name": "GENESIS_MERC_EQUIPPED_ATTACK_V023",
+      "frames": 39,
+      "duration_seconds": 1.1,
+      "foot_correction_cm_min": -0.07,
+      "foot_correction_cm_max": 0.12,
+      "head_world_y_m": 1.6338,
+      "left_hand_y_m": 1.1823,
+      "right_hand_y_m": 1.3558
+    },
+    {
+      "name": "GENESIS_MERC_EQUIPPED_BLOCK_V023",
+      "frames": 36,
+      "duration_seconds": 0.85,
+      "foot_correction_cm_min": -0.07,
+      "foot_correction_cm_max": 0.12,
+      "head_world_y_m": 1.6338,
+      "left_hand_y_m": 1.1823,
+      "right_hand_y_m": 1.3558
+    }
+  ],
+  "original_model_bones_and_materials_untouched": true,
+  "total_animations": 19,
+  "playcanvas_tested": false,
+  "human_approved": false
+}
