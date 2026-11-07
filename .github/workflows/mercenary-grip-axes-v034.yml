@@ -2,7 +2,7 @@ name: Genesis | V034 anatomical right-hand grip height and depth sweep Cycles HD
 on:
   push:
     branches: [experiment/mercenary-v034-grip-axis-calibration-20261107]
-    paths: [.github/workflows/mercenary-hilt-fit-v034.yml]
+    paths: [.github/workflows/mercenary-grip-axes-v034.yml]
   workflow_dispatch:
 permissions:
   contents: write
