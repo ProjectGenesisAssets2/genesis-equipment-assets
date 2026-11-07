@@ -1,0 +1,46 @@
+name: Genesis | V022 Blender compatible V015 shield re-export without EXT meshopt
+on:
+  push:
+    branches: [experiment/mercenary-natural-combat-v021]
+    paths: [.github/workflows/shield-v022-blender-compatible.yml]
+  workflow_dispatch:
+permissions: {contents: write}
+jobs:
+  no-meshopt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install glTF transform CLI and decompress V015 candidate for Blender native importer
+        run: |
+          set -euo pipefail
+          npm install -g @gltf-transform/cli
+          mkdir -p candidates/shield/iron_v015_pbr2k_v022/blender_compatible
+          gltf-transform optimize \
+            candidates/shield/iron_v015_pbr2k_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb \
+            candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --compress false --texture-compress webp --texture-size 2048 --simplify false
+          python3 - <<'PY'
+          import hashlib,struct,json
+          from pathlib import Path
+          source=Path('candidates/shield/iron_v015_pbr2k_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb')
+          dest=Path('candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb')
+          raw=dest.read_bytes();n=struct.unpack_from('<I',raw,12)[0]
+          g=json.loads(raw[20:20+n])
+          assert raw[:4]==b'glTF' and len(raw)>1000000
+          assert 'EXT_meshopt_compression' not in g.get('extensionsRequired',[])
+          assert 'EXT_meshopt_compression' not in g.get('extensionsUsed',[])
+          assert len(g['meshes'])>=2
+          print('GENESIS_V015_NATIVE_BLENDER_SHIELD_V022',len(raw),len(g['meshes']),hashlib.sha256(raw).hexdigest())
+          (dest.with_suffix('.json')).write_text(json.dumps({'sha256':hashlib.sha256(raw).hexdigest(),'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'extension_free':True,'meshes':len(g['meshes']),'review_only':True},indent=2))
+          PY
+      - name: Commit native Blender-compatible PBR2K V015 candidate on experimental org branch
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/shield/iron_v015_pbr2k_v022/blender_compatible
+          git diff --cached --quiet || git commit -m 'V022 experimental real V015 shield material+geometry GLB with meshopt decompressed'
+          git fetch origin experiment/mercenary-natural-combat-v021
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-natural-combat-v021
