@@ -21,7 +21,7 @@ jobs:
           mkdir -p output/mercenary_fist_variants_v036 /tmp/genesis_fist_v036
           curl -fSL --retry 3 --max-time 180 \
             -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/13579435942/zip" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/13578593320/zip" \
             -o /tmp/genesis_fist_v036/source_variants.zip
           unzip -q /tmp/genesis_fist_v036/source_variants.zip -d /tmp/genesis_fist_v036/source
           echo '3da594d7b0825419f04dc4da973d9b49394227408f39d0b7e3739fccb480a80a  /tmp/genesis_fist_v036/source/mercenary_grip_A_v035.glb' | sha256sum -c
