@@ -12,7 +12,7 @@ import math
 import struct
 import sys
 from pathlib import Path
-from collections import defaultdict
+from bisect import bisect_right
 import bpy
 from mathutils import Vector
 
@@ -84,6 +84,21 @@ def segment_effects(source, slices, variant, intensity):
         {"verts": [], "faces": [], "mats": [], "mat_lookup": {}, "mids": [], "smooth": []}
         for _ in range(slices)
     ]
+    # Balanced *physical* length sections: the original blade-space t values are
+    # not uniformly distributed in [0,1], so use exact projected polygon quantiles.
+    # This preserves every original face and produces actual populated growth bands.
+    projections = []
+    for obj in converted:
+        world = [obj.matrix_world @ v.co for v in obj.data.vertices]
+        for poly in obj.data.polygons:
+            centre = sum((world[i] for i in poly.vertices), Vector()) / len(poly.vertices)
+            projections.append((centre - origin).dot(along) / denom)
+    ordered = sorted(projections)
+    require(len(ordered) > 100, "empty V28 procedural frost geometry")
+    cutoffs = [ordered[(i * len(ordered)) // slices] for i in range(1, slices)]
+    require(cutoffs[0] < cutoffs[-1], "frost has no lengthwise spread")
+    print("GENESIS_V28_ACTUAL_FROST_BLADE_PROJECTION", variant,
+          {"minimum": ordered[0], "maximum": ordered[-1], "cuts": cutoffs}, flush=True)
     original_face_count = 0
     for obj in converted:
         verts_world = [obj.matrix_world @ vert.co for vert in obj.data.vertices]
@@ -95,7 +110,7 @@ def segment_effects(source, slices, variant, intensity):
             original_face_count += 1
             centroid = sum((verts_world[i] for i in poly.vertices), Vector()) / len(poly.vertices)
             relative = (centroid - origin).dot(along) / denom
-            idx = max(0, min(slices - 1, int(((relative - .09) / .895) * slices)))
+            idx = bisect_right(cutoffs, relative)
             block = buckets[idx]
             local_to_global = indices[idx]
             face = []
