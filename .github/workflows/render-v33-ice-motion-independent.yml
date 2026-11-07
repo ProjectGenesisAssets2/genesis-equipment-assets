@@ -1,0 +1,121 @@
+name: Genesis V33 - escarcha en movimiento independiente de intensidad EXR32
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v33-hielo-movimiento-independiente-intensidad-20261107]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: genesis-v33-ice-test-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  render-v33:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source scripts and approved presets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v33_ice_motion_independent.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          test -s presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json
+          test -s render-input/v03-blob-manifest.json
+      - name: Recover original V03 sword from existing repository blob manifest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/v33-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/v33-original-v03.glb' | sha256sum -c
+      - name: Recover 32-bit/channel HDRI EXR (never JPG)
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/v33-studio.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/v33-studio.exr' | sha256sum -c
+      - name: Install Blender Foundation 4.5.13 LTS
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/v33-blender.tar.xz
+          mkdir -p /tmp/v33-blender
+          tar -xJf /tmp/v33-blender.tar.xz -C /tmp/v33-blender --strip-components=1
+          /tmp/v33-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render independent ice motion at constant 50 pct and compare 20 50 100 pct
+        timeout-minutes: 66
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v33-render
+          /tmp/v33-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v33_ice_motion_independent.py -- --input /tmp/v33-original-v03.glb --hdri /tmp/v33-studio.exr --output-dir /tmp/v33-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 48 --channels Hielo
+          for name in V33_Escarcha_I20_T1_Hero.png V33_Escarcha_I50_T1_Hero.png V33_Escarcha_I100_T1_Hero.png V33_Escarcha_I50_T25_Hero.png V33_Escarcha_I50_T49_Hero.png V33_Escarcha_I50_T73_Hero.png V33_Escarcha_I50_T97_Hero.png V33_Escarcha_I100_T1_Detalle.png v33_escarcha_movimiento_audit.json; do test -s "/tmp/v33-render/$name"; done
+      - name: Verify real images and flag source material as preliminary not original
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,json
+          root=Path('/tmp/v33-render')
+          a=json.loads((root/'v33_escarcha_intensidad_audit.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
+          assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['geometry_modified'] is False and a['base_material_modified'] is False
+          assert a['material_source_exact_original_blend'] is False
+          assert a['intensity_animation_created_in_blender'] is False
+          assert a['continuous_ice_motion_animated_in_blender'] is True
+          assert a['intensity_and_motion_independent'] is True
+          assert a['results'][0]['details']['intensity_has_animation_keyframes'] is False
+          assert a['results'][0]['details']['intensity_and_time_independent'] is True
+          for intensity,frame,view in [(20,1,'Hero'),(50,1,'Hero'),(100,1,'Hero'),(50,25,'Hero'),(50,49,'Hero'),(50,73,'Hero'),(50,97,'Hero'),(100,1,'Detalle')]:
+            p=root/f'V33_Escarcha_I{intensity}_T{frame}_{view}.png'
+            raw=p.read_bytes()
+            assert raw[:8]==b'\x89PNG\r\n\x1a\n' and struct.unpack_from('>II',raw,16)==(1200,1500)
+            assert len(raw)>90000
+          print('V33_REAL_CYCLES_PRELIMINARY_PASS')
+          PY
+      - name: Assemble actual rendered frames into animated GIF (no synthetic frames)
+        run: |
+          python3 -m venv /tmp/v33-gif-env
+          /tmp/v33-gif-env/bin/pip install --quiet pillow
+          /tmp/v33-gif-env/bin/python - <<'PY'
+          from PIL import Image,ImageOps
+          from pathlib import Path
+          root=Path('/tmp/v33-render')
+          values=(1,25,49,73,97)
+          frames=[]
+          for v in values:
+              with Image.open(root/f'V33_Escarcha_I50_T{v}_Hero.png') as im:
+                  frames.append(im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS))
+          pingpong=frames
+          pingpong[0].save(root/'V33_Escarcha_I50_Movimiento_Loop.gif',save_all=True,
+                           append_images=pingpong[1:],duration=310,loop=0,optimize=True)
+          assert (root/'V33_Escarcha_Intensidad_0_a_100.gif').stat().st_size>30000
+          PY
+      - name: Archive render previews
+        run: |
+          mkdir -p public-previews/v33-independent-ice-motion-cycles-hdri32
+          cp /tmp/v33-render/V33_Escarcha_*.png public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/V33_Escarcha_Intensidad_0_a_100.gif public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/v33_escarcha_intensidad_audit.json public-previews/v33-independent-ice-motion-cycles-hdri32/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V33-Ice-Intensity-RealCycles-NotApproved
+          path: public-previews/v33-independent-ice-motion-cycles-hdri32/
+          retention-days: 14
+      - name: Publish visual review images ONLY to V33 experimental branch
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v33-hielo-movimiento-independiente-intensidad-20261107
+          git checkout -B experiment/v33-hielo-movimiento-independiente-intensidad-20261107 FETCH_HEAD
+          mkdir -p public-previews/v33-independent-ice-motion-cycles-hdri32
+          cp /tmp/v33-render/V33_Escarcha_*.png public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/v33_escarcha_intensidad_audit.json public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/V33_Escarcha_Intensidad_0_a_100.gif public-previews/v33-independent-ice-motion-cycles-hdri32/
+          git add public-previews/v33-independent-ice-motion-cycles-hdri32/
+          if ! git diff --cached --quiet; then
+            git commit -m 'review(v33): real Cycles animated ice texture at constant 50 percent intensity'
+            git push origin HEAD:experiment/v33-hielo-movimiento-independiente-intensidad-20261107
+          fi
