@@ -1,0 +1,54 @@
+{
+  "source": "AutoSprite T1 Sentinel",
+  "source_url": "https://www.autosprite.io/free-3d-models/t1-sentinel",
+  "license": "CC0 declared on official asset page",
+  "sha256": "238512321b5af88d9a682f3a669205082d7fa508fa839c0bbbe8870b49866eff",
+  "size_bytes": 24319564,
+  "meshes": 1,
+  "skins": 1,
+  "bone_counts": [
+    22
+  ],
+  "bone_names": [
+    [
+      "mixamorig:Hips",
+      "mixamorig:Spine",
+      "mixamorig:Spine1",
+      "mixamorig:Spine2",
+      "mixamorig:Neck",
+      "mixamorig:Head",
+      "mixamorig:LeftShoulder",
+      "mixamorig:LeftArm",
+      "mixamorig:LeftForeArm",
+      "mixamorig:LeftHand",
+      "mixamorig:RightShoulder",
+      "mixamorig:RightArm",
+      "mixamorig:RightForeArm",
+      "mixamorig:RightHand",
+      "mixamorig:LeftUpLeg",
+      "mixamorig:LeftLeg",
+      "mixamorig:LeftFoot",
+      "mixamorig:LeftToeBase",
+      "mixamorig:RightUpLeg",
+      "mixamorig:RightLeg",
+      "mixamorig:RightFoot",
+      "mixamorig:RightToeBase"
+    ]
+  ],
+  "animation_names": [
+    "death",
+    "hit_chest",
+    "idle",
+    "sword_attack",
+    "sword_block",
+    "sword_idle",
+    "walk_loop"
+  ],
+  "finger_joint_names": [],
+  "equipment_node_or_mesh_names": [],
+  "scene_node_count": 24,
+  "textures": 1,
+  "images": 1,
+  "geometry_and_equipment_tested_in_game": false,
+  "human_approved": false
+}

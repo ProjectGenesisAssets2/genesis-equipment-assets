@@ -1,0 +1,169 @@
+{
+  "status": "V038_ALTERNATIVE_CC0_CHARACTER_REAL_CYCLES_VISUAL_REVIEW_REQUIRED",
+  "source_url": "https://www.autosprite.io/free-3d-models/t1-sentinel",
+  "license_claim": "CC0 on publisher page, candidate not approved",
+  "source_sha256": "238512321b5af88d9a682f3a669205082d7fa508fa839c0bbbe8870b49866eff",
+  "source_bytes": 24319564,
+  "source_not_edited": true,
+  "blender_version": "4.5.13 LTS",
+  "engine": "CYCLES",
+  "hdri": "studio_small_09_4k.exr",
+  "hdri_depth_bits": 96,
+  "meshes": 2,
+  "armatures": 1,
+  "bones": [
+    "mixamorig:Hips",
+    "mixamorig:Spine",
+    "mixamorig:Spine1",
+    "mixamorig:Spine2",
+    "mixamorig:Neck",
+    "mixamorig:Head",
+    "mixamorig:LeftShoulder",
+    "mixamorig:LeftArm",
+    "mixamorig:LeftForeArm",
+    "mixamorig:LeftHand",
+    "mixamorig:RightShoulder",
+    "mixamorig:RightArm",
+    "mixamorig:RightForeArm",
+    "mixamorig:RightHand",
+    "mixamorig:LeftUpLeg",
+    "mixamorig:LeftLeg",
+    "mixamorig:LeftFoot",
+    "mixamorig:LeftToeBase",
+    "mixamorig:RightUpLeg",
+    "mixamorig:RightLeg",
+    "mixamorig:RightFoot",
+    "mixamorig:RightToeBase"
+  ],
+  "actions": [
+    "death",
+    "hit_chest",
+    "idle",
+    "sword_attack",
+    "sword_block",
+    "sword_idle",
+    "walk_loop"
+  ],
+  "mesh_object_names": [
+    "Icosphere",
+    "material"
+  ],
+  "material_count": 2,
+  "character_bounds_m": [
+    [
+      -0.9510578513145447,
+      -0.9999999403953552,
+      -1.0
+    ],
+    [
+      0.9510578513145447,
+      0.9999999403953552,
+      1.0
+    ]
+  ],
+  "equipment_can_be_separated": null,
+  "game_tested": false,
+  "finger_grip_visual_approved": false,
+  "renders": [
+    {
+      "file": "V038_01_idle_front.png",
+      "size": 547661,
+      "clip": {
+        "action": "idle",
+        "frame": 7
+      },
+      "hand_bone": "mixamorig:RightHand",
+      "hand_focus_world": [
+        -0.1534714698791504,
+        0.05691184848546982,
+        0.5132049322128296
+      ],
+      "camera": [
+        1.3421270847320557,
+        -5.368508338928223,
+        0.8589613437652588
+      ],
+      "detail": false
+    },
+    {
+      "file": "V038_02_idle_back.png",
+      "size": 541411,
+      "clip": {
+        "action": "idle",
+        "frame": 7
+      },
+      "hand_bone": "mixamorig:RightHand",
+      "hand_focus_world": [
+        -0.1534714698791504,
+        0.05691184848546982,
+        0.5132049322128296
+      ],
+      "camera": [
+        -1.487743854522705,
+        5.313370704650879,
+        0.9564067125320435
+      ],
+      "detail": false
+    },
+    {
+      "file": "V038_03_walk_step.png",
+      "size": 543945,
+      "clip": {
+        "action": "walk_loop",
+        "frame": 11
+      },
+      "hand_bone": "mixamorig:RightHand",
+      "hand_focus_world": [
+        -0.12645553052425385,
+        -0.02176334150135517,
+        0.5357139110565186
+      ],
+      "camera": [
+        1.826597809791565,
+        -5.218851089477539,
+        0.8872047066688538
+      ],
+      "detail": false
+    },
+    {
+      "file": "V038_04_sword_hand_detail.png",
+      "size": 755552,
+      "clip": {
+        "action": "idle",
+        "frame": 7
+      },
+      "hand_bone": "mixamorig:RightHand",
+      "hand_focus_world": [
+        -0.1534714698791504,
+        0.05691184848546982,
+        0.5132049322128296
+      ],
+      "camera": [
+        0.6338200569152832,
+        -2.403374195098877,
+        0.8084392547607422
+      ],
+      "detail": true
+    },
+    {
+      "file": "V038_05_sword_hand_reverse.png",
+      "size": 731610,
+      "clip": {
+        "action": "idle",
+        "frame": 7
+      },
+      "hand_bone": "mixamorig:RightHand",
+      "hand_focus_world": [
+        -0.1534714698791504,
+        0.05691184848546982,
+        0.5132049322128296
+      ],
+      "camera": [
+        -0.940762996673584,
+        2.517198085784912,
+        0.8084392547607422
+      ],
+      "detail": true
+    }
+  ]
+}
