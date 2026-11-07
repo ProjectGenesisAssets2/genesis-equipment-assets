@@ -1,0 +1,120 @@
+name: Genesis | V022 real dual weapon V015 shield V12B sword Blender Cycles HDRI32
+on:
+  push:
+    branches: [experiment/mercenary-dual-equipment-v022]
+    paths:
+      - 'scripts/mercenary/qa_real_sword_shield_v022.py'
+      - '.github/workflows/mercenary-real-dual-equipment-v022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  real-dual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore genuine V015 66cm shield optimized 2K WebP from validated chunk handoff
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mercy_gear_v022 output/mercenary_dual_v022
+          python3 - <<'PY'
+          import json,gzip,base64,hashlib
+          from pathlib import Path
+          folder=Path('handoff/escudo_v015_pbr2k_v022')
+          manifest=json.loads((folder/'manifest.json').read_text())
+          zipped=b''.join(base64.b64decode((folder/('chunk_%03d.base64.txt'%i)).read_text()) for i in range(manifest['num_chunks']))
+          assert hashlib.sha256(zipped).hexdigest()==manifest['compressed_sha256']
+          raw=gzip.decompress(zipped)
+          assert hashlib.sha256(raw).hexdigest()==manifest['output_sha256']
+          assert len(raw)==manifest['bytes'] and raw[:4]==b'glTF'
+          (Path('/tmp/mercy_gear_v022')/manifest['glb_filename']).write_bytes(raw)
+          print('AUTHENTIC_V015_SHIELD_2K_RESTORED',len(raw),manifest['output_sha256'])
+          PY
+      - name: Fetch verified real 19-clip natural mercenary rig from own public organization
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 120 \
+            'https://raw.githubusercontent.com/ProjectGenesisAssets2/genesis-equipment-assets/experiment/mercenary-natural-combat-v021/candidates/mercenary/natural_equipped_v021/mercenary_equipment_natural_v021.glb' \
+            -o /tmp/mercy_gear_v022/mercenary_equipment_natural_v021.glb
+          echo 'd11dfc46fafbf333185f9ba038e7fb4719e8acf03d5835a2c17e744530c954ba  /tmp/mercy_gear_v022/mercenary_equipment_natural_v021.glb' | sha256sum -c
+      - name: Restore protected real V12B sword in ephemeral Actions runner only
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/mercy_gear_v022/V12B_PRIVATE_REAL_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/mercy_gear_v022/V12B_PRIVATE_REAL_SWORD.glb' | sha256sum -c
+      - name: HDRI source 32bit Poly Haven studio EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/mercy_gear_v022/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/mercy_gear_v022/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install true Blender 4.5.13 LTS on public Actions
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/mercy_gear_v022/blender.tar.xz
+          mkdir -p /tmp/mercy_gear_v022/blender
+          tar -xJf /tmp/mercy_gear_v022/blender.tar.xz -C /tmp/mercy_gear_v022/blender --strip-components=1
+          /tmp/mercy_gear_v022/blender/blender --version | grep 'Blender 4.5.13'
+      - name: Attach both actual models to real hand bones; render four authentic Cycles/EXR32 views
+        run: |
+          set -euo pipefail
+          /tmp/mercy_gear_v022/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_real_sword_shield_v022.py -- \
+            --rig /tmp/mercy_gear_v022/mercenary_equipment_natural_v021.glb \
+            --shield /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb \
+            --sword /tmp/mercy_gear_v022/V12B_PRIVATE_REAL_SWORD.glb \
+            --hdri /tmp/mercy_gear_v022/studio_small_09_4k.exr \
+            --out output/mercenary_dual_v022
+          test "$(find output/mercenary_dual_v022 -name '*.png' | wc -l)" -eq 4
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          q=json.loads(Path('output/mercenary_dual_v022/MERCENARY_REAL_DOUBLE_EQUIPMENT_V022_QA.json').read_text())
+          assert q['shield_parent_bone']=='LeftHand' and q['sword_parent_bone']=='RightHand'
+          assert len(q['renders'])==4 and q['available_animations']>=19
+          assert q['shield_diameter_m']==.66 and q['sword_length_m']==.8925
+          assert not q['playcanvas_game_integration_tested'] and not q['approved_visual']
+          print('V022_TWO_GENUINE_WEAPONS_ATTACHED_TO_19_CLIP_CHARACTER_QA_PASS')
+          PY
+      - name: Commit actual Cycles review JPEGs and quality metrics ONLY to public experiment branch
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          mkdir -p candidates/mercenary/dual_equipment_v022
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import shutil
+          root=Path('output/mercenary_dual_v022')
+          target=Path('candidates/mercenary/dual_equipment_v022')
+          for p in root.glob('*.png'):
+           im=Image.open(p).convert('RGB');im.thumbnail((850,1000),Image.Resampling.LANCZOS)
+           im.save(target/(p.stem+'.jpg'),quality=90,subsampling=0,optimize=True)
+          shutil.copy2(root/'MERCENARY_REAL_DOUBLE_EQUIPMENT_V022_QA.json',target)
+          assert len(list(target.glob('*.jpg')))==4
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/dual_equipment_v022
+          git diff --cached --quiet || git commit -m 'V022 real PBR V015 shield + licensed original V12B sword on natural 19-clip rig, four real Cycles HDRI32 renders'
+          git fetch origin experiment/mercenary-dual-equipment-v022
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-dual-equipment-v022
+      - name: Upload real full-resolution QA without protected original sword or internal textures
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: genesis-mercenary-v022-true-V015-shield-V12B-sword-real-cycles
+          path: output/mercenary_dual_v022/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Erase protected original sword from runner
+        if: always()
+        run: rm -f /tmp/mercy_gear_v022/V12B_PRIVATE_REAL_SWORD.glb
