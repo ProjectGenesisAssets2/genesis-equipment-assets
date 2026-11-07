@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           npm install --global @gltf-transform/cli
           gltf-transform copy \
-            /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022_uncompressed.glb \
+            /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb \
             /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022_uncompressed.glb
           python3 - <<'PY'
           import json,struct,hashlib
@@ -86,7 +86,7 @@ jobs:
           /tmp/mercy_gear_v022/blender/blender -b -t 4 --python-exit-code 1 \
             --python scripts/mercenary/qa_real_sword_shield_v022.py -- \
             --rig /tmp/mercy_gear_v022/mercenary_equipment_natural_v021.glb \
-            --shield /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022.glb \
+            --shield /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022_uncompressed.glb \
             --sword /tmp/mercy_gear_v022/V12B_PRIVATE_REAL_SWORD.glb \
             --hdri /tmp/mercy_gear_v022/studio_small_09_4k.exr \
             --out output/mercenary_dual_v022
