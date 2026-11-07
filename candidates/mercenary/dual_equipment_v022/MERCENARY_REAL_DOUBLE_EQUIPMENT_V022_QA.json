@@ -1,0 +1,115 @@
+{
+  "status": "V022_REAL_MERCENARY_TWO_ACTUAL_3D_WEAPONS_CYCLES_REVIEW_ONLY",
+  "true_v015_shield_export_sha256": "ac25f2be9a667b1f9e59ce7e428e5e40d8f9efbf34904256d7bf55b112bca2f1",
+  "source_sword_v12b_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "real_mercenary_animated_glb_sha256": "d11dfc46fafbf333185f9ba038e7fb4719e8acf03d5835a2c17e744530c954ba",
+  "shield_source_object_count": 3,
+  "shield_diameter_m": 0.66,
+  "sword_length_m": 0.8925,
+  "shield_parent_bone": "LeftHand",
+  "sword_parent_bone": "RightHand",
+  "shield_original_materials_intact": true,
+  "sword_v12b_surface": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "images_repaired": [
+    "gltf_imported_PBR_WEBP_textures_embedded"
+  ],
+  "renders": [
+    {
+      "label": "V022_01_idle_frente_escudo_v015_espada_v12b",
+      "image": "V022_01_idle_frente_escudo_v015_espada_v12b.png",
+      "sha256": "86c6ce466f9b62631c1b8aca19fef2052e89dcc6a3f586b1c239532e850a825e",
+      "bytes": 1479364,
+      "pose": {
+        "clip": "GENESIS_MERC_EQUIPPED_IDLE_V021",
+        "frame": 0,
+        "total_frames": 49
+      },
+      "weapon_center": [
+        -0.4231090545654297,
+        -0.25981712341308594,
+        1.0160760879516602
+      ],
+      "shield_center": [
+        0.41275525093078613,
+        -0.18509483337402344,
+        1.3073368072509766
+      ]
+    },
+    {
+      "label": "V022_02_idle_3cuartos",
+      "image": "V022_02_idle_3cuartos.png",
+      "sha256": "ecb2557584ec0397871c1d01b23cf6fe5e7ddae74a5a4e0a6339ccefba7092df",
+      "bytes": 1424878,
+      "pose": {
+        "clip": "GENESIS_MERC_EQUIPPED_IDLE_V021",
+        "frame": 13,
+        "total_frames": 49
+      },
+      "weapon_center": [
+        -0.43108606338500977,
+        -0.25275421142578125,
+        1.0007591247558594
+      ],
+      "shield_center": [
+        0.40677595138549805,
+        -0.18852567672729492,
+        1.3149948120117188
+      ]
+    },
+    {
+      "label": "V022_03_walk_paso_1",
+      "image": "V022_03_walk_paso_1.png",
+      "sha256": "cc87b62b68f9f0d6db56fbbef285f7c791620b1dd3254347947ce121ae671afb",
+      "bytes": 1427152,
+      "pose": {
+        "clip": "GENESIS_MERC_EQUIPPED_WALK_V021",
+        "frame": 9,
+        "total_frames": 36
+      },
+      "weapon_center": [
+        -0.4306674003601074,
+        -0.2530851364135742,
+        0.981689453125
+      ],
+      "shield_center": [
+        0.4070925712585449,
+        -0.18865633010864258,
+        1.2945899963378906
+      ]
+    },
+    {
+      "label": "V022_04_walk_paso_2",
+      "image": "V022_04_walk_paso_2.png",
+      "sha256": "170d6a223e3aaadc69f74993f6bc4631105647a4c4d2b22e3fd10d771edd4e91",
+      "bytes": 1433028,
+      "pose": {
+        "clip": "GENESIS_MERC_EQUIPPED_WALK_V021",
+        "frame": 26,
+        "total_frames": 36
+      },
+      "weapon_center": [
+        -0.4380354881286621,
+        -0.2538156509399414,
+        0.986882209777832
+      ],
+      "shield_center": [
+        0.4124789237976074,
+        -0.1827840805053711,
+        1.2824592590332031
+      ]
+    }
+  ],
+  "armature_bones": 24,
+  "available_animations": 19,
+  "playcanvas_game_integration_tested": false,
+  "approved_visual": false,
+  "master_blend_modified_on_disk": false,
+  "shield_candidate_export_glb_from_separate_v018_and_v022": true
+}
