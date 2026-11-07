@@ -1,0 +1,142 @@
+name: Genesis | V032 sword grip calibration sweep authentic Cycles EXR32
+on:
+  push:
+    branches: [experiment/mercenary-v032-hilt-fitting-20261107]
+    paths: [.github/workflows/mercenary-hilt-fit-v032.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  real-hilt-fitting:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use V031 actual right glove and check the exact original 5 motions
+        run: |
+          set -euo pipefail
+          mkdir -p output/mercenary_hilt_fit_v032 /tmp/genesis_fit_v032
+          echo '92c68a22d5917a5b731266500a46e232489ecdae2de8a60391bacf3675060076  candidates/mercenary/grip_v031/mercenary_grip_corrected_v031.glb' | sha256sum -c
+          cp candidates/mercenary/grip_v031/mercenary_grip_corrected_v031.glb output/mercenary_hilt_fit_v032/
+      - name: Recover genuine V12B iron V175 protected source in ephemeral runner
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_fit_v032/ORIGINAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_fit_v032/ORIGINAL_V12B_SWORD.glb' | sha256sum -c
+      - name: Verify true 32bit 4K studio EXR, not JPG or PNG
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_fit_v032/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_fit_v032/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_fit_v032/blender.tar.xz
+          mkdir -p /tmp/genesis_fit_v032/blender
+          tar -xJf /tmp/genesis_fit_v032/blender.tar.xz -C /tmp/genesis_fit_v032/blender --strip-components=1
+          /tmp/genesis_fit_v032/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Prepare real noncombat hilt fitting comparison without altering hand bones
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/mercenary/qa_explorer_v024.py').read_text().replace('V024','V032').replace('v024','v032')
+          for clip in ('IDLE','WALK','INSPECT_SWORD','INSPECT_SHIELD','WALK_EQUIPPED'):
+            s=s.replace('GENESIS_MERC_'+clip+'_V032','GENESIS_MERC_'+clip+'_V029')
+          s=s.replace("cam.location=center+Vector(camdir).normalized()*5.5",
+                      "focus=anchor.matrix_world.translation if has_sword else native['GENESIS_SOCKET_SHIELD_L'].matrix_world.translation\n  cam.location=focus+Vector(camdir).normalized()*1.65")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.67")
+          s=s.replace('scene.cycles.samples=38','scene.cycles.samples=30')
+          s=s.replace('scene.render.resolution_x=900;scene.render.resolution_y=1080','scene.render.resolution_x=800;scene.render.resolution_y=960')
+          s='\n'.join(line for line in s.splitlines() if not line.lstrip().startswith("render('V032_"))+'\n'
+          needle=" report={'status':"
+          assert needle in s
+          calls=(
+            " def test_offset(label,dx,view=(.55,-1,.16)):\n"
+            "  assign(arm,expected[0],0)\n"
+            "  bpy.context.view_layer.update()\n"
+            "  swordroot.matrix_world=Matrix.Translation((dx,0,0))@sword_target\n"
+            "  bpy.context.view_layer.update()\n"
+            "  render(label,expected[2],.54,True,False,view)\n"
+            " test_offset('V032_A_original_hilt_0mm',.000)\n"
+            " test_offset('V032_B_hilt_plus20mm',.020)\n"
+            " test_offset('V032_C_hilt_plus40mm',.040)\n"
+            " test_offset('V032_D_hilt_plus60mm',.060)\n"
+            " test_offset('V032_E_hilt_plus40mm_back',.040,(-.60,1,.16))\n"
+          )
+          s=s.replace(needle,calls+needle)
+          import ast
+          ast.parse(s)
+          assert s.count("test_offset('V032_")==5
+          Path('scripts/mercenary/qa_hilt_fit_v032.py').write_text(s)
+          print('V032_CALIBRATION_VARIANT_BLENDER_SCRIPT_VALID')
+          PY
+      - name: Run real Cycles 32-bit A/B/C/D right-hand grip comparisons, incl rear
+        run: |
+          set -euo pipefail
+          /tmp/genesis_fit_v032/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_hilt_fit_v032.py -- \
+            --character candidates/mercenary/grip_v031/mercenary_grip_corrected_v031.glb \
+            --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --sword /tmp/genesis_fit_v032/ORIGINAL_V12B_SWORD.glb \
+            --hdri /tmp/genesis_fit_v032/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_hilt_fit_v032
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          out=Path('output/mercenary_hilt_fit_v032')
+          qa=json.loads((out/'MERCENARY_EXPLORER_V032_RENDER_QA.json').read_text())
+          assert len(qa['renders'])==5 and qa['weapon_parent_correct'] and qa['shield_parent_correct']
+          assert len(list(out.glob('V032_*.png')))==5
+          (out/'V032_HILT_VARIANTS.json').write_text(json.dumps({
+            'status':'V032_CALIBRATION_SWEEP_PENDING_VISUAL_REVIEW',
+            'character':'V031 experimental glove, existing V029 5 action clips',
+            'source_weapon':'V12B real V175 exact SHA256 verified',
+            'anatomical_side':'RightHand only; LeftHand shield unchanged',
+            'sword_world_x_variants_m':[0,.020,.040,.060],
+            'approved':False,'playcanvas_tested':False,'visual_score':None},indent=2))
+          print('V032_FIVE_CYCLES_REAL_IMAGES_DONE')
+          PY
+      - name: Retain JPEG evidence and calibration manifest in experimental branch
+        run: |
+          set -euo pipefail
+          python3 -m pip install Pillow==11.3.0 --disable-pip-version-check
+          mkdir -p candidates/mercenary/hilt_fit_v032
+          cp output/mercenary_hilt_fit_v032/V032_HILT_VARIANTS.json candidates/mercenary/hilt_fit_v032/
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          out=Path('candidates/mercenary/hilt_fit_v032')
+          for p in Path('output/mercenary_hilt_fit_v032').glob('V032_*.png'):
+            im=Image.open(p).convert('RGB')
+            im.thumbnail((850,990),Image.Resampling.LANCZOS)
+            im.save(out/(p.stem+'.jpg'),quality=88,optimize=True)
+          assert len(list(out.glob('*.jpg')))==5
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/hilt_fit_v032
+          git diff --cached --quiet || git commit -m 'V032 experimental real sword handle fit sweep, retain authentic Cycles HDRI32 evidence'
+          git fetch origin experiment/mercenary-v032-hilt-fitting-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-v032-hilt-fitting-20261107
+      - name: Upload 5 exact full-res real renders and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v032-hilt-fit-four-positions-Cycles32
+          path: output/mercenary_hilt_fit_v032/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Delete protected source sword
+        if: always()
+        run: rm -f /tmp/genesis_fit_v032/ORIGINAL_V12B_SWORD.glb
