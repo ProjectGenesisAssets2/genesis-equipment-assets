@@ -1,0 +1,74 @@
+{
+  "schema": "Genesis_V27_RealV25Ice_FreezingTravel_Cycles32bpc_24fps",
+  "status": "experimental_strong_movement_quality_review_pending",
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "original_glb_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_exr_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_depth_RGBbits_per_channel": 32,
+  "hdri_exr_resolution": [
+    4096,
+    2048
+  ],
+  "approved_V12B_material_preserved": true,
+  "approved_V25_ice_model_reused_without_redesign": true,
+  "v25_static_quality_reference": 7.5,
+  "original_mesh_modified": false,
+  "fire_V20C1_modified": false,
+  "rayo_V07_modified": false,
+  "frame_count": 48,
+  "fps": 24,
+  "duration_s": 2.0,
+  "source_frame_quality": {
+    "resolution_percentage": 60,
+    "samples": 18,
+    "denoising": true
+  },
+  "loop_parameter_difference": 0.0,
+  "motion": "strong physical frost-front freeze from hilt to tip then natural thaw; smooth sinusoidal travel with zero derivative at loop endpoints",
+  "effect_objects": 379,
+  "effect_object_types": {
+    "frost": 315,
+    "shelf": 6,
+    "crystals": 58
+  },
+  "static_v25_geometry": {
+    "ice_tapered_shelves": 6,
+    "faceted_3d_crystals": 58,
+    "branched_frost_dendrites": 70,
+    "rime_grains": 125,
+    "PBR_refraction_roughness": 0.17,
+    "ice_bands_reach_cutting_edges": true,
+    "centre_ridge_metal_exposed": true,
+    "all_geometry_sampled_on_V03_blade": true
+  },
+  "samples": [
+    {
+      "frame": 0,
+      "bytes": 700050,
+      "file": "Ice_V25_Animated_000.png"
+    },
+    {
+      "frame": 12,
+      "bytes": 705969,
+      "file": "Ice_V25_Animated_012.png"
+    },
+    {
+      "frame": 24,
+      "bytes": 706782,
+      "file": "Ice_V25_Animated_024.png"
+    },
+    {
+      "frame": 36,
+      "bytes": 705969,
+      "file": "Ice_V25_Animated_036.png"
+    },
+    {
+      "frame": 47,
+      "bytes": 700569,
+      "file": "Ice_V25_Animated_047.png"
+    }
+  ],
+  "playcanvas_implementation": "not yet ported or tested",
+  "visual_approval": "pending; do not imply game-ready"
+}
