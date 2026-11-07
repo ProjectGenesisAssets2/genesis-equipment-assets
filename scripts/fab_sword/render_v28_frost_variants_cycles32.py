@@ -111,7 +111,7 @@ def build_frost(coord,along,side,normal,intensity,variant):
             if variant=='B' and colony%4==0:
                 # A FEW teal highlights: visually not electrical, no helices.
                 p=trace(.72,height=.0075)
-                sz=.0014+.001*rng.random()
+                sz=.0014+.001*math.sin(colony+2.8)**2
                 ref.ellipsoid('V28_GENTLE_COLD_TIP_%s_%02d'%(sign,colony),
                               p,(sz*.63,sz*.94,sz*.48),luminous)
                 tips+=1
