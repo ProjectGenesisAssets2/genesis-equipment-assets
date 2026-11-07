@@ -1,0 +1,103 @@
+{
+  "schema": "Genesis_V28_RealHoarfrost_A_B_24fps_Cycles_AnimatedGLB",
+  "status": "experimental_animated_not_yet_user_approved",
+  "original_V03_GLB_SHA256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "original_studio_EXR_SHA256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "RGB_HDRI_bits_per_channel": 32,
+  "HDRI_resolution": [
+    4096,
+    2048
+  ],
+  "Blender": "4.5.13 LTS",
+  "renderer": "Cycles",
+  "approved_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "source_3D_not_imagegen": true,
+  "approved_sword_unchanged": true,
+  "fire_and_lightning_untouched": true,
+  "in_main": false,
+  "variants": [
+    {
+      "variant": "B",
+      "source_V28": {
+        "root_colonies": 230,
+        "primary_dendrites": 230,
+        "secondary_branches": 1840,
+        "frost_microbranches": 3680,
+        "subtle_azure_crystal_lights": 39,
+        "porous_rime_deposits": 10,
+        "micro_rime_granules": 1100,
+        "base_metal_ridge_exposed": true,
+        "frost_coating_rather_than_glass_armor": true,
+        "glow_is_low_and_only_in_B": true,
+        "render_variant": "B"
+      },
+      "geometry": {
+        "sectors": 12,
+        "original_v28_polygons": 110792,
+        "animated_polygons": 110792,
+        "intensity_0_to_100": 100,
+        "geometric_not_postprocessed": true
+      },
+      "animated_glb": {
+        "name": "V28_Escarcha_B_AnimatedOverlay.glb",
+        "bytes": 5415348,
+        "sha256": "acee158f70d0d2959d7b2882d9b67bb8f6e644199516a2d113953da35da05eea",
+        "animation_count": 12,
+        "animation_channels": 12,
+        "meshes": 12,
+        "actual_GLTF_keyframe_animation": true
+      },
+      "editable_scene": "V28_Escarcha_B_Animada_Cycles32.blend",
+      "render": {
+        "actual_cycles_frames": 48,
+        "fps": 24,
+        "duration_seconds": 2.0,
+        "samples_per_frame": 16,
+        "resolution_pct": 78,
+        "camera_view": "macro",
+        "keyframe_samples": [
+          {
+            "frame": 1,
+            "file": "frame_000.png",
+            "bytes": 1237340,
+            "sha256": "01841b87f769ff55347b3710908b3b0f11dcdd78da90f05e4868ce16791e1cdb"
+          },
+          {
+            "frame": 8,
+            "file": "frame_007.png",
+            "bytes": 1255801,
+            "sha256": "6bf6d6210b113bb12a416d09f4995314926a46309cf8e4ae15d26e5c6e9ffd94"
+          },
+          {
+            "frame": 16,
+            "file": "frame_015.png",
+            "bytes": 1279217,
+            "sha256": "9ecfe922bbd378ac0688ba0626acabbc35df8142f2b9c0a77cd00cd3e634cce4"
+          },
+          {
+            "frame": 24,
+            "file": "frame_023.png",
+            "bytes": 1281832,
+            "sha256": "7fd64a9d9c7944d33181989270d5c484802684cbba8f2df4df7781553fa169ef"
+          },
+          {
+            "frame": 36,
+            "file": "frame_035.png",
+            "bytes": 1267105,
+            "sha256": "dd7d2027ed8f561f8fb629e3bd36ef4a666f1206088cdaf21abc1b2ea1200e22"
+          },
+          {
+            "frame": 48,
+            "file": "frame_047.png",
+            "bytes": 1237340,
+            "sha256": "5da987b2afa9a210b7895119eddfe1cdf53849a80b302b24c0e3ae4becbc22fa"
+          }
+        ],
+        "macro": "V28_Escarcha_B_Cycles32_Macro.png",
+        "morph": "12 mesh sectors grow hilt-to-tip, hold, thaw tip-to-hilt"
+      },
+      "approved": false,
+      "playcanvas_tested": false
+    }
+  ]
+}

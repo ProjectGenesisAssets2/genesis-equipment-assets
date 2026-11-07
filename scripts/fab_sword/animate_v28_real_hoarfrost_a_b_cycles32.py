@@ -206,7 +206,7 @@ def render_variant(scene, args, variant, objects, result_dir):
     scene.render.engine = "CYCLES"
     scene.cycles.samples = args.samples
     scene.render.resolution_percentage = args.resolution_pct
-    scene.camera = bpy.data.objects["CAM_hero"]
+    scene.camera = bpy.data.objects["CAM_BLADE_MACRO" if args.animation_camera == "macro" else "CAM_hero"]
     scene.render.image_settings.file_format = "PNG"
     bpy.context.view_layer.cycles.use_denoising = True
     frames_dir = result_dir / "frames"
@@ -244,6 +244,7 @@ def render_variant(scene, args, variant, objects, result_dir):
     scene.cycles.samples = args.samples
     return {"actual_cycles_frames": 48, "fps": 24, "duration_seconds": 2.0,
             "samples_per_frame": args.samples, "resolution_pct": args.resolution_pct,
+            "camera_view": args.animation_camera,
             "keyframe_samples": samples, "macro": macro.name,
             "morph": "12 mesh sectors grow hilt-to-tip, hold, thaw tip-to-hilt"}
 
@@ -266,6 +267,7 @@ def main():
     parser.add_argument("--resolution-pct", type=int, default=58)
     parser.add_argument("--intensity", type=int, default=100)
     parser.add_argument("--variant", choices=("A", "B", "both"), default="both")
+    parser.add_argument("--animation-camera", choices=("hero", "macro"), default="hero")
     args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
     require(0 <= args.intensity <= 100, "intensity must be 0-100")
     require(12 <= args.samples <= 128 and 40 <= args.resolution_pct <= 100,

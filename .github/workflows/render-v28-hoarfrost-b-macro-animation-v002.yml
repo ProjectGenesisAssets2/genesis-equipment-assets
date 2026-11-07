@@ -1,0 +1,134 @@
+name: Genesis V28 | Escarcha B macro animada REAL Cycles EXR RGB32 v002
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v28-escarcha-a-b-animada-cycles32-20261107]
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v28-frost-b-macro-v002
+  cancel-in-progress: true
+jobs:
+  build-animate-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 115
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source checks
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/animate_v28_real_hoarfrost_a_b_cycles32.py scripts/fab_sword/render_v28_two_actual_frost_3d.py
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+          test "$(git hash-object scripts/fab_sword/render_v28_two_actual_frost_3d.py)" = 61c5c64cfb2b08df600bbd5c6fa087b3d0bf2f65
+      - name: Restore approved V03 and EXR 32bpc originals
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v28-sword.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v28-sword.glb' | sha256sum -c
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        timeout-minutes: 9
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          test "$(stat -c %s /tmp/blender.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-blender
+          tar -xJf /tmp/blender.tar.xz -C /tmp/genesis-blender --strip-components=1
+          /tmp/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Generate actual A and B 24fps Cycles animation and animated GLB
+        timeout-minutes: 92
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v28-animated
+          /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/animate_v28_real_hoarfrost_a_b_cycles32.py -- --input /tmp/genesis-v28-sword.glb --hdri /tmp/studio_small_09_4k.exr --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --output-dir /tmp/v28-animated --samples 16 --setup-samples 12 --hero-samples 64 --resolution-pct 78 --intensity 100 --variant B --animation-camera macro
+      - name: Install FFmpeg system encoder on Ubuntu
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
+      - name: Encode to MP4 and GIF from real Cycles frames
+        timeout-minutes: 7
+        run: |
+          set -euo pipefail
+          command -v ffmpeg
+          for v in B; do
+            dir="/tmp/v28-animated/$v"
+            printf -v mp4 '%s/V28_Escarcha_%s_Cycles32_24fps.mp4' "$dir" "$v"
+            printf -v gif '%s/V28_Escarcha_%s_Cycles32_Loop12fps.gif' "$dir" "$v"
+            ffmpeg -hide_banner -loglevel error -y -framerate 24 -i "$dir/frames/frame_%03d.png" -c:v libx264 -preset medium -crf 17 -pix_fmt yuv420p -movflags +faststart "$mp4"
+            ffmpeg -hide_banner -loglevel error -y -framerate 24 -i "$dir/frames/frame_%03d.png" -vf "fps=12,scale=480:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=3" -loop 0 "$gif"
+          done
+      - name: Verify editable Blender, actual GLB animations, both 48-frame MP4s
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          for v in B; do
+            /tmp/genesis-blender/blender -b "/tmp/v28-animated/$v/V28_Escarcha_$v"_Animada_Cycles32.blend --python-exit-code 1 --python-expr "import bpy; o=[x for x in bpy.data.objects if x.name.startswith('GENESIS_V28_FROST_') and x.type=='MESH']; assert len(o)>=10; assert sum(x.animation_data is not None and x.animation_data.action is not None for x in o)>=10; assert bpy.context.scene.render.engine=='CYCLES'; print('GENESIS_V28_EDITABLE_REOPENED',len(o))"
+          done
+          python3 - <<'PY'
+          import json,struct,hashlib,subprocess
+          from pathlib import Path
+          b=Path('/tmp/v28-animated')
+          a=json.loads((b/'v28_animated_real_hoarfrost_a_b_audit.json').read_text())
+          assert a['renderer']=='Cycles' and a['Blender'].startswith('4.5.13')
+          assert a['RGB_HDRI_bits_per_channel']==32 and a['HDRI_resolution']==[4096,2048]
+          assert a['approved_sword_unchanged'] and a['fire_and_lightning_untouched']
+          assert len(a['variants'])==1 and {v['variant'] for v in a['variants']}=={'B'}
+          for x in a['variants']:
+            v=x['variant'];d=b/v
+            assert x['geometry']['original_v28_polygons']==x['geometry']['animated_polygons']
+            assert x['geometry']['sectors']>=10
+            data=(d/x['animated_glb']['name']).read_bytes()
+            assert data[:4]==b'glTF' and struct.unpack_from('<I',data,8)[0]==len(data)
+            assert hashlib.sha256(data).hexdigest()==x['animated_glb']['sha256']
+            n,typ=struct.unpack_from('<I4s',data,12)
+            assert typ==b'JSON'
+            j=json.loads(data[20:20+n])
+            assert len(j.get('animations',[]))>=1 and sum(len(z['channels']) for z in j['animations'])>=10
+            assert len(list((d/'frames').glob('frame_*.png')))==48
+            assert x['render']['fps']==24 and x['render']['duration_seconds']==2. and x['render']['camera_view']=='macro'
+            assert (d/x['render']['macro']).stat().st_size>100000
+            for ext in ('mp4','gif'):
+              f=list(d.glob('*.'+ext));assert len(f)==1 and f[0].stat().st_size>20000
+            mp4=next(d.glob('*.mp4'))
+            video=json.loads(subprocess.check_output(['ffprobe','-v','error','-of','json','-show_entries','format=duration',str(mp4)]))
+            assert 1.95<=float(video['format']['duration'])<=2.1
+          print('GENESIS_V28_B_MACRO_GLTF_AND_CYCLES_24FPS_VERIFIED')
+          PY
+      - name: Stage experimental deliverables only
+        run: |
+          set -euo pipefail
+          mkdir -p public-previews/escarcha-v28-macro-b-v002
+          cp /tmp/v28-animated/v28_animated_real_hoarfrost_a_b_audit.json public-previews/escarcha-v28-macro-b-v002/
+          for v in B; do
+            cp /tmp/v28-animated/"$v"/*.mp4 /tmp/v28-animated/"$v"/*.gif /tmp/v28-animated/"$v"/*.png /tmp/v28-animated/"$v"/*.glb public-previews/escarcha-v28-macro-b-v002/
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V28-B-Macro-AnimatedFrost-Cycles32-GLB
+          path: |
+            /tmp/v28-animated/*/*.blend
+            public-previews/escarcha-v28-macro-b-v002/
+          retention-days: 14
+      - name: Publish only on V28 experimental branch, never main
+        run: |
+          set -euo pipefail
+          branch='experiment/v28-escarcha-macro-animada-b-v002-20261107'
+          git config user.name 'Genesis Asset QA CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin "$branch"
+          git checkout -B "$branch" FETCH_HEAD
+          git add public-previews/escarcha-v28-macro-b-v002/
+          if git diff --cached --quiet; then echo 'Unchanged'; else
+            git commit -m 'preview(v28): actual B macro animation Cycles 24fps [skip ci]'
+            git push origin "HEAD:$branch"
+          fi
+      - name: Cleanup temporary original source files
+        if: always()
+        run: rm -f /tmp/genesis-v28-sword.glb /tmp/studio_small_09_4k.exr
