@@ -1,0 +1,123 @@
+name: Genesis | V035 three right-hand anatomical curl meshes Cycles HDRI32
+on:
+  push:
+    branches: [experiment/mercenary-v035-finger-curl-candidates-20261107]
+    paths:
+      - scripts/mercenary/sculpt_right_glove_v035.py
+      - .github/workflows/mercenary-grip-curvature-v035.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  glove-v035:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Three experimental anatomical RIGHT hand GLBs; original untouched
+        run: |
+          set -euo pipefail
+          mkdir -p output/grip_v035 /tmp/grip_v035
+          echo '694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa  candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb' | sha256sum -c
+          python3 scripts/mercenary/sculpt_right_glove_v035.py --source candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb --out output/grip_v035 --label A --angle 3.10 --pivot -.734 --radius .018
+          python3 scripts/mercenary/sculpt_right_glove_v035.py --source candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb --out output/grip_v035 --label B --angle 3.14 --pivot -.737 --radius .015
+          python3 scripts/mercenary/sculpt_right_glove_v035.py --source candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb --out output/grip_v035 --label C --angle 3.14 --pivot -.740 --radius .013
+          python3 - <<'PY'
+          import struct,json,hashlib
+          from pathlib import Path
+          orig=Path('candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb').read_bytes()
+          n=struct.unpack_from('<I',orig,12)[0]
+          for label in 'ABC':
+            p=Path('output/grip_v035')/('mercenary_grip_'+label+'_v035.glb')
+            b=p.read_bytes();assert b[:20+n]==orig[:20+n] and len(b)==len(orig)
+            qa=json.loads((p.parent/('MERCENARY_GRIP_'+label+'_V035_QA.json')).read_text())
+            assert qa['left_hand_and_rig_unchanged'] and qa['right_grip_vertices_edited']>100
+            assert hashlib.sha256(b).hexdigest()==qa['output_sha256']
+          print('V035_GLTF_3_RIGHT_ONLY_VARIANTS_PASS')
+          PY
+      - name: Rehydrate protected genuine V12B source in runner only
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/grip_v035/REAL_V12B_SWORD.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/grip_v035/REAL_V12B_SWORD.glb' | sha256sum -c
+      - name: Download genuine 32bit EXR HDRI with validated checksum
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/grip_v035/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/grip_v035/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/grip_v035/blender.tar.xz
+          mkdir -p /tmp/grip_v035/blender
+          tar -xJf /tmp/grip_v035/blender.tar.xz -C /tmp/grip_v035/blender --strip-components=1
+          /tmp/grip_v035/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Adapt proven actual Cycles model renderer for 2 glove views
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/mercenary/qa_explorer_v024.py').read_text().replace('V024','V035').replace('v024','v035')
+          for key in ('IDLE','WALK','INSPECT_SWORD','INSPECT_SHIELD','WALK_EQUIPPED'):
+            s=s.replace('GENESIS_MERC_'+key+'_V035','GENESIS_MERC_'+key+'_V029')
+          s=s.replace("hand=right_palm+Vector((-.013,-.013,-.003))","hand=right_palm+Vector((.037,-.013,-.023))")
+          assert "hand=right_palm+Vector((.037,-.013,-.023))" in s
+          s=s.replace('scene.cycles.samples=38','scene.cycles.samples=26')
+          s=s.replace('cam.location=center+Vector(camdir).normalized()*5.5',
+                      "focus=anchor.matrix_world.translation if has_sword else native['GENESIS_SOCKET_SHIELD_L'].matrix_world.translation\n  cam.location=focus+Vector(camdir).normalized()*1.65")
+          s=s.replace("aim(cam,center);cam_data.type='ORTHO';cam_data.ortho_scale=2.5",
+                      "aim(cam,focus);cam_data.type='ORTHO';cam_data.ortho_scale=.68")
+          s=s.replace('scene.render.resolution_x=900;scene.render.resolution_y=1080',
+                      'scene.render.resolution_x=660;scene.render.resolution_y=790')
+          s='\n'.join(l for l in s.splitlines() if not l.lstrip().startswith("render('V035_"))+'\n'
+          needle=" report={'status':";assert needle in s
+          s=s.replace(needle,(
+            " render('V035_FRONT',expected[2],.54,True,False,(.55,-1,.16))\n"
+            " render('V035_BACK',expected[2],.54,True,False,(-.60,1,.16))\n"
+          )+needle)
+          import ast;ast.parse(s)
+          Path('scripts/mercenary/qa_grip_v035.py').write_text(s)
+          print('V035_AUTHENTIC_CYCLES_QA_SCRIPT_VALID')
+          PY
+      - name: Render all three real glove curvature candidates front and back
+        run: |
+          set -euo pipefail
+          for label in A B C; do
+            mkdir -p "output/grip_v035/$label"
+            /tmp/grip_v035/blender/blender -b -t 4 --python-exit-code 1 \
+              --python scripts/mercenary/qa_grip_v035.py -- \
+              --character "output/grip_v035/mercenary_grip_$label""_v035.glb" \
+              --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+              --sword /tmp/grip_v035/REAL_V12B_SWORD.glb \
+              --hdri /tmp/grip_v035/studio_small_09_4k.exr \
+              --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+              --out "output/grip_v035/$label"
+            test "$(find "output/grip_v035/$label" -name 'V035_*.png' | wc -l)" -eq 2
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for letter in 'ABC':
+            p=Path('output/grip_v035')/letter
+            q=json.loads((p/'MERCENARY_EXPLORER_V035_RENDER_QA.json').read_text())
+            assert len(q['renders'])==2 and q['weapon_parent_correct'] and q['shield_parent_correct']
+          print('V035_CYCLES32_SIX_REAL_VIEWS_VERIFIED')
+          PY
+      - name: Upload 3 GLB variants and original full-size Cycles renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v035-anatomical-right-glove-curvature-3-candidates
+          path: output/grip_v035/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Delete temporary licensed sword from runner
+        if: always()
+        run: rm -f /tmp/grip_v035/REAL_V12B_SWORD.glb
