@@ -1,0 +1,276 @@
+{
+  "status": "V021_CC0_QUATERNIUS_REAL_CYCLES_POSE_QA_PENDING_HUMAN_VISUAL_APPROVAL",
+  "target_original_bones": 24,
+  "total_actions": 19,
+  "real_cc0_animation_clips": [
+    "Meshy original Idle_02",
+    "Quaternius Walk_Loop",
+    "Quaternius Sword_Attack"
+  ],
+  "authentic_original_sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "metal_v175_v12b": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "sword_length_m": 0.8925,
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "sword_attached_to_real_bone_socket": true,
+  "no_placeholder_shield": true,
+  "approved_shield_model_mounted": false,
+  "game_tested": false,
+  "human_visual_approved": false,
+  "renders": [
+    {
+      "image": "V021_01_idle_real_mercenary_sword_down.png",
+      "bytes": 1567133,
+      "sha256": "9b028d6324250e96cbcd83d50c18a0219acc73db321675c73cf67cd1a69321da",
+      "clip": "GENESIS_MERC_EQUIPPED_IDLE_V021",
+      "frame": 0,
+      "sword_variant": "rest_lowered",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.17,
+        -0.18,
+        -0.969
+      ],
+      "socket_relative_matrix": [
+        [
+          -34.55717468261719,
+          17.827905654907227,
+          -21.894271850585938,
+          -12.374924659729004
+        ],
+        [
+          -8.465217590332031,
+          26.47012710571289,
+          34.915077209472656,
+          28.530832290649414
+        ],
+        [
+          26.93574333190918,
+          31.191165924072266,
+          -17.11629867553711,
+          -9.570310592651367
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V021_02_idle_34_real_mercenary_sword.png",
+      "bytes": 1588058,
+      "sha256": "1b1402b52aea8c67c28c1171ab0a79ddf268fd1eedefee4836c1dfae79d007bf",
+      "clip": "GENESIS_MERC_EQUIPPED_IDLE_V021",
+      "frame": 23,
+      "sword_variant": "rest_lowered",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.17,
+        -0.18,
+        -0.969
+      ],
+      "socket_relative_matrix": [
+        [
+          -34.55717468261719,
+          17.827905654907227,
+          -21.894271850585938,
+          -12.374924659729004
+        ],
+        [
+          -8.465217590332031,
+          26.47012710571289,
+          34.915077209472656,
+          28.530832290649414
+        ],
+        [
+          26.93574333190918,
+          31.191165924072266,
+          -17.11629867553711,
+          -9.570310592651367
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V021_03_walk_step_025.png",
+      "bytes": 1601094,
+      "sha256": "0fe948a70140555c3ca8cbd4392ef23c802f1ef06539ed6ed189b75ecadbdb49",
+      "clip": "GENESIS_MERC_EQUIPPED_WALK_V021",
+      "frame": 9,
+      "sword_variant": "rest_lowered",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.17,
+        -0.18,
+        -0.969
+      ],
+      "socket_relative_matrix": [
+        [
+          -34.55717468261719,
+          17.827905654907227,
+          -21.894271850585938,
+          -12.374924659729004
+        ],
+        [
+          -8.465217590332031,
+          26.47012710571289,
+          34.915077209472656,
+          28.530832290649414
+        ],
+        [
+          26.93574333190918,
+          31.191165924072266,
+          -17.11629867553711,
+          -9.570310592651367
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V021_04_walk_step_075.png",
+      "bytes": 1610786,
+      "sha256": "d51454bdb5eb476b33445078129330c8275226498043fc6a0cd1dfd4cc61b026",
+      "clip": "GENESIS_MERC_EQUIPPED_WALK_V021",
+      "frame": 26,
+      "sword_variant": "rest_lowered",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.17,
+        -0.18,
+        -0.969
+      ],
+      "socket_relative_matrix": [
+        [
+          -34.55717468261719,
+          17.827905654907227,
+          -21.894271850585938,
+          -12.374924659729004
+        ],
+        [
+          -8.465217590332031,
+          26.47012710571289,
+          34.915077209472656,
+          28.530832290649414
+        ],
+        [
+          26.93574333190918,
+          31.191165924072266,
+          -17.11629867553711,
+          -9.570310592651367
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V021_05_sword_attack.png",
+      "bytes": 1600136,
+      "sha256": "4bbec50144a7671d268df8456427cfb2ce8c40f00ce5706b7570c12c88cfbbbf",
+      "clip": "GENESIS_MERC_EQUIPPED_ATTACK_V021",
+      "frame": 12,
+      "sword_variant": "rest_lowered",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.17,
+        -0.18,
+        -0.969
+      ],
+      "socket_relative_matrix": [
+        [
+          -34.55717468261719,
+          17.827905654907227,
+          -21.894271850585938,
+          -12.374924659729004
+        ],
+        [
+          -8.465217590332031,
+          26.47012710571289,
+          34.915077209472656,
+          28.530832290649414
+        ],
+        [
+          26.93574333190918,
+          31.191165924072266,
+          -17.11629867553711,
+          -9.570310592651367
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "image": "V021_06_shield_block_unarmed_left.png",
+      "bytes": 1611833,
+      "sha256": "54468a5617b03cde63099ec0a22971c20eb7b7b11d2bbb3b1972c96cafff4a24",
+      "clip": "GENESIS_MERC_EQUIPPED_BLOCK_V021",
+      "frame": 11,
+      "sword_variant": "rest_lowered",
+      "source_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+      "sword_world_tip_direction": [
+        -0.17,
+        -0.18,
+        -0.969
+      ],
+      "socket_relative_matrix": [
+        [
+          -34.55717468261719,
+          17.827905654907227,
+          -21.894271850585938,
+          -12.374924659729004
+        ],
+        [
+          -8.465217590332031,
+          26.47012710571289,
+          34.915077209472656,
+          28.530832290649414
+        ],
+        [
+          26.93574333190918,
+          31.191165924072266,
+          -17.11629867553711,
+          -9.570310592651367
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ]
+}
