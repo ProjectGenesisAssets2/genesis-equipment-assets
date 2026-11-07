@@ -1,0 +1,50 @@
+{
+  "status": "V028_CYCLES32_REAL_POSE_REVIEW_PENDING_HUMAN_APPROVAL",
+  "character_sha256": "98f5583efdc43c20e99f1773c78b45bd88994ede8a3dacbd37ad9eca9149b352",
+  "sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "shield_sha256": "a169a827b70621ec21eeaa894b3cf10eebfacc0eb1ed5bb575d9ff8f275a6ec2",
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "bones": 24,
+  "clips": [
+    "GENESIS_MERC_IDLE_V028",
+    "GENESIS_MERC_WALK_V028",
+    "GENESIS_MERC_INSPECT_SWORD_V028",
+    "GENESIS_MERC_INSPECT_SHIELD_V028",
+    "GENESIS_MERC_WALK_EQUIPPED_V028"
+  ],
+  "sword_surface": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+  "shield_socket": "GENESIS_SOCKET_SHIELD_L",
+  "weapon_parent_correct": true,
+  "shield_parent_correct": true,
+  "playcanvas_tested": false,
+  "human_approved": false,
+  "renders": [
+    {
+      "file": "V028_03_inspeccionar_espada.png",
+      "sha256": "644e05b8ed3c206c826fdeaa722eddb2a87c325863960e083d31b0a94edb8866",
+      "bytes": 1156703,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V028",
+      "phase": 0.54,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "status": "V028_EXPERIMENTAL_CYCLES_REVIEW_PENDING",
+  "source_v027_sha256": "f3e2abe505a6c4b283ae122d248cfbe5fb06a2769a9b8956bc53000f162e657c",
+  "source_v023_sha256": "9d7fcb0626c5c24490d4a9aaf2ef1c349a56bbf2baa8b6e1cabadb288f9ffb76",
+  "output_sha256": "98f5583efdc43c20e99f1773c78b45bd88994ede8a3dacbd37ad9eca9149b352",
+  "animations": [
+    "GENESIS_MERC_IDLE_V028",
+    "GENESIS_MERC_WALK_V028",
+    "GENESIS_MERC_INSPECT_SWORD_V028",
+    "GENESIS_MERC_INSPECT_SHIELD_V028",
+    "GENESIS_MERC_WALK_EQUIPPED_V028"
+  ],
+  "rig_bones": 24,
+  "changes": "sword inspection closer to body via blend toward source neutral idle; no changes to shield or gait",
+  "meshes_unchanged": true,
+  "playcanvas_tested": false,
+  "human_approved": false
+}
