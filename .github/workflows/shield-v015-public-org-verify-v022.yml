@@ -1,0 +1,57 @@
+name: Genesis | V022 genuine V015 66cm shield source handoff into PUBLIC assets org
+on:
+  push:
+    branches: [experiment/mercenary-natural-combat-v021]
+    paths:
+      - '.github/workflows/shield-v015-public-org-verify-v022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  verify-shield:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild exact V015 Blender exported shield game GLB from private source authenticated chunks
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,hashlib,gzip,json,struct
+          from pathlib import Path
+          folder=Path('handoff/escudo_v015_pbr2k_v022')
+          m=json.loads((folder/'manifest.json').read_text())
+          assert m['num_chunks']==8 and m['bytes']==3361820
+          content=b''.join(base64.b64decode((folder/('chunk_%03d.base64.txt'%i)).read_text(),validate=True) for i in range(m['num_chunks']))
+          assert hashlib.sha256(content).hexdigest()==m['compressed_sha256']
+          raw=gzip.decompress(content)
+          assert hashlib.sha256(raw).hexdigest()==m['output_sha256'] and len(raw)==m['bytes']
+          assert raw[:4]==b'glTF' and struct.unpack_from('<I',raw,8)[0]==len(raw)
+          n=struct.unpack_from('<I',raw,12)[0]
+          g=json.loads(raw[20:20+n])
+          assert len(g['meshes'])>=2 and len(g['materials'])>=2 and len(g.get('images',[]))>=2
+          out=Path('candidates/shield/iron_v015_pbr2k_v022')
+          out.mkdir(parents=True,exist_ok=True)
+          (out/m['glb_filename']).write_bytes(raw)
+          report={'status':'V022_AUTHENTIC_3D_SHIELD_CANDIDATE_NOT_OWNER_APPROVED',
+            'original_V015_source_glb_sha256':m['input_sha256'],
+            'candidate_sha256':m['output_sha256'],
+            'candidate_bytes':m['bytes'],'mesh_count':len(g['meshes']),
+            'materials':len(g['materials']),'images':len(g['images']),
+            'gltf_extensions_used':g.get('extensionsUsed',[]),
+            'original_blend_untouched':True,'game_integrated':False,
+            'source':'gburdesedev/genesis-blender-render/experiment/escudo-v015-export-equipment-v018',
+            'geometry':'original 15 mesh forged iron + oak + goat leather V015; 66cm'};
+          (out/'SOURCE_QA_V022.json').write_text(json.dumps(report,indent=2))
+          print('GENESIS_TRUE_V015_SHIELD_PUBLIC_ORG',report)
+          PY
+      - name: Preserve only candidate GLB plus its provenance on experiment, no main
+        run: |
+          set -euo pipefail
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/shield/iron_v015_pbr2k_v022
+          git diff --cached --quiet || git commit -m 'Candidate only: genuine V015 forged iron PBR shield 66cm, WebP2K + provenance'
+          git fetch origin experiment/mercenary-natural-combat-v021
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-natural-combat-v021
