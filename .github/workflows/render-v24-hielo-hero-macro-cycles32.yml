@@ -1,0 +1,140 @@
+name: Genesis V24 - Hielo physical frost Cycles V12B genuine 32bpc EXR HDRI
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v23-affinity-physical-quality-pass-v12b-20261106]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v24-real-ice-cycles-hdri32-visual-qa
+  cancel-in-progress: true
+jobs:
+  cycles-lookdev:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify scripts, original preset and no changes to approved effects
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v24_hielo_cycles_hdri32.py
+          python3 -m py_compile scripts/fab_sword/render_v12_v175_j_roughness.py
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+          node tests/affinity-slots-v01/validate.mjs
+          test "$(git hash-object vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs)" = fc4a3722e7c07b33d034b6d1ead5504f480a6345
+      - name: Recover original 2150-triangle V03/V175 asset byte-exact
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v24-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v24-original-v03.glb' | sha256sum -c
+      - name: Recover approved original 4096x2048 EXR HDRI at RGB 32bits per channel
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+          test "$(stat -c %s /tmp/studio_small_09_4k.exr)" -gt 1000000
+      - name: Install original Blender Foundation 4.5.13 LTS
+        timeout-minutes: 9
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-v24-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-v24-blender --strip-components=1
+          /tmp/genesis-v24-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render V12B reference plus one real Cycles Hielo hero and macro view
+        timeout-minutes: 35
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v24-review
+          /tmp/genesis-v24-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v24_hielo_cycles_hdri32.py -- --input /tmp/genesis-v24-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/genesis-v24-review --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 96 --channels Hielo
+          test -s /tmp/genesis-v24-review/v24_hielo_cycles_audit.json
+          test -s /tmp/genesis-v24-review/V12_V175_Color_J_Rugosidad034_Hero.png
+          for name in Hielo; do
+            test -s "/tmp/genesis-v24-review/${name}_V24_V12B_HDRI32_Hero.png"
+            test -s "/tmp/genesis-v24-review/${name}_V24_V12B_HDRI32_Detalle.png"
+          done
+      - name: Audit original iron, 32bpc EXR, geometry, photons and actual images
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,struct
+          p=Path('/tmp/genesis-v24-review')
+          a=json.loads((p/'v24_hielo_cycles_audit.json').read_text())
+          b=json.loads((p/'render_audit.json').read_text())
+          preset=json.loads(Path('presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
+          assert a['hdri_sha256']==preset['lighting']['hdri_sha256']==b['hdri_sha256']
+          assert a['hdri_size']==[4096,2048] and b['hdri_image_depth_bpp']==96
+          assert a['samples']==96 and a['exposure_ev']==.5 and a['agx_look']=='AgX - Medium High Contrast'
+          assert a['original_triangles']==2150 and a['blade_triangles']==98
+          assert a['approved_base_preset']==preset['id'] and a['geometry_modified'] is False
+          assert a['base_material_modified'] is False and a['approved_fire_modified'] is False and a['approved_rayo_modified'] is False
+          assert a['source_sha256']==b['source_sha256']==preset['source_original']['sha256']
+          assert a['no_concepts'] and a['no_imagegen']
+          assert set(q['affinity'] for q in a['results'])=={'Hielo'}
+          for item in a['results']:
+            assert item['approved'] is False and item['human_visual_score'] is None
+            assert item['vfx_objects']>5 and len(item['renders'])==2
+            for r in item['renders']:
+              file=p/r['name']; data=file.read_bytes()
+              assert len(data)>100000 and data[:8]==b'\x89PNG\r\n\x1a\n'
+              assert struct.unpack_from('>II',data,16)==(1200,1500)
+          print('GENESIS_V24_TRUE_32BIT_EXR_V12B_ICE_VALIDATED')
+          PY
+      - name: Generate inspection JPEGs only, no new concepts
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/genesis-v24-preview-env
+          /tmp/genesis-v24-preview-env/bin/pip install --quiet pillow
+          /tmp/genesis-v24-preview-env/bin/python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          p=Path('/tmp/genesis-v24-review')
+          for name in ['Hielo']:
+            for suffix in ['Hero','Detalle']:
+              input=p/(name+'_V24_V12B_HDRI32_'+suffix+'.png')
+              out=p/(name+'_V24_V12B_HDRI32_'+suffix+'_preview.jpg')
+              with Image.open(input) as im:
+                im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS).save(out,'JPEG',quality=90,optimize=True)
+              assert out.stat().st_size>10000
+          PY
+      - name: Archive candidate renders separately, no master source assets
+        run: |
+          set -euo pipefail
+          mkdir -p public-previews/hielo-v24-cycles32-private-qa
+          for name in Hielo; do
+            cp /tmp/genesis-v24-review/"${name}"_V24_V12B_HDRI32_*.png public-previews/hielo-v24-cycles32-private-qa/
+            cp /tmp/genesis-v24-review/"${name}"_V24_V12B_HDRI32_*_preview.jpg public-previews/hielo-v24-cycles32-private-qa/
+          done
+          cp /tmp/genesis-v24-review/v24_hielo_cycles_audit.json public-previews/hielo-v24-cycles32-private-qa/
+          cp /tmp/genesis-v24-review/V12_V175_Color_J_Rugosidad034_Hero.png public-previews/hielo-v24-cycles32-private-qa/
+          test "$(find public-previews/hielo-v24-cycles32-private-qa -maxdepth 1 -name '*.png' | wc -l)" -eq 3
+          test "$(find public-previews/hielo-v24-cycles32-private-qa -maxdepth 1 -name '*preview.jpg' | wc -l)" -eq 2
+          ! find public-previews/hielo-v24-cycles32-private-qa -type f \( -iname '*.glb' -o -iname '*.blend' -o -iname '*.exr' \) | grep -q .
+      - name: Keep evaluation files as GitHub Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V24-PhysicalIce-Cycles32-HDRI-PrivateNotApproved
+          path: public-previews/hielo-v24-cycles32-private-qa/
+          retention-days: 14
+      - name: Publish only to isolated experimental branch for inspection
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v24-hielo-frosted-blade-v12b-hdri32-20261106
+          git checkout -B experiment/v24-hielo-frosted-blade-v12b-hdri32-20261106 FETCH_HEAD
+          git add public-previews/hielo-v24-cycles32-private-qa/
+          if git diff --cached --quiet; then echo 'Unchanged'; else
+            git commit -m 'lookdev(v24): internal evaluation Cycles V12B five affinity candidates'
+            git push origin HEAD:experiment/v24-hielo-frosted-blade-v12b-hdri32-20261106
+          fi
+      - name: Remove temporary model and HDRI after inspection
+        if: always()
+        run: rm -f /tmp/genesis-v24-original-v03.glb /tmp/studio_small_09_4k.exr
