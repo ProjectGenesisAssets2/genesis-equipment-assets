@@ -1,0 +1,58 @@
+{
+  "schema": "Genesis_V25_RealCycles_32bitHDRI_OrganicTaperedIce",
+  "status": "V25_ICE_ONLY_QUALITY_REVIEW_PENDING",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_bits_per_pixel": 96,
+  "hdri_size": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 96,
+  "approved_base_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_triangles": 2150,
+  "blade_triangles": 98,
+  "geometry_modified": false,
+  "base_material_modified": false,
+  "approved_rayo_modified": false,
+  "approved_fire_modified": false,
+  "no_concepts": true,
+  "no_imagegen": true,
+  "vfx_not_yet_adapted_to_PlayCanvas": true,
+  "exposure_ev": 0.5,
+  "agx_look": "AgX - Medium High Contrast",
+  "world_strength": 0.9,
+  "results": [
+    {
+      "affinity": "Hielo",
+      "details": {
+        "ice_tapered_shelves": 6,
+        "faceted_3d_crystals": 58,
+        "branched_frost_dendrites": 70,
+        "rime_grains": 125,
+        "PBR_refraction_roughness": 0.17,
+        "ice_bands_reach_cutting_edges": true,
+        "centre_ridge_metal_exposed": true,
+        "all_geometry_sampled_on_V03_blade": true
+      },
+      "renders": [
+        {
+          "name": "Hielo_V25_V12B_HDRI32_Hero.png",
+          "bytes": 1927627,
+          "camera": "CAM_hero"
+        },
+        {
+          "name": "Hielo_V25_V12B_HDRI32_Detalle.png",
+          "bytes": 2074862,
+          "camera": "CAM_BLADE_MACRO"
+        }
+      ],
+      "vfx_objects": 379,
+      "approved": false,
+      "human_visual_score": null
+    }
+  ]
+}
