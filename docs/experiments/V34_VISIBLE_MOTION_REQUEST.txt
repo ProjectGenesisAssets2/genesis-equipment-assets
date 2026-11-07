@@ -1,0 +1,1 @@
+Render V34. Continuous animated frost on real V03 blade at FIXED 50% intensity, separately compare 20/50/100. Confirm visible frame differences quantitatively. Only org public Actions, never merge main. Shader currently provisional, exact ingot material transfer pending.
