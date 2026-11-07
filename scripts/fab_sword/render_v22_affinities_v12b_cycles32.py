@@ -443,7 +443,7 @@ def main():
         bpy.context.view_layer.update()
         renders=[render('CAM_hero',args.output_dir/(ch+'_V23_V12B_HDRI32_Hero.png'))]
         # Macro view is vital to inspect crystalline/organic shape, not just glowing pixels.
-        renders.append(render('CAM_BLADE_MACRO',args.output_dir/(ch+'_V22_V12B_HDRI32_Detalle.png')))
+        renders.append(render('CAM_BLADE_MACRO',args.output_dir/(ch+'_V23_V12B_HDRI32_Detalle.png')))
         count_after=len([o for o in bpy.data.objects if o.type=='MESH' and not o.name.startswith(TAGS)])
         if count_before!=count_after:raise RuntimeError('Approved original sword mesh list changed!')
         all_results.append({'affinity':ch,'details':details,'renders':renders,
