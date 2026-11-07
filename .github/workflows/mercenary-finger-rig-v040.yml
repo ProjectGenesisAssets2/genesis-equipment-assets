@@ -1,0 +1,41 @@
+name: Genesis | V040 CC0 medieval mercenary finger-rig source audit
+on:
+  push:
+    branches: [experiment/mercenary-finger-rig-search-v040-20261107]
+    paths:
+      - scripts/mercenary/discover_free_finger_rig_knight_v040.py
+      - .github/workflows/mercenary-finger-rig-v040.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify-real-finger-rig:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit public Quaternius male skinned rig and official free medieval outfit URLs
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/discover_free_finger_rig_knight_v040.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('output/mercenary_finger_rig_v040/OFFICIAL_CC0_KNIGHT_DISCOVERY.json')
+          data=json.loads(p.read_text())
+          rig=data.get('base_rig',{})
+          print('REAL_BONE_COUNTS',rig.get('joints'), 'FINGERS_LEFT',len(rig.get('left_finger_bones',[])), 'FINGERS_RIGHT',len(rig.get('right_finger_bones',[])))
+          if rig.get('error'):print('BASE_DOWNLOAD_ERROR',rig['error'])
+          for source in ['base','outfits','outfits_itch']:
+            e=data[source]
+            print('SOURCE',source, 'OFFICIAL_LINKS',e.get('entries',[])[:12])
+          PY
+      - name: Upload discovered sources and original licensee-endorsed CC0 male character for geometry check
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v040-real-CC0-finger-rig-male-and-official-knight-sources
+          path: output/mercenary_finger_rig_v040/
+          retention-days: 7
+          if-no-files-found: warn
