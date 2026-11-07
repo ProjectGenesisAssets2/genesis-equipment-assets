@@ -1,0 +1,151 @@
+name: Genesis V28 - DOS variantes reales 3D escarcha Cycles V12B HDRI 32bpc
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v27-hielo-cristalizacion-recorrido-cycles24fps-20261106]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: genesis-v28-two-real-frost-3d-assets
+  cancel-in-progress: true
+jobs:
+  render-two-real-frost-assets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source scripts and approved fire/rayo byte integrity
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v28_two_actual_frost_3d.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          python3 -m py_compile scripts/fab_sword/render_v12_v175_j_roughness.py
+          python3 tests/fire-rayo-v08/check_rayo_approved.py
+          test "$(git hash-object vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs)" = fc4a3722e7c07b33d034b6d1ead5504f480a6345
+          test "$(git hash-object scripts/fab_sword/render_v25_hielo_cycles_hdri32.py)" = 683c921eb8f204beb110d267f0839b64421e16d8
+      - name: Restore EXACT original V03/V175 GLB without modifying repository
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-v28-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-v28-original-v03.glb' | sha256sum -c
+      - name: Recover approved REAL 4K EXR HDRI RGB32 bits each channel
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+          test "$(stat -c %s /tmp/studio_small_09_4k.exr)" -gt 1000000
+      - name: Install Blender Foundation 4.5.13 LTS for actual Cycles 3D rendering
+        timeout-minutes: 9
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-v28-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-v28-blender --strip-components=1
+          /tmp/genesis-v28-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Create BOTH TRUE 3D frost models and render A/B hero + macro in Cycles
+        timeout-minutes: 46
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v28-frost
+          /tmp/genesis-v28-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v28_two_actual_frost_3d.py -- --input /tmp/genesis-v28-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --output-dir /tmp/genesis-v28-frost --samples 96
+          test -s /tmp/genesis-v28-frost/v28_real_3d_hoarfrost_audit.json
+          for variant in A B; do
+            test -s "/tmp/genesis-v28-frost/Escarcha_${variant}_V28_V12B_HDRI32_Hero.png"
+            test -s "/tmp/genesis-v28-frost/Escarcha_${variant}_V28_V12B_HDRI32_Detalle.png"
+            test -s "/tmp/genesis-v28-frost/GENESIS_V28_Escarcha_${variant}_Real_3D.blend"
+            test -s "/tmp/genesis-v28-frost/GENESIS_V28_Escarcha_${variant}_Overlay.glb"
+          done
+      - name: Validate both genuine 3D overlays, original HDRI and four true Cycles images
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,struct,hashlib
+          p=Path('/tmp/genesis-v28-frost')
+          a=json.loads((p/'v28_real_3d_hoarfrost_audit.json').read_text())
+          preset=json.loads(Path('presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender_version'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_dimensions']==[4096,2048]
+          assert a['hdri_exr_sha256']==preset['lighting']['hdri_sha256']
+          assert a['source_glb_sha256']==preset['source_original']['sha256']
+          assert a['approved_iron_preset']==preset['id']
+          assert a['original_V03_mesh_unchanged'] and a['fuego_V20C1_unchanged'] and a['rayo_V07_unchanged']
+          assert a['no_concept_generated'] and a['source_3D_blend_and_GLb_overlay_created']
+          assert len(a['variants'])==2 and set(q['variant'] for q in a['variants'])=={'A','B'}
+          for v in a['variants']:
+            assert v['user_approval'] is False
+            assert v['geometry']['primary_dendrites']>=145
+            assert v['geometry']['frost_microbranches']>=2000
+            assert v['geometry']['base_metal_ridge_exposed']
+            glb=p/v['overlay_glb']['path'];d=glb.read_bytes()
+            assert len(d)>10000 and d[:4]==b'glTF'
+            assert struct.unpack_from('<I',d,8)[0]==len(d)
+            assert hashlib.sha256(d).hexdigest()==v['overlay_glb']['sha256']
+            scene=(p/v['blend_file']).read_bytes()
+            assert scene[:7]==b'BLENDER',len(scene)
+            assert len(v['renders'])==2
+            for render in v['renders']:
+              data=(p/render['file']).read_bytes()
+              assert data[:8]==b'\x89PNG\r\n\x1a\n'
+              assert struct.unpack_from('>II',data,16)==(1200,1500)
+              assert len(data)>100000 and hashlib.sha256(data).hexdigest()==render['sha256']
+          print('GENESIS_V28_TWO_ACTUAL_3D_FROST_VARIANTS_VERIFIED_NOT_CONCEPTS')
+          PY
+      - name: Generate only thumbnails FROM actual Cycles PNGs
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/genesis-v28-pil-env
+          /tmp/genesis-v28-pil-env/bin/pip install --quiet pillow
+          /tmp/genesis-v28-pil-env/bin/python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          p=Path('/tmp/genesis-v28-frost')
+          for variant in ('A','B'):
+            for view in ('Hero','Detalle'):
+              src=p/f'Escarcha_{variant}_V28_V12B_HDRI32_{view}.png'
+              target=p/f'Escarcha_{variant}_V28_V12B_HDRI32_{view}_preview.jpg'
+              with Image.open(src) as im:
+                im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS).save(target,'JPEG',quality=91,optimize=True)
+              assert target.stat().st_size>12000
+          PY
+      - name: Stage actual frost overlay GLBs and Cycles images, not masters
+        run: |
+          set -euo pipefail
+          mkdir -p public-previews/escarcha-v28-A-B-real-3d
+          cp /tmp/genesis-v28-frost/Escarcha_*.png public-previews/escarcha-v28-A-B-real-3d/
+          cp /tmp/genesis-v28-frost/Escarcha_*_preview.jpg public-previews/escarcha-v28-A-B-real-3d/
+          cp /tmp/genesis-v28-frost/GENESIS_V28_Escarcha_*_Overlay.glb public-previews/escarcha-v28-A-B-real-3d/
+          cp /tmp/genesis-v28-frost/v28_real_3d_hoarfrost_audit.json public-previews/escarcha-v28-A-B-real-3d/
+          test "$(find public-previews/escarcha-v28-A-B-real-3d -maxdepth 1 -name '*.png' | wc -l)" -eq 4
+          test "$(find public-previews/escarcha-v28-A-B-real-3d -maxdepth 1 -name '*.glb' | wc -l)" -eq 2
+          test "$(find public-previews/escarcha-v28-A-B-real-3d -maxdepth 1 -name '*_preview.jpg' | wc -l)" -eq 4
+          ! find public-previews/escarcha-v28-A-B-real-3d -type f -iname '*.exr' | grep -q .
+      - name: Upload editable Blender 3D scenes and validated GLB overlays
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V28-Two-Real3D-Frost-Scenes-Overlays-Cycles32
+          path: |
+            /tmp/genesis-v28-frost/GENESIS_V28_Escarcha_A_Real_3D.blend
+            /tmp/genesis-v28-frost/GENESIS_V28_Escarcha_B_Real_3D.blend
+            public-previews/escarcha-v28-A-B-real-3d/
+          retention-days: 14
+      - name: Publish outputs ONLY to experimental V28 branch, not main
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v28-escarcha-realista-dos-variantes-cycles32-20261107
+          git checkout -B experiment/v28-escarcha-realista-dos-variantes-cycles32-20261107 FETCH_HEAD
+          git add public-previews/escarcha-v28-A-B-real-3d/
+          if git diff --cached --quiet; then echo 'Unchanged'; else
+            git commit -m 'preview(v28): two REAL 3D hoarfrost GLB effects and Cycles HDRI32 images'
+            git push origin HEAD:experiment/v28-escarcha-realista-dos-variantes-cycles32-20261107
+          fi
+      - name: Cleanup temporary sources
+        if: always()
+        run: rm -f /tmp/genesis-v28-original-v03.glb /tmp/studio_small_09_4k.exr
