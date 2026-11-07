@@ -1,0 +1,17 @@
+{
+  "status": "V031_EXPERIMENTAL_NEEDS_VISUAL_REVIEW",
+  "source_sha256": "694c5d9de518de6a702e5d0ee2d801e203daffa04807f394437663cae4ef94aa",
+  "output_sha256": "92c68a22d5917a5b731266500a46e232489ecdae2de8a60391bacf3675060076",
+  "right_grip_vertices_edited": 252,
+  "strongly_curled_vertices": 240,
+  "max_position_change_m": 0.065943,
+  "anatomical_right_hand_joint": 8,
+  "anatomical_left_hand_joint": 4,
+  "right_weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+  "left_shield_socket": "GENESIS_SOCKET_SHIELD_L",
+  "curl_radians": 2.05,
+  "left_hand_and_rig_unchanged": true,
+  "geometry_edit": "Right-hand glove sculpt only, target fist around real V12B grip",
+  "playcanvas_tested": false,
+  "human_approved": false
+}

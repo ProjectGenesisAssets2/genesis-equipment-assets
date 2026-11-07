@@ -1,0 +1,94 @@
+{
+  "status": "V031_CYCLES32_REAL_POSE_REVIEW_PENDING_HUMAN_APPROVAL",
+  "character_sha256": "92c68a22d5917a5b731266500a46e232489ecdae2de8a60391bacf3675060076",
+  "sword_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "shield_sha256": "a169a827b70621ec21eeaa894b3cf10eebfacc0eb1ed5bb575d9ff8f275a6ec2",
+  "hdri": {
+    "name": "studio_small_09_4k.exr",
+    "depth_bpp": 96,
+    "dimensions": [
+      4096,
+      2048
+    ],
+    "sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558"
+  },
+  "bones": 24,
+  "clips": [
+    "GENESIS_MERC_IDLE_V029",
+    "GENESIS_MERC_WALK_V029",
+    "GENESIS_MERC_INSPECT_SWORD_V029",
+    "GENESIS_MERC_INSPECT_SHIELD_V029",
+    "GENESIS_MERC_WALK_EQUIPPED_V029"
+  ],
+  "sword_surface": {
+    "triangles": 2150,
+    "base_color": "V175 unchanged",
+    "roughness_multiplier": 0.34,
+    "oxide_roughness": 0.1,
+    "metallic_min": 0.98,
+    "normal": "Fab Image_2"
+  },
+  "weapon_socket": "GENESIS_SOCKET_WEAPON_R",
+  "shield_socket": "GENESIS_SOCKET_SHIELD_L",
+  "weapon_parent_correct": true,
+  "shield_parent_correct": true,
+  "playcanvas_tested": false,
+  "human_approved": false,
+  "renders": [
+    {
+      "file": "V031_01_RIGHT_HAND_FRONT.png",
+      "sha256": "e765d22de7179c10fcdfd4805ad66cbe9d01bcfa0b1c47322c92fa78a10b7e6e",
+      "bytes": 1278808,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.54,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    },
+    {
+      "file": "V031_02_RIGHT_HAND_BACK.png",
+      "sha256": "7f83b3ac5f55d21da502d13956ec1d5323884512d943c91bdfdf2615dfebbf84",
+      "bytes": 1126398,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.54,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    },
+    {
+      "file": "V031_03_RIGHT_HAND_INSPECT_START.png",
+      "sha256": "035d198ad9af70c3892af1d423136b2bf7d24cc80860a9418522a5c550989307",
+      "bytes": 1318413,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.15,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    },
+    {
+      "file": "V031_04_RIGHT_HAND_INSPECT_RETURN.png",
+      "sha256": "2dcf2101ca6d6b38531856f8ef8cf47d6069f18578a0169ec6f264a29e849382",
+      "bytes": 1311361,
+      "clip": "GENESIS_MERC_INSPECT_SWORD_V029",
+      "phase": 0.85,
+      "sword_visible": true,
+      "shield_visible": false,
+      "rigged_character": true,
+      "real_Cycles": true
+    },
+    {
+      "file": "V031_05_LEFT_SHIELD_BACK.png",
+      "sha256": "7a08bc3e6add71c548999db0cc5f40ae7982a85c49c7d1a6c543a5868603f38f",
+      "bytes": 1105335,
+      "clip": "GENESIS_MERC_INSPECT_SHIELD_V029",
+      "phase": 0.54,
+      "sword_visible": false,
+      "shield_visible": true,
+      "rigged_character": true,
+      "real_Cycles": true
+    }
+  ]
+}
