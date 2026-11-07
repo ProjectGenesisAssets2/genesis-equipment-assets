@@ -1,0 +1,120 @@
+name: Genesis | V038 alternate CC0 sentinel real existing rig and sword hand Cycles32
+on:
+  push:
+    branches:
+      - experiment/mercenary-alt-cc0-sentinel-v038-20261107
+    paths:
+      - scripts/mercenary/qa_alternative_cc0_sentinel_v038.py
+      - .github/workflows/mercenary-alternative-v038.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  inspect-actual-alternative-character:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download CC0 alternative medieval soldier GLB directly from publisher
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v038 output/mercenary_alt_v038
+          curl -fSL --retry 4 --retry-all-errors --max-time 300 \
+            -H 'User-Agent: ProjectGenesis3DQA/1.0' \
+            'https://pub-63ab27389d044634a73e89c1a0c6d4a6.r2.dev/free-library/3d-models/t1-sentinel/t1-sentinel.glb' \
+            -o /tmp/genesis_v038/sentinel_cc0_source.glb
+          test "$(wc -c </tmp/genesis_v038/sentinel_cc0_source.glb)" -gt 2000000
+          python3 - <<'PY'
+          import json,struct,hashlib
+          from pathlib import Path
+          raw=Path('/tmp/genesis_v038/sentinel_cc0_source.glb').read_bytes()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<II',raw,4)==(2,len(raw))
+          n,typ=struct.unpack_from('<I4s',raw,12);assert typ==b'JSON'
+          g=json.loads(raw[20:20+n]);assert g['meshes'] and g['skins']
+          names=[v.get('name','') for v in g['nodes']]
+          mesh_names=[v.get('name','') for v in g['meshes']]
+          bones=[[g['nodes'][b].get('name','') for b in skin['joints']] for skin in g['skins']]
+          animations=[x.get('name','') for x in g.get('animations',[])]
+          finger=[x for j in bones for x in j if any(k in x.lower() for k in ('thumb','index','middle','ring','pinky','finger'))]
+          equip=[x for x in names+mesh_names if any(k in x.lower() for k in ('sword','shield','weapon','hilt','blade'))]
+          r={
+            'source':'AutoSprite T1 Sentinel','source_url':'https://www.autosprite.io/free-3d-models/t1-sentinel',
+            'license':'CC0 declared on official asset page', 'sha256':hashlib.sha256(raw).hexdigest(),
+            'size_bytes':len(raw),'meshes':len(g['meshes']),'skins':len(g['skins']),'bone_counts':[len(b) for b in bones],
+            'bone_names':bones,'animation_names':animations,'finger_joint_names':finger,
+            'equipment_node_or_mesh_names':equip,'scene_node_count':len(names),
+            'textures':len(g.get('textures',[])), 'images':len(g.get('images',[])),
+            'geometry_and_equipment_tested_in_game':False,'human_approved':False}
+          Path('output/mercenary_alt_v038/V038_NATIVE_GLTF_AUDIT.json').write_text(json.dumps(r,indent=2))
+          print('V038_ALTERNATIVE_NATIVE_RIG_CHECK',json.dumps({k:r[k] for k in ('sha256','size_bytes','meshes','bone_counts','animation_names','finger_joint_names','equipment_node_or_mesh_names')},ensure_ascii=False),flush=True)
+          PY
+      - name: Real high-dynamic-range EXR studio light, checked source
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v038/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v038/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install official Blender 4.5.13 LTS public runner
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v038/blender.tar.xz
+          mkdir -p /tmp/genesis_v038/blender
+          tar -xJf /tmp/genesis_v038/blender.tar.xz -C /tmp/genesis_v038/blender --strip-components=1
+          /tmp/genesis_v038/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render five ACTUAL alternative GLB angles with 32-bit EXR and original supplied animations
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v038/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/qa_alternative_cc0_sentinel_v038.py -- \
+            --character /tmp/genesis_v038/sentinel_cc0_source.glb \
+            --hdri /tmp/genesis_v038/studio_small_09_4k.exr \
+            --out output/mercenary_alt_v038
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('output/mercenary_alt_v038')
+          qa=json.loads((root/'V038_CANDIDATE_CYCLES_QA.json').read_text())
+          assert qa['engine']=='CYCLES' and len(qa['renders'])==5
+          assert len(list(root.glob('V038_*.png')))==5
+          assert qa['hdri_depth_bits']>=96
+          assert qa['armatures']>=1 and qa['meshes']>=1
+          print('V038_REAL_CYCLES32_ALT_MERCENARY_QA',qa['source_sha256'],qa['actions'])
+          PY
+      - name: Retain only CC0 attribution/provenance and thumbnails on experimental branch
+        run: |
+          set -euo pipefail
+          python3 -m pip install Pillow==11.3.0 --disable-pip-version-check
+          mkdir -p candidates/mercenary/alternative_cc0_sentinel_v038
+          cp output/mercenary_alt_v038/*.json candidates/mercenary/alternative_cc0_sentinel_v038/
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          base=Path('output/mercenary_alt_v038')
+          out=Path('candidates/mercenary/alternative_cc0_sentinel_v038')
+          for f in sorted(base.glob('V038_*.png')):
+            image=Image.open(f).convert('RGB')
+            image.thumbnail((650,780),Image.Resampling.LANCZOS)
+            image.save(out/(f.stem+'.jpg'),quality=87,optimize=True)
+          assert len(list(out.glob('V038_*.jpg')))==5
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/alternative_cc0_sentinel_v038
+          git diff --cached --quiet || git commit -m 'V038 unapproved alternate CC0 sentinel real Blender Cycles EXR32 source audit'
+          git fetch origin experiment/mercenary-alt-cc0-sentinel-v038-20261107
+          git rebase FETCH_HEAD
+          git push origin HEAD:experiment/mercenary-alt-cc0-sentinel-v038-20261107
+      - name: Upload original alternative GLB and real render QA for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v038-alt-cc0-sentinel-real-rig-Cycles32
+          path: |
+            /tmp/genesis_v038/sentinel_cc0_source.glb
+            output/mercenary_alt_v038/
+          if-no-files-found: warn
+          retention-days: 7
