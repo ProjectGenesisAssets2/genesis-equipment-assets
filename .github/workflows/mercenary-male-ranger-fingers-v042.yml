@@ -1,0 +1,63 @@
+name: Genesis | V042 official pre-rigged CC0 Male Ranger including actual weighted digits
+on:
+  push:
+    branches: [experiment/mercenary-ranger-original-finger-rig-v042-20261107]
+    paths:
+      - scripts/mercenary/fetch_official_quaternius_knight_v041.cjs
+      - scripts/mercenary/audit_official_knight_fingers_v041.py
+      - .github/workflows/mercenary-finger-knight-v042.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-finger-rig-knight-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium for normal publisher-authorized $0 download flow
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Download legitimate original free Standard medieval outfits from Quaternius
+        run: |
+          set -euo pipefail
+          node scripts/mercenary/fetch_official_quaternius_knight_v041.cjs
+          test -s /tmp/genesis_v041/quaternius_fantasy_standard.zip
+          unzip -tqq /tmp/genesis_v041/quaternius_fantasy_standard.zip
+      - name: Audit pre-existing hand/finger joint bones, choose source medieval rig
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/audit_official_knight_fingers_v041.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('output/mercenary_ranger_v042/V042_OFFICIAL_RIG_CHECK.json')
+          r=json.loads(p.read_text())
+          assert r['model_entries']>0,'The Standard pack does not contain skinned characters'
+          if not r['qualified_medieval_models']:
+            raise RuntimeError('No pre-rigged medieval male Ranger with individual digit chains')
+          else:
+            print('V042_ACTUAL_FULL_FINGER_RIG_MEDIEVAL_CANDIDATE',r.get('selected_original'),r.get('selected_file_count'))
+            assert r['skin_influence_verified'],'Finger names exist but source skin does not deform with individual finger bones'
+          PY
+      - name: Upload only the qualified unmodified original model and report, no source ZIP or main
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v042-authentic-ranger-65-joint-20-finger-chains
+          path: output/mercenary_ranger_v042/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload diagnostic screenshot only if free download page fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v042-official-itch-free-download-diagnostic
+          path: /tmp/genesis_v041/itch_free_download_diagnostic.png
+          if-no-files-found: ignore
+          retention-days: 3
