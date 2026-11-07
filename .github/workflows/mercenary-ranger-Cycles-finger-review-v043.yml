@@ -1,0 +1,99 @@
+name: Genesis | V043 Quaternius original Ranger skinned-finger Cycles HDRI32 real preview
+on:
+  push:
+    branches: [experiment/mercenary-ranger-real-Cycles-preview-v043-20261107]
+    paths:
+      - scripts/mercenary/render_original_male_ranger_v043.py
+      - .github/workflows/mercenary-ranger-Cycles-finger-review-v043.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  genuine-medieval-ranger-view-and-export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover publisher original pre-rigged Male Ranger GLTF and all six textures, verify QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v043 output/mercenary_ranger_cycles_v043
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13595856204/zip' \
+            -o /tmp/genesis_v043/ranger_source.zip
+          unzip -oq /tmp/genesis_v043/ranger_source.zip -d /tmp/genesis_v043
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          b=Path('/tmp/genesis_v043')
+          gltf=list(b.glob('source/**/Outfits/Male_Ranger.gltf'))
+          assert len(gltf)==1
+          qa=json.loads((b/'V042_ORIGINAL_MALE_RANGER_FINGER_QA.json').read_text())
+          assert qa['finger_skinning_verified'] and qa['bone_count']==65
+          assert qa['left_weighted_vertices']>=500 and qa['right_weighted_vertices']>=500
+          assert hashlib.sha256(gltf[0].read_bytes()).hexdigest()==qa['gltf_sha256']
+          assert all((b/'source'/Path(name)).exists() for name in qa['extracted_source_files'])
+          print('V043_REAL_ORIGINAL_CC0_FINGER_SKIN_SOURCE_PASS',gltf[0],qa['left_weighted_vertices'],qa['right_weighted_vertices'])
+          PY
+      - name: Use real 32-bit EXR HDRI 4K studio_small_09 with source SHA
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 4 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v043/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v043/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install exact official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v043/blender.tar.xz
+          mkdir -p /tmp/genesis_v043/blender
+          tar -xJf /tmp/genesis_v043/blender.tar.xz \
+            -C /tmp/genesis_v043/blender --strip-components=1
+          /tmp/genesis_v043/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render REAL original rigged ranger body and both flexing hands, export single source GLB
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v043/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/render_original_male_ranger_v043.py -- \
+            --source '/tmp/genesis_v043/source/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)/Outfits/Male_Ranger.gltf' \
+            --hdri /tmp/genesis_v043/studio_small_09_4k.exr \
+            --out output/mercenary_ranger_cycles_v043
+      - name: Validate single exported genuine rigged GLB has retained 65 bones and real finger mesh weights
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,struct
+          base=Path('output/mercenary_ranger_cycles_v043')
+          p=base/'GENESIS_QUATERNIUS_MALE_RANGER_ORIGINAL_RIGGED_V043.glb'
+          raw=p.read_bytes()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<II',raw,4)==(2,len(raw))
+          jlen,jtype=struct.unpack_from('<I4s',raw,12)
+          assert jtype==b'JSON'
+          g=json.loads(raw[20:20+jlen])
+          assert len(g.get('skins',[]))==1 and len(g['skins'][0]['joints'])==65
+          names=[g['nodes'][i].get('name','') for i in g['skins'][0]['joints']]
+          for side in ('_r','_l'):
+            assert sum(any(s in n for s in ('thumb','index','middle','ring','pinky')) and n.endswith(side) for n in names)>=15
+          assert any('JOINTS_0' in p.get('attributes',{}) and 'WEIGHTS_0' in p.get('attributes',{}) for mesh in g['meshes'] for p in mesh['primitives'])
+          qa=json.loads((base/'V043_MALE_RANGER_REAL_CYCLES_FINGER_QA.json').read_text())
+          assert qa['preexisting_skin_bones']==65 and qa['actual_mesh_vertices_moved_by_finger_preset']>=400
+          assert qa['max_vertex_displacement_m']>.012
+          assert len(qa['renders'])==7 and len(list(base.glob('V043_*.png')))==7
+          assert hashlib.sha256(raw).hexdigest()==qa['single_glb_sha256']
+          print('V043_AUTHENTIC_MALE_RANGER_RIGGED_GLB_AND_FINGER_MOVEMENT_VERIFIED',p.stat().st_size)
+          PY
+      - name: Save genuine candidate GLB, 7 Cycles EXR32 PNG and QA, experimental only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v043-CC0-original-Male-Ranger-rigged-65-bones-flexing-fingers-Cycles32
+          path: output/mercenary_ranger_cycles_v043/
+          if-no-files-found: warn
+          retention-days: 10
