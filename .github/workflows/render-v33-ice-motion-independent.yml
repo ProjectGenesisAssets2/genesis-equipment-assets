@@ -56,7 +56,7 @@ jobs:
           from pathlib import Path
           import struct,json
           root=Path('/tmp/v33-render')
-          a=json.loads((root/'v33_escarcha_intensidad_audit.json').read_text())
+          a=json.loads((root/'v33_escarcha_movimiento_audit.json').read_text())
           assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
           assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
           assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
@@ -90,14 +90,14 @@ jobs:
           pingpong=frames
           pingpong[0].save(root/'V33_Escarcha_I50_Movimiento_Loop.gif',save_all=True,
                            append_images=pingpong[1:],duration=310,loop=0,optimize=True)
-          assert (root/'V33_Escarcha_Intensidad_0_a_100.gif').stat().st_size>30000
+          assert (root/'V33_Escarcha_I50_Movimiento_Loop.gif').stat().st_size>30000
           PY
       - name: Archive render previews
         run: |
           mkdir -p public-previews/v33-independent-ice-motion-cycles-hdri32
           cp /tmp/v33-render/V33_Escarcha_*.png public-previews/v33-independent-ice-motion-cycles-hdri32/
-          cp /tmp/v33-render/V33_Escarcha_Intensidad_0_a_100.gif public-previews/v33-independent-ice-motion-cycles-hdri32/
-          cp /tmp/v33-render/v33_escarcha_intensidad_audit.json public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/V33_Escarcha_I50_Movimiento_Loop.gif public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/v33_escarcha_movimiento_audit.json public-previews/v33-independent-ice-motion-cycles-hdri32/
       - uses: actions/upload-artifact@v4
         with:
           name: Genesis-V33-Ice-Intensity-RealCycles-NotApproved
@@ -112,8 +112,8 @@ jobs:
           git checkout -B experiment/v33-hielo-movimiento-independiente-intensidad-20261107 FETCH_HEAD
           mkdir -p public-previews/v33-independent-ice-motion-cycles-hdri32
           cp /tmp/v33-render/V33_Escarcha_*.png public-previews/v33-independent-ice-motion-cycles-hdri32/
-          cp /tmp/v33-render/v33_escarcha_intensidad_audit.json public-previews/v33-independent-ice-motion-cycles-hdri32/
-          cp /tmp/v33-render/V33_Escarcha_Intensidad_0_a_100.gif public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/v33_escarcha_movimiento_audit.json public-previews/v33-independent-ice-motion-cycles-hdri32/
+          cp /tmp/v33-render/V33_Escarcha_I50_Movimiento_Loop.gif public-previews/v33-independent-ice-motion-cycles-hdri32/
           git add public-previews/v33-independent-ice-motion-cycles-hdri32/
           if ! git diff --cached --quiet; then
             git commit -m 'review(v33): real Cycles animated ice texture at constant 50 percent intensity'
