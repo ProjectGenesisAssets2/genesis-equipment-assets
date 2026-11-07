@@ -59,37 +59,37 @@
             "frame": 1,
             "file": "frame_000.png",
             "bytes": 653546,
-            "sha256": "3d3f6cc4f33922c5a5409e551392f6f71f2de146fbc983b86dd2cdc49306c4ae"
+            "sha256": "20b6abb0a6a47a932804e1a48dab171f79b02b7fb596b02b58353c635bb4abb8"
           },
           {
             "frame": 8,
             "file": "frame_007.png",
             "bytes": 655763,
-            "sha256": "7e886466df34b9c11063d7f0e9e187c6b6be84bc61be1628fa742fd1dde17fa6"
+            "sha256": "f9392d001d35a422b82e2e087cc139413e0793ca27b7c368dcb6a8ac171df7d8"
           },
           {
             "frame": 16,
             "file": "frame_015.png",
             "bytes": 658712,
-            "sha256": "ba5b51753ed9770c066d5c72055e3a742a172e2f00f42633598a20dbe286b213"
+            "sha256": "f3803ab87fe5ef3296c7cb63355c93f22ba9669298184f2b6b8f25564f9bdd28"
           },
           {
             "frame": 24,
             "file": "frame_023.png",
             "bytes": 658466,
-            "sha256": "9f43adfc6475def121745feec3d07d82985da524e7702a409a64587ab2c992c3"
+            "sha256": "064516a66b8180bbb130100f7192bde0d19e70efe09d94a23004ee31179675a0"
           },
           {
             "frame": 36,
             "file": "frame_035.png",
             "bytes": 657678,
-            "sha256": "084def80eb4226e401bb86e0fc1ee1c44753ad5f3cf40d18a794da2c72e1624e"
+            "sha256": "ecc3c1fd97ed112a93b10b1405f53a5a3d7b35ca90fe8ccd7aa8ad9463cd1a4c"
           },
           {
             "frame": 48,
             "file": "frame_047.png",
             "bytes": 653546,
-            "sha256": "4394dc45108da5ef67951366dd7dfd8ce2eb9541361e75fee944e9692d8c2121"
+            "sha256": "81f13c369e5fe090833bdcf76583a1f83b126eae7fea08a9db5cc288b69c3bc7"
           }
         ],
         "macro": "V28_Escarcha_A_Cycles32_Macro.png",
@@ -141,37 +141,37 @@
             "frame": 1,
             "file": "frame_000.png",
             "bytes": 653567,
-            "sha256": "966115ad3688b27843f9331f7229687830236c5ed26202b24f910e3d91424fc8"
+            "sha256": "c587400b44664d44cd77c2192bc67ce86c2f7d96c314c1f5671ce90ae02bffe2"
           },
           {
             "frame": 8,
             "file": "frame_007.png",
             "bytes": 654881,
-            "sha256": "9e8082a8594b34615449e98589febd7ff674fc2397374816bfa4223623049e70"
+            "sha256": "0619d35c21ba82466854758320e9eec5a40e907db6d23effec42f54e3bec9474"
           },
           {
             "frame": 16,
             "file": "frame_015.png",
             "bytes": 655669,
-            "sha256": "c8e4fd97ea5d45df2280da03d7669cc0bb74e55b51b62919bf9d265f06b8d6e5"
+            "sha256": "bd75d5acb904fc825571df3e068c555e5a2052b5ce76ce3901c3b2edfb56b297"
           },
           {
             "frame": 24,
             "file": "frame_023.png",
             "bytes": 655197,
-            "sha256": "65e675f11f2ce80cfe8c4679d87192e5f06cafd339aa82acf22d0d89f61df207"
+            "sha256": "eaf449d18283806773553a85c20ae3934f05caf1486de5edcaf7f25e8f0dd28b"
           },
           {
             "frame": 36,
             "file": "frame_035.png",
             "bytes": 656305,
-            "sha256": "b70402e387d725d053f0e5dd7549b827ed9c90baa88f8046979d0ffbca3ef57c"
+            "sha256": "95b188aa5d0db772a004bc654f5f70d2ec50134d51246156d4884c6776ec67f7"
           },
           {
             "frame": 48,
             "file": "frame_047.png",
             "bytes": 653567,
-            "sha256": "e6f5cbe9e51bdaa8c9532c47cd51a878bd594e412ca3c8763ff15d92cbdc5f69"
+            "sha256": "2fa791d14282725b37c5f202f092a4a16aa2a41f29a849680b29e6810f84b88d"
           }
         ],
         "macro": "V28_Escarcha_B_Cycles32_Macro.png",
