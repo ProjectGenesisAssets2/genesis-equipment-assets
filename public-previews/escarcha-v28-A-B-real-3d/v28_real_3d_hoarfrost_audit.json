@@ -1,0 +1,102 @@
+{
+  "schema": "Genesis_V28_TwoReal3DFrostVariants_BlenderCycles32HDRI",
+  "status": "experimental_not_approved",
+  "source_glb_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_exr_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_dimensions": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender_version": "4.5.13 LTS",
+  "samples": 96,
+  "approved_iron_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_V03_mesh_unchanged": true,
+  "fuego_V20C1_unchanged": true,
+  "rayo_V07_unchanged": true,
+  "no_concept_generated": true,
+  "user_requested_actual_3D": true,
+  "source_3D_blend_and_GLb_overlay_created": true,
+  "realtime_PlayCanvas_not_yet_tested": true,
+  "variants": [
+    {
+      "variant": "A",
+      "spec": "real matte hoarfrost",
+      "geometry": {
+        "root_colonies": 145,
+        "primary_dendrites": 145,
+        "secondary_branches": 1160,
+        "frost_microbranches": 2320,
+        "subtle_azure_crystal_lights": 0,
+        "porous_rime_deposits": 9,
+        "micro_rime_granules": 600,
+        "base_metal_ridge_exposed": true,
+        "frost_coating_rather_than_glass_armor": true,
+        "glow_is_low_and_only_in_B": true,
+        "render_variant": "A"
+      },
+      "overlay_glb": {
+        "path": "GENESIS_V28_Escarcha_A_Overlay.glb",
+        "bytes": 4476020,
+        "sha256": "511c40e0ea7d988732342b21e55dd306bf5274685985fd65ea85983ea5a9787c",
+        "primitiveMeshes": 13,
+        "glb_validated": true
+      },
+      "blend_file": "GENESIS_V28_Escarcha_A_Real_3D.blend",
+      "renders": [
+        {
+          "file": "Escarcha_A_V28_V12B_HDRI32_Hero.png",
+          "bytes": 1920682,
+          "sha256": "da5df4ad41ee4ae1a172fd131ad47579a74f95514bce319d8233aef7d7f8a5c0"
+        },
+        {
+          "file": "Escarcha_A_V28_V12B_HDRI32_Detalle.png",
+          "bytes": 2079682,
+          "sha256": "e0140f38472698f7dd79f219cbfc46a716b6af4eb924511219062a6ce955a4d9"
+        }
+      ],
+      "user_approval": false,
+      "candidate_7_5_threshold": "requires visual inspection"
+    },
+    {
+      "variant": "B",
+      "spec": "real hoarfrost with restrained icy reflection",
+      "geometry": {
+        "root_colonies": 230,
+        "primary_dendrites": 230,
+        "secondary_branches": 1840,
+        "frost_microbranches": 3680,
+        "subtle_azure_crystal_lights": 39,
+        "porous_rime_deposits": 10,
+        "micro_rime_granules": 1100,
+        "base_metal_ridge_exposed": true,
+        "frost_coating_rather_than_glass_armor": true,
+        "glow_is_low_and_only_in_B": true,
+        "render_variant": "B"
+      },
+      "overlay_glb": {
+        "path": "GENESIS_V28_Escarcha_B_Overlay.glb",
+        "bytes": 8228008,
+        "sha256": "15fce55ac1e190f98e20f292f5241e8e0f7aa9380aefe6e7059f030518fa2651",
+        "primitiveMeshes": 15,
+        "glb_validated": true
+      },
+      "blend_file": "GENESIS_V28_Escarcha_B_Real_3D.blend",
+      "renders": [
+        {
+          "file": "Escarcha_B_V28_V12B_HDRI32_Hero.png",
+          "bytes": 1915845,
+          "sha256": "1256a94d81c18894cb84b7974450da2e4461d5abffe0059391c1160ee483cdb3"
+        },
+        {
+          "file": "Escarcha_B_V28_V12B_HDRI32_Detalle.png",
+          "bytes": 2076531,
+          "sha256": "76c050ecc72adb6bd6a7542f01f2ab09e403a091ddca431b3211323171642362"
+        }
+      ],
+      "user_approval": false,
+      "candidate_7_5_threshold": "requires visual inspection"
+    }
+  ]
+}
