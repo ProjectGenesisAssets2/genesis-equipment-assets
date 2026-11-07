@@ -73,7 +73,7 @@ jobs:
           assert 'GENESIS_MERC_INSPECT_SWORD_V029' in src and 'GENESIS_MERC_INSPECT_SHIELD_V029' in src
           assert 'cam_data.ortho_scale=.68' in src
           assert src.count("render('V030_")==3
-          dest=Path('/tmp/genesis_hand_v030/qa_v030_true_glove_closeups.py')
+          dest=Path('scripts/mercenary/qa_v030_true_glove_closeups.py')
           dest.write_text(src+'\n')
           import ast
           ast.parse(src)
@@ -83,7 +83,7 @@ jobs:
         run: |
           set -euo pipefail
           /tmp/genesis_hand_v030/blender/blender -b -t 4 --python-exit-code 1 \
-            --python /tmp/genesis_hand_v030/qa_v030_true_glove_closeups.py -- \
+            --python scripts/mercenary/qa_v030_true_glove_closeups.py -- \
             --character candidates/mercenary/explorer_v029/mercenary_explorer_v029.glb \
             --shield candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
             --sword /tmp/genesis_hand_v030/ORIGINAL_V12B_SWORD.glb \
