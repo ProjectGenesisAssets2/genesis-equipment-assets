@@ -104,7 +104,7 @@ jobs:
       - name: Stage experimental deliverables only
         run: |
           set -euo pipefail
-          mkdir -p public-previews/escarcha-v28-animada-a-b
+          mkdir -p public-previews/escarcha-v28-macro-b-v002
           cp /tmp/v28-animated/v28_animated_real_hoarfrost_a_b_audit.json public-previews/escarcha-v28-macro-b-v002/
           for v in B; do
             cp /tmp/v28-animated/"$v"/*.mp4 /tmp/v28-animated/"$v"/*.gif /tmp/v28-animated/"$v"/*.png /tmp/v28-animated/"$v"/*.glb public-previews/escarcha-v28-macro-b-v002/
@@ -126,7 +126,7 @@ jobs:
           git checkout -B "$branch" FETCH_HEAD
           git add public-previews/escarcha-v28-macro-b-v002/
           if git diff --cached --quiet; then echo 'Unchanged'; else
-            git commit -m 'preview(v28): actual animated A/B GLBs and Cycles 24fps [skip ci]'
+            git commit -m 'preview(v28): actual B macro animation Cycles 24fps [skip ci]'
             git push origin "HEAD:$branch"
           fi
       - name: Cleanup temporary original source files
