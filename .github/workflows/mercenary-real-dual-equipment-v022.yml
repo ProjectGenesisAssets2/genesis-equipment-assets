@@ -31,6 +31,24 @@ jobs:
           (Path('/tmp/mercy_gear_v022')/manifest['glb_filename']).write_bytes(raw)
           print('AUTHENTIC_V015_SHIELD_2K_RESTORED',len(raw),manifest['output_sha256'])
           PY
+      - name: Decode optional EXT_meshopt_compression GLB for Blender 4.5.13 compatibility
+        run: |
+          set -euo pipefail
+          npm install --global @gltf-transform/cli
+          gltf-transform copy \
+            /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022_uncompressed.glb \
+            /tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022_uncompressed.glb
+          python3 - <<'PY'
+          import json,struct,hashlib
+          from pathlib import Path
+          p=Path('/tmp/mercy_gear_v022/escudo_hierro_v015_PBR2K_WEBP_v022_uncompressed.glb')
+          raw=p.read_bytes();n=struct.unpack_from('<I',raw,12)[0]
+          g=json.loads(raw[20:20+n])
+          assert raw[:4]==b'glTF'
+          assert 'EXT_meshopt_compression' not in g.get('extensionsRequired',[])
+          assert len(g.get('meshes',[]))>=2 and len(g.get('materials',[]))>=2
+          print('REAL_SHIELD_GLTF_BLENDER_COMPATIBLE',len(raw),hashlib.sha256(raw).hexdigest(),g.get('extensionsUsed'))
+          PY
       - name: Fetch verified real 19-clip natural mercenary rig from own public organization
         run: |
           set -euo pipefail
