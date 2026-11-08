@@ -1,0 +1,78 @@
+name: Genesis | V046 real CC0 human head candidate visual QA Cycles EXR32
+on:
+  push:
+    branches: [experiment/mercenary-photoreal-human-head-v046-20261107]
+    paths:
+      - scripts/mercenary/inspect_photoreal_head_source_v046.py
+      - .github/workflows/mercenary-cc0-human-head-source-v046.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  genuine-cc0-human-head-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch original 3D GLB from public CC0 source with no conversion
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v046 output/mercenary_human_head_v046
+          curl -fSL --retry 3 --max-time 240 \
+            'https://raw.githubusercontent.com/ibrews/VitruvianGodot/main/godot_project/vitruvian_head.glb' \
+            -o /tmp/genesis_v046/vitruvian_head_CC0_original.glb
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+          b=Path('/tmp/genesis_v046/vitruvian_head_CC0_original.glb').read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<II',b,4)==(2,len(b)) and len(b)>1000000
+          print('GENESIS_REAL_CC0_HUMAN_HEAD_DOWNLOADED',len(b))
+          PY
+      - name: Use original true 32-bit EXR 4K studio HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v046/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v046/studio_small_09_4k.exr' | sha256sum -c
+      - name: Blender 4.5.13 LTS official, not local
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v046/blender.tar.xz
+          mkdir -p /tmp/genesis_v046/blender
+          tar -xJf /tmp/genesis_v046/blender.tar.xz \
+            -C /tmp/genesis_v046/blender --strip-components=1
+          /tmp/genesis_v046/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Generate genuine male human head source tri-view under studio Cycles, no integration
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v046/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/inspect_photoreal_head_source_v046.py -- \
+            --head /tmp/genesis_v046/vitruvian_head_CC0_original.glb \
+            --hdri /tmp/genesis_v046/studio_small_09_4k.exr \
+            --out output/mercenary_human_head_v046
+          cp /tmp/genesis_v046/vitruvian_head_CC0_original.glb output/mercenary_human_head_v046/
+      - name: Validate genuine head candidate, do not claim it fits Ranger yet
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          q=Path('output/mercenary_human_head_v046')
+          d=json.loads((q/'V046_PHOTOREAL_HEAD_SOURCE_AUDIT.json').read_text())
+          assert d['Cycles'] and len(d['renders'])==3
+          assert d['original_head_replacement_done'] is False
+          assert d['existing_Quaternius_rig_65_bones_untouched'] is True
+          assert len(list(q.glob('V046_HUMAN_FACE_*.png')))==3
+          print('V046_REAL_HEAD_SOURCE_QA_SUCCESS_NOT_YET_ATTACHED',d['source_sha256'])
+          PY
+      - name: Save original CC0 head GLB and real preview without touching master
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v046-authentic-CC0-realistic-male-head-three-Cycles32-source-previews
+          path: output/mercenary_human_head_v046/
+          if-no-files-found: warn
+          retention-days: 10
