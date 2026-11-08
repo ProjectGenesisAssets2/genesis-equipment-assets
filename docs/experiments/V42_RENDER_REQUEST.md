@@ -1,0 +1,3 @@
+# V42 — natural ice crystals, real specular ridges, genuine V175/V12B
+
+Baseline V41: visual 6.3, crystallization 6.5, animation 7. New goal independently visual >=7, crystallization >=7, animation >=7. Source V03 original unchanged, preset approved Hierro V175/V12B unchanged, original V175 Hielo shader imported byte exact, new physically raised crystal shelf ridges and crystalline facets, dynamic 50% coating stays independent from intensity 0..100. Render Blender 4.5.13 LTS Cycles, EXR HDRI 32bpc, 56 samples, full hero and macro. Do not merge main or approve until after inspection of real renders and GIF.
