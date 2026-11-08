@@ -1,0 +1,3 @@
+# V43 — three real independent elemental effects on ONE approved V03 3D sword
+
+Requested: a true Blender Cycles original asset render, NOT generated concept art. Fuse V18 Unity Labs CC0 translucent flame ribbons, approved V07 lightning-helix *geometry adapted to native Cycles* (approved PlayCanvas GLSL module stays intact), and V42 Hielo physical crystal shader loaded from user's original V175 master. Preserve approved iron V175 V12B shader / original GLB SHA, use HDRI EXR 32 bit/channel Blender 4.5.13. Two camera views at identical simultaneous intensity settings. Experiment only, no main publication or visual approval assumed.
