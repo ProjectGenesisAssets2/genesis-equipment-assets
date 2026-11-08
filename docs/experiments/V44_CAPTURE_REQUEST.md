@@ -1,0 +1,3 @@
+# V44 actual 3D original sword fusion, animated
+
+Use the exact existing V03 GLB source with material V175 and original independent PlayCanvas VFX shaders: Fuego V20C.1, Rayo V07 and Hielo V21 (experimental WebGL stand-in, NOT user-accepted Blender V42). Render them simultaneously as a moving original asset in Chromium WebGL2; use no generated images or new fantasy sword shapes. Record frames and verify original SHA, geometry unchanged and individual channel pixel differences. Blender V175/V12B additional roughness settings do not exist in original GLB; the previously produced V43 Cycles still is the V12B static reference. Explicitly document any mismatch; do not claim 3 GLBs because the 3 VFX are shader modules and geometry. No main modification.
