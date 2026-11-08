@@ -71,7 +71,7 @@ for image_index,img in enumerate(g['images']):
         ratio=max_side/max(original.size)
         original=original.resize(tuple(int(round(s*ratio)) for s in original.size),Image.Resampling.LANCZOS)
     # Actual skin/normal/PBR masks are lossless to prevent unwanted artifacts.
-    noncolor=any(x in name.lower() for x in ('normal','_orm','rough','_mr','metal'))
+    noncolor=any(x in name.lower() for x in ('normal','_orm','rough','_mr','metal')) or name in ('Image_1','Image_2')
     if original.mode not in ('RGB','RGBA'):original=original.convert('RGBA' if 'A' in original.mode else 'RGB')
     web=io.BytesIO()
     if noncolor:
