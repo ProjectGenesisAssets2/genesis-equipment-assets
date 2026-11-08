@@ -21,6 +21,7 @@ CAPTURED_SOURCE=None
 READY=False
 RESULTS=[]
 FIRE_INFO={}
+FIRE_TGA_PATH=None
 RAY_INFO={}
 SOURCE_GLBSHA='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
 HDRI_SHA='bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558'
@@ -122,6 +123,9 @@ def build_fusion(scene):
     for n in frost.CRYSTAL_VALUES:n.outputs[0].default_value=.67
     fire_level=64
     fire_time=1.4
+    fire.FLAME_IMAGE_TGA=bpy.data.images.load(FIRE_TGA_PATH,check_existing=False)
+    fire.FLAME_IMAGE_TGA.reload()
+    if tuple(fire.FLAME_IMAGE_TGA.size)!=(2048,1024):raise RuntimeError('V43_BAD_FLAME_ATLAS_AFTER_SCENE')
     objects,lights,geom,stats=fire.create_fire(fire_level,fire_time,CAPTURED_SOURCE)
     for obj in objects:
         obj.name=frost.TAGS+'V43_FUEGO_V18_'+obj.name
@@ -146,6 +150,7 @@ def fusion_render(camera,output):
     return result
 
 def main():
+    global FIRE_TGA_PATH
     ap=argparse.ArgumentParser()
     for k in ('input','hdri','hielo-blend','flame-exr','flame-tga','output-dir','preset'):
         ap.add_argument('--'+k,required=True)
@@ -159,13 +164,12 @@ def main():
         raise RuntimeError('V43_NOT_V12B_APPROVED_BASE')
     flame=Path(args.flame_tga)
     if not flame.is_file():raise RuntimeError('V43_CC0_FLAME_TGA_MISSING')
-    fire.FLAME_IMAGE_TGA=bpy.data.images.load(str(flame.resolve()),check_existing=True)
-    fire.FLAME_IMAGE_TGA.reload()
+    # v12.main() clears the Blender scene and its images. Load CC0 atlas only
+    # AFTER that reset, immediately before constructing the V18 fire material.
+    FIRE_TGA_PATH=str(flame.resolve())
     fire.FLAME_IMAGE_EXR=None
     fire.FLAME_SHA_TGA=hashlib.sha256(flame.read_bytes()).hexdigest()
     fire.FLAME_SHA_EXR=hashlib.sha256(Path(args.flame_exr).read_bytes()).hexdigest()
-    if tuple(fire.FLAME_IMAGE_TGA.size)!=(2048,1024):
-        raise RuntimeError('V43_WRONG_CC0_FLAME_ATLAS_SIZE')
     frost.add_ice_layer=prepared_ice_builder
     frost.render_frames=fusion_render
     sys.argv=['blender','--','--input',args.input,'--hdri',args.hdri,
