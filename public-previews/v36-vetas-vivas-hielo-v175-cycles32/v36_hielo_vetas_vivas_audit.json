@@ -1,0 +1,109 @@
+{
+  "schema": "Genesis_V36_OriginalV175_HIELO_Material_IndependentSurfaceMotion",
+  "status": "V25_ICE_ONLY_QUALITY_REVIEW_PENDING",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_RGB_bits_per_channel": 32,
+  "hdri_bits_per_pixel": 96,
+  "hdri_size": [
+    4096,
+    2048
+  ],
+  "renderer": "Cycles",
+  "blender": "4.5.13 LTS",
+  "samples": 56,
+  "approved_base_preset": "Genesis_Espada_V03_Hierro_V175_V12B",
+  "original_triangles": 2150,
+  "blade_triangles": 98,
+  "geometry_modified": false,
+  "base_material_modified": false,
+  "approved_rayo_modified": false,
+  "approved_fire_modified": false,
+  "no_concepts": true,
+  "no_imagegen": true,
+  "vfx_not_yet_adapted_to_PlayCanvas": true,
+  "exposure_ev": 0.5,
+  "agx_look": "AgX - Medium High Contrast",
+  "world_strength": 0.9,
+  "results": [
+    {
+      "affinity": "Hielo",
+      "details": {
+        "version": "V36",
+        "source_blend_sha256": "9a24ffe1865ccf33c80b535ba27db0726fa1caca0f352425c82c8ae91e34ec89",
+        "source_hielo_material": "M_Ingot_Universal_Affinity_HIELO",
+        "source_original_node_count": 59,
+        "source_graph_preserved_and_only_wrapped": true,
+        "original_hielo_blend_applied": true,
+        "source_material_textures_missing": false,
+        "single_cutting_edge": true,
+        "blade_length_frost_envelope": 0.37,
+        "motion_mode": "travelling warped branching filaments and deposition",
+        "frost_strength_clamped_to": 0.83,
+        "central_ridge_uncovered": true,
+        "original_sword_mesh_modified": false,
+        "intensity_node": "V36_Ice_Intensity",
+        "intensity_has_animation_keyframes": false,
+        "motion_node": "V36_Ice_Animation_Time",
+        "motion_keyframes": {
+          "1": 0,
+          "97": 1
+        },
+        "intensity_motion_independent": true,
+        "overlay_faces": 4140
+      },
+      "renders": [
+        {
+          "name": "V36_Escarcha_V175_I000_T001_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I020_T001_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T001_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T013_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T025_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T037_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T049_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T061_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T073_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T085_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I050_T097_Hero.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I100_T001_Detalle.png"
+        },
+        {
+          "name": "V36_Escarcha_V175_I100_T001_Hero.png"
+        }
+      ],
+      "vfx_objects": 1,
+      "approved": false,
+      "human_visual_score": null
+    }
+  ],
+  "material_source_exact_original_blend": true,
+  "intensity_has_animation": false,
+  "continuous_ice_motion_animated_in_blender": true,
+  "intensity_and_motion_independent": true,
+  "not_approved": true,
+  "motion_mean_delta_active_frost_pixels": 9.718157795394488,
+  "active_frost_blade_rect_fraction": 0.0272615004631059,
+  "motion_visibility_threshold_passed": true
+}
