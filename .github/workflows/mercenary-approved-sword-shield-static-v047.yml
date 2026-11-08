@@ -1,0 +1,117 @@
+name: Genesis | V047 actual game mercenary with original V12B sword + V015 shield
+on:
+  push:
+    branches: [experiment/mercenary-stand-display-v047-20261107]
+    paths:
+      - scripts/mercenary/build_static_genesis_equipped_ranger_v047.py
+      - .github/workflows/mercenary-approved-sword-shield-static-v047.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  render-and-verify-mission-mercenary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore real 65-bone Ranger with face V045b from last successful GitHub QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v047/src output/mercenary_game_display_v047
+          curl -fSL --retry 3 --max-time 250 \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13599181223/zip' \
+            -o /tmp/genesis_v047/ranger_with_face.zip
+          unzip -oq /tmp/genesis_v047/ranger_with_face.zip -d /tmp/genesis_v047/src
+          test -s /tmp/genesis_v047/src/GENESIS_QUATERNIUS_RANGER_MALE_FACE_PBR_V045B.glb
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          d=Path('/tmp/genesis_v047/src')
+          p=d/'GENESIS_QUATERNIUS_RANGER_MALE_FACE_PBR_V045B.glb'
+          q=json.loads((d/'V045B_ORIGINAL_SKIN_ATLAS_QA.json').read_text())
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==q['output_glb_sha256']
+          assert q['original_armature_bones']==65
+          print('V047_GENUINE_RANGER_WITH_FACE_SOURCE_SHA256',q['output_glb_sha256'])
+          PY
+      - name: Rehydrate exact approved V12B sword as the original 21 Git blobs, not an invented substitute
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py \
+            --manifest render-input/v03-blob-manifest.json \
+            --output /tmp/genesis_v047/src/Genesis_Sword_Iron_V03_V175_Colores.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis_v047/src/Genesis_Sword_Iron_V03_V175_Colores.glb' | sha256sum -c
+      - name: Verify exact V015 approved WebGL shield source, game original untouched
+        run: |
+          set -euo pipefail
+          cp candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            /tmp/genesis_v047/src/escudo_v015_PBR2K_NO_MESHOPT.glb
+          echo 'a169a827b70621ec21eeaa894b3cf10eeb1ed5bb575d9ff8f275a6ec2  /tmp/genesis_v047/src/escudo_v015_PBR2K_NO_MESHOPT.glb' | sha256sum -c
+      - name: Fetch actual verified 32-bit EXR PolyHaven studio environment
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v047/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v047/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install verified Blender 4.5.13 LTS using public GH Actions
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v047/blender.tar.xz
+          mkdir -p /tmp/genesis_v047/blender
+          tar -xJf /tmp/genesis_v047/blender.tar.xz -C /tmp/genesis_v047/blender --strip-components=1
+          /tmp/genesis_v047/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Build standalone REAL Ranger display of user-approved V12B and V015, render authentic Cycles five views
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v047/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/build_static_genesis_equipped_ranger_v047.py -- \
+            --ranger /tmp/genesis_v047/src/GENESIS_QUATERNIUS_RANGER_MALE_FACE_PBR_V045B.glb \
+            --sword /tmp/genesis_v047/src/Genesis_Sword_Iron_V03_V175_Colores.glb \
+            --shield /tmp/genesis_v047/src/escudo_v015_PBR2K_NO_MESHOPT.glb \
+            --hdri /tmp/genesis_v047/studio_small_09_4k.exr \
+            --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json \
+            --out output/mercenary_game_display_v047
+      - name: Validate actual combined glTF bones, 3D sword + shield meshes, materials and no animation claims
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,struct,hashlib
+          from pathlib import Path
+          d=Path('output/mercenary_game_display_v047')
+          p=d/'GENESIS_MERCENARY_RANGER_V047_REAL_V12B_SWORD_V015_SHIELD_STATIC.glb'
+          raw=p.read_bytes()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<II',raw,4)==(2,len(raw))
+          n,k=struct.unpack_from('<I4s',raw,12);assert k==b'JSON'
+          g=json.loads(raw[20:20+n])
+          assert len(g.get('skins',[]))==1 and len(g['skins'][0]['joints'])==65
+          names=[n.get('name','') for n in g['nodes']]
+          assert any('GENESIS_V047_APPROVED_SWORD_V12B' in n for n in names),names
+          assert any('GENESIS_V047_APPROVED_SHIELD_V015' in n for n in names),names
+          assert len(g.get('meshes',[]))>=14
+          assert len(g.get('materials',[]))>=10
+          qa=json.loads((d/'V047_MERCENARY_GENESIS_SWORD_SHIELD_QA.json').read_text())
+          assert qa['character_head_present']
+          assert qa['sword_length_m']>.80 and qa['shield_longest_dimension_m']>.60
+          assert qa['right_hand_sword_grip_distance_m']<.10 and qa['left_hand_shield_center_distance_m']<.40
+          assert qa['equipment_display_mode'].startswith('STATIC')
+          assert not qa['in_world_integration_tested'] and not qa['human_visual_approved']
+          assert len(qa['renders'])==5 and len(list(d.glob('V047_*.png')))==5
+          assert hashlib.sha256(raw).hexdigest()==qa['combined_glb_sha256']
+          print('V047_TRUE_GENESIS_APPROVED_SWORD_AND_SHIELD_COMBINED_GLB_VERIFIED',qa['combined_glb_sha256'],len(raw),'bytes')
+          PY
+      - name: Upload exact in-engine prototype GLB with five real Cycles renders for approval
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v047-mercenary-actual-approved-V12B-sword-V015-shield-static-demo-prototype
+          path: output/mercenary_game_display_v047/
+          retention-days: 10
+          if-no-files-found: warn
