@@ -1,0 +1,112 @@
+name: Genesis V45 - Animacion Cycles HDRI EXR32 Espada V03 V175 V12B Tres Efectos
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v45-hdri32-cycles-triple-animacion-v175v12b-20261108]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  triple-real-3d:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate verified source scripts and approved lightning
+        run: |
+          python3 -m py_compile scripts/fab_sword/render_v45_hdri32_triple_animated.py scripts/fab_sword/render_v42_moving_crystal_ice.py scripts/fab_sword/render_v18_v12b_fuego_v06_flow_cycles.py
+          test -s vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs
+          grep -Fq 'const turns=3.15' vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs
+      - name: Recover ORIGINAL V03 sword GLB
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/v45-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/v45-original-v03.glb' | sha256sum -c
+      - name: Recover 4K 32-bit/channel EXR HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr -o /tmp/v45-studio.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/v45-studio.exr' | sha256sum -c
+      - name: Recover original V175 ice master
+        run: |
+          set -euo pipefail
+          base64 -d < render-input/v35-v175-hielo/Genesis_V175_MaterialMaster_4_Afinidades_EXPERIMENTAL.blend.xz.b64 | xz -dc > /tmp/v45-hielo-original.blend
+          echo '9a24ffe1865ccf33c80b535ba27db0726fa1caca0f352425c82c8ae91e34ec89  /tmp/v45-hielo-original.blend' | sha256sum -c
+      - name: Recover original Unity Labs CC0 flame atlas
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v45-flame
+          curl -fSL --retry 3 --max-time 180 https://unity3d.com/files/labs/downloads/vfx/assets01/SmallFlame01-mini-temperature/SmallFlame01-mini-flipbooks.zip -o /tmp/v45-flame/flipbooks.zip
+          echo 'a9585630cdfa568849f82b62fe1dac93045012f90963cc21ee909cceaa23953e  /tmp/v45-flame/flipbooks.zip' | sha256sum -c
+          unzip -oj /tmp/v45-flame/flipbooks.zip SmallFlame01-mini_16x4.exr SmallFlame01-mini_16x4.tga -d /tmp/v45-flame
+      - name: Install Blender Foundation 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz -o /tmp/v45-blender.tar.xz
+          mkdir -p /tmp/v45-blender
+          tar -xJf /tmp/v45-blender.tar.xz -C /tmp/v45-blender --strip-components=1
+          /tmp/v45-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render 24 real Cycles frames of original sword with animated FIRE LIGHTNING ICE
+        timeout-minutes: 65
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v45-render
+          /tmp/v45-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v45_triple_elemental_cycles.py -- --input /tmp/v45-original-v03.glb --hdri /tmp/v45-studio.exr --hielo-blend /tmp/v45-hielo-original.blend --flame-exr /tmp/v45-flame/SmallFlame01-mini_16x4.exr --flame-tga /tmp/v45-flame/SmallFlame01-mini_16x4.tga --output-dir /tmp/v45-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 40
+      - name: Verify real Cycles output and effect provenance
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,struct
+          root=Path('/tmp/v45-render')
+          a=json.loads((root/'v45_fusion_3_efectos_audit.json').read_text())
+          assert a['asset_source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['hdri_rgb_32bit_channel_sha256']=='bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558'
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['iron_preset']=='Genesis_Espada_V03_Hierro_V175_V12B'
+          assert a['three_effects_in_one_scene'] and not a['original_sword_geometry_modified']
+          assert a['temporal_animation_frames']==24
+          assert a['hielo_intensity_no_animation'] is True
+          assert a['fire']['ribbons']==4 and a['rayo']['helix_turns']==3.15
+          assert a['hielo']['physical_crystals']['facet_crystals']==48
+          assert len(a['renders'])==25
+          paths=sorted(root.glob('V45_Triple_V175V12B_HDRI32_Frame_*.png'))
+          assert len(paths)==24
+          paths.append(root/'V45_Triple_V175V12B_HDRI32_Detalle.png')
+          for p in paths:
+            data=p.read_bytes()
+            assert data[:8]==b'\x89PNG\r\n\x1a\n'
+            assert struct.unpack_from('>II',data,16)==(1080,1350)
+            assert len(data)>90000
+          assert a['hielo']['physical_crystals']['facet_animated_time'] is True
+          print('V45_REAL_CYCLES_FUSION_3_EFFECTS_VERIFIED')
+          PY
+      - name: Encode actual Cycles frames, 12fps, no generated imagery
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y ffmpeg; fi
+          cd /tmp/v45-render
+          ffmpeg -y -loglevel error -framerate 12 -i V45_Triple_V175V12B_HDRI32_Frame_%03d.png -c:v libx264 -crf 17 -preset medium -pix_fmt yuv420p -movflags +faststart V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.mp4
+          ffmpeg -y -loglevel error -framerate 12 -i V45_Triple_V175V12B_HDRI32_Frame_%03d.png -vf "fps=12,scale=750:-1:flags=lanczos,palettegen" palette.png
+          ffmpeg -y -loglevel error -framerate 12 -i V45_Triple_V175V12B_HDRI32_Frame_%03d.png -i palette.png -lavfi "fps=12,scale=750:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3" -loop 0 V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.gif
+          test -s V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.mp4
+          test -s V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.gif
+          test "$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nw=1:nk=1 V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.mp4)" -eq 24
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V45-Original-V175V12B-EXR32-Triple-Animated-Cycles
+          path: |
+            /tmp/v45-render/V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.mp4
+            /tmp/v45-render/V45_Espada_V03_Fuego_Rayo_Hielo_EXR32_RealCycles.gif
+            /tmp/v45-render/V45_Triple_V175V12B_HDRI32_Frame_000.png
+            /tmp/v45-render/V45_Triple_V175V12B_HDRI32_Frame_012.png
+            /tmp/v45-render/V45_Triple_V175V12B_HDRI32_Detalle.png
+            /tmp/v45-render/v45_fusion_3_efectos_audit.json
+          retention-days: 14
+      - name: Clean runner original assets
+        if: always()
+        run: |
+          rm -f /tmp/v45-original-v03.glb /tmp/v45-studio.exr /tmp/v45-hielo-original.blend
+          rm -rf /tmp/v45-flame
