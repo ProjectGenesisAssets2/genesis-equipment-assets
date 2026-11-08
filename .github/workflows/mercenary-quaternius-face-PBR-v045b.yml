@@ -1,0 +1,94 @@
+name: Genesis | V045b original Quaternius Male Ranger actual face PBR atlas Cycles32
+on:
+  push:
+    branches: [experiment/mercenary-quaternius-original-head-PBR-v045b-20261107]
+    paths:
+      - scripts/mercenary/finish_quaternius_ranger_face_PBR_v045b.py
+      - .github/workflows/mercenary-quaternius-face-PBR-v045b.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  true-65bone-face-PBR-verification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 47
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read previous genuine unapproved V045 built character, validate SHA, preserve original source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v045b output/mercenary_quaternius_head_PBR_v045b
+          curl -fSL --retry 3 --max-time 220 \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13598533001/zip' \
+            -o /tmp/genesis_v045b/previous_combined.zip
+          unzip -oq /tmp/genesis_v045b/previous_combined.zip -d /tmp/genesis_v045b
+          echo '24cd5e08ce919950a2325bd02177cec50f184d236b8d67bcbbf2c8921589d76e  /tmp/genesis_v045b/GENESIS_QUATERNIUS_RANGER_WITH_ORIGINAL_MALE_HEAD_V045.glb' | sha256sum -c
+      - name: Use same physical 4K HDRI 32-bit per channel EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v045b/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v045b/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v045b/blender.tar.xz
+          mkdir -p /tmp/genesis_v045b/blender
+          tar -xJf /tmp/genesis_v045b/blender.tar.xz \
+            -C /tmp/genesis_v045b/blender --strip-components=1
+          /tmp/genesis_v045b/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Apply existing original Ranger male PBR skin atlas to original same-rig Quaternius male face
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v045b/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/finish_quaternius_ranger_face_PBR_v045b.py -- \
+            --combined /tmp/genesis_v045b/GENESIS_QUATERNIUS_RANGER_WITH_ORIGINAL_MALE_HEAD_V045.glb \
+            --hdri /tmp/genesis_v045b/studio_small_09_4k.exr \
+            --out output/mercenary_quaternius_head_PBR_v045b
+      - name: Validate actual head skinned and textured GLB + Cycles32 three real views
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,struct,json
+          o=Path('output/mercenary_quaternius_head_PBR_v045b')
+          p=o/'GENESIS_QUATERNIUS_RANGER_MALE_FACE_PBR_V045B.glb'
+          raw=p.read_bytes()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<II',raw,4)==(2,len(raw))
+          n,t=struct.unpack_from('<I4s',raw,12);assert t==b'JSON'
+          g=json.loads(raw[20:20+n])
+          assert len(g['skins'])==1 and len(g['skins'][0]['joints'])==65
+          joint_names=[g['nodes'][i].get('name','') for i in g['skins'][0]['joints']]
+          assert sum('thumb' in x and x.endswith('_r') for x in joint_names)>=3
+          assert sum('thumb' in x and x.endswith('_l') for x in joint_names)>=3
+          targets=['GENESIS_V045_BASE_MALE_EYEBROWS','GENESIS_V045_BASE_MALE_EYES','GENESIS_V045_BASE_MALE_REAL_FACE_AND_NECK']
+          for name in targets:
+            nodes=[n for n in g['nodes'] if name in n.get('name','')]
+            assert nodes and 'mesh' in nodes[0],(name,'head node missing')
+            prim=g['meshes'][nodes[0]['mesh']]['primitives'][0]
+            attrs=prim['attributes']
+            assert 'JOINTS_0' in attrs and 'WEIGHTS_0' in attrs
+            mat=g['materials'][prim['material']]
+            assert mat.get('pbrMetallicRoughness',{}).get('baseColorTexture') is not None,(name,'face atlas PBR not applied')
+          qa=json.loads((o/'V045B_ORIGINAL_SKIN_ATLAS_QA.json').read_text())
+          assert qa['original_armature_bones']==65 and len(qa['renders'])==3
+          assert len(list(o.glob('V045B_*.png')))==3
+          assert hashlib.sha256(raw).hexdigest()==qa['output_glb_sha256']
+          assert not qa['human_approved'] and not qa['main_modified']
+          print('V045B_QUATERNIUS_ORIGINAL_FACE_GLB_PBR32_TECHNICAL_PASS',qa['output_glb_sha256'])
+          PY
+      - name: Preserve real face result as candidate only with images and QA, no publication
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v045b-authentic-male-head-PBR-Ranger-Cycles32-experimental-unapproved
+          path: output/mercenary_quaternius_head_PBR_v045b/
+          retention-days: 10
+          if-no-files-found: warn
