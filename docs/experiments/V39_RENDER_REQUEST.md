@@ -1,0 +1,3 @@
+# V39 — hero-scale moving ice front, real Cycles render
+
+After V38 rejection (6.2/10 overall, animation below 7), prove a visibly animated crystal growth field on unchanged V03 iron sword and original V175 Hielo material. Keep the intensity independent 0–100. Full hero animation at 50%, closeup loop, 0/20/50/100 frames. Preserve physically based ice, no neon or blade-wide uniform cyan. Quantitative frame delta must exceed 12/255 over active frost region, and human visual rating must reach 7/10 before presenting as a candidate. Uses public GitHub Actions Blender 4.5.13 LTS, 32 bpc EXR HDRI and Cycles. Never merge into main without owner approval.
