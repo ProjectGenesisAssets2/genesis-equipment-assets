@@ -1,0 +1,101 @@
+name: Genesis | V044 transplant verified 65-bone Quaternius fingers to original Meshy Mercenary
+on:
+  push:
+    branches: [experiment/mercenary-meshy-quaternius-finger-retarget-v044-20261107]
+    paths:
+      - scripts/mercenary/mesh_transfer_quaternius_65bone_to_meshy_v044.py
+      - .github/workflows/mercenary-meshy-donor-65finger-v044.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  actual-bone-transfer-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore both verified CC0 GLB originals, no edits to masters
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v044/originals output/meshy_mercenary_donor_fingers_v044
+          curl -fSL --retry 3 --max-time 220 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13594319410/zip' \
+            -o /tmp/genesis_v044/meshy_original.zip
+          unzip -oq /tmp/genesis_v044/meshy_original.zip -d /tmp/genesis_v044/originals
+          curl -fSL --retry 3 --max-time 220 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13595866940/zip' \
+            -o /tmp/genesis_v044/donor.zip
+          unzip -oq /tmp/genesis_v044/donor.zip -d /tmp/genesis_v044/originals
+          echo '0452096d35bb41d992bc3508ee05f9cdc2a6ee34bb472a60c33eb9b22b66f005  /tmp/genesis_v044/originals/MESHY_CANDIDATE1_ORIGINAL.glb' | sha256sum -c
+          echo '2b8a1358f165fb7a1afa5930c4a3d92a9fff11ea01c63df18d368735fdbb29af  /tmp/genesis_v044/originals/GENESIS_QUATERNIUS_MALE_RANGER_ORIGINAL_RIGGED_V043.glb' | sha256sum -c
+      - name: Fetch verified 32bit EXR real HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v044/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v044/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS in public org GitHub Actions
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v044/blender.tar.xz
+          mkdir -p /tmp/genesis_v044/blender
+          tar -xJf /tmp/genesis_v044/blender.tar.xz \
+            -C /tmp/genesis_v044/blender --strip-components=1
+          /tmp/genesis_v044/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Transfer genuine donor armature and render six 3D QA views with exact model
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v044/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/mesh_transfer_quaternius_65bone_to_meshy_v044.py -- \
+            --meshy /tmp/genesis_v044/originals/MESHY_CANDIDATE1_ORIGINAL.glb \
+            --donor /tmp/genesis_v044/originals/GENESIS_QUATERNIUS_MALE_RANGER_ORIGINAL_RIGGED_V043.glb \
+            --hdri /tmp/genesis_v044/studio_small_09_4k.exr \
+            --out output/meshy_mercenary_donor_fingers_v044
+      - name: Inspect freshly exported actual V044 GLB and honest technical state
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,struct,hashlib
+          d=Path('output/meshy_mercenary_donor_fingers_v044')
+          p=d/'GENESIS_MESHY_WEARY_WARRIOR_65BONES_V044_EXPERIMENTAL.glb'
+          raw=p.read_bytes()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<II',raw,4)==(2,len(raw))
+          n,t=struct.unpack_from('<I4s',raw,12)
+          assert t==b'JSON'
+          g=json.loads(raw[20:20+n])
+          assert len(g.get('skins',[]))==1
+          skin=g['skins'][0]
+          assert len(skin['joints'])==65
+          bones=[g['nodes'][i].get('name','') for i in skin['joints']]
+          assert sum('thumb' in n and n.endswith('_r') for n in bones)>=3
+          assert sum('thumb' in n and n.endswith('_l') for n in bones)>=3
+          attrs=g['meshes'][0]['primitives'][0]['attributes']
+          assert 'JOINTS_0' in attrs and 'WEIGHTS_0' in attrs
+          qa=json.loads((d/'V044_MESHY_DONOR_FINGERS_QA.json').read_text())
+          assert qa['source_mesh_vertices']==9277
+          assert qa['finger_deformation_numeric_pass']
+          assert len(qa['renders'])==6
+          assert all((d/x['file']).stat().st_size>45000 for x in qa['renders'])
+          assert qa['user_approved'] is False and qa['PlayCanvas_tested'] is False
+          assert hashlib.sha256(raw).hexdigest()==qa['exported_glb_sha256']
+          print('V044_GEOMETRY_FINGER_DEFORMED_TECHNICAL_PASS_NOT_APPROVED',qa['digit_deformation_measurements'])
+          PY
+      - name: Preserve V044 candidate GLB, all real Cycles HDRI32 renders and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-Meshy-Quaternius-original-65-bone-fingers-V044-experimental-unapproved
+          path: output/meshy_mercenary_donor_fingers_v044/
+          if-no-files-found: warn
+          retention-days: 10
