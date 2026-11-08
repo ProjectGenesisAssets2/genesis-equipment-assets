@@ -190,7 +190,7 @@ def add_ice_layer(coord,along,side,normal,intensity):
 def render_frames(camera,output):
     # Motion at constant 50% versus strength 20/50/100 at exactly the same time.
     name='Hero' if 'Hero' in output.name else 'Detalle'
-    variants=[(20,1),(50,1),(100,1)]
+    variants=[(0,1),(20,1),(50,1),(100,1)]
     if name=='Hero':
         variants += [(50,t) for t in (13,25,37,49,61,73,85,97)]
     else:variants=[(100,1)]
