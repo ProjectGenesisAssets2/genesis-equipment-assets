@@ -1,0 +1,79 @@
+name: Genesis V44 - REAL original V03 GLB triple animated VFX WebGL
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v44-espada-v03-animacion-triple-webgl-20261108]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: genesis-v44-real-glb-three-animations
+  cancel-in-progress: true
+jobs:
+  capture-three-effects-original-glb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original effect files, no reimplementation
+        run: |
+          set -euo pipefail
+          node --check tests/triple-v44/record.cjs
+          test -s vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs
+          test -s vfx/experimental/Genesis_Fuego_V20C_CalorYFlamas.mjs
+          test -s vfx/experimental/Genesis_Hielo_V21_Cristalizacion.mjs
+          grep -Fq 'const turns=3.15' vfx/approved/Genesis_Rayo_Helicoidal_V07.mjs
+      - name: Recover and verify original V03 PBR V175 GLB from repository chunks
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output tests/triple-v44/source_original_v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  tests/triple-v44/source_original_v03.glb' | sha256sum -c
+      - name: Install original PlayCanvas and Chromium with software WebGL2
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund --no-save playcanvas@2.23.3 playwright@1.56.1 pngjs@7.0.0
+          npx playwright install chromium
+          ffmpeg -version | head -n 1
+      - name: Serve original 3D GLB and verified shader modules
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/v44-web-server.log 2>&1 &
+          sleep 2
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/tests/triple-v44/source_original_v03.glb)" = 200
+      - name: Record REAL 3D GLB with three independent channels at 16fps
+        timeout-minutes: 25
+        run: |
+          set -euo pipefail
+          node tests/triple-v44/record.cjs | tee /tmp/genesis-v44-playcanvas.log
+          test "$(find triple-v44-output -maxdepth 1 -name 'V44_triple_frame_*.png' | wc -l)" -eq 48
+          test -s triple-v44-output/V44_TresEfectos_V03_Hero.png
+          test -s triple-v44-output/v44_real_3d_capture_audit.json
+      - name: Encode 3-second actual animated sword preview, not still image
+        run: |
+          set -euo pipefail
+          cd triple-v44-output
+          ffmpeg -y -loglevel error -framerate 16 -i V44_triple_frame_%03d.png -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p -movflags +faststart V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.mp4
+          ffmpeg -y -loglevel error -framerate 16 -i V44_triple_frame_%03d.png -vf "fps=12,scale=960:-1:flags=lanczos,palettegen" V44_paleta.png
+          ffmpeg -y -loglevel error -framerate 16 -i V44_triple_frame_%03d.png -i V44_paleta.png -lavfi "fps=12,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3" -loop 0 V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.gif
+          test -s V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.mp4
+          test -s V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.gif
+          test "$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nw=1:nk=1 V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.mp4)" -eq 48
+      - name: Upload only actual GLB renders and audit, not copyrighted model
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V44-Triple-VFX-Original-V03GLB-Actual-WebGL2
+          path: |
+            triple-v44-output/V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.mp4
+            triple-v44-output/V44_Espada_V03_Fuego_Rayo_Hielo_AnimacionReal.gif
+            triple-v44-output/V44_TresEfectos_V03_Hero.png
+            triple-v44-output/V44_Base_OriginalV03_V175.png
+            triple-v44-output/V44_Solo_FuegoV20C1.png
+            triple-v44-output/V44_Solo_RayoV07.png
+            triple-v44-output/V44_Solo_HieloV21_WebGL.png
+            triple-v44-output/v44_real_3d_capture_audit.json
+          retention-days: 14
+      - name: Cleanup original model
+        if: always()
+        run: rm -f tests/triple-v44/source_original_v03.glb
