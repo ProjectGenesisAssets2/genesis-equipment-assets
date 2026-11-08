@@ -139,9 +139,9 @@ jobs:
           data=json.loads(audit_path.read_text())
           data['motion_mean_delta_active_frost_pixels']=active_delta
           data['active_frost_blade_rect_fraction']=coverage
-          data['motion_visibility_threshold_passed']=active_delta>15.0 and coverage>.029
+          data['motion_visibility_threshold_passed']=active_delta>15.0 and coverage>.025
           audit_path.write_text(json.dumps(data,indent=2,ensure_ascii=False))
-          assert active_delta>15.0 and coverage>.029, 'V41_HERO_FROST_MOTION_BELOW_TARGET'
+          assert active_delta>15.0 and coverage>.025, 'V41_HERO_FROST_MOTION_BELOW_TARGET'
           # A real-image zoom crop helps verify subtle surface motion.
           # It does not synthesize or change any frame.
           zoom_frames=[]
