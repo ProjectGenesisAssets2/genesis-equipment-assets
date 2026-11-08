@@ -1,0 +1,132 @@
+name: Genesis | V049 actual playable static mercenary V12B sword V015 shield WebP PBR
+on:
+  push:
+    branches: [experiment/mercenary-web-display-v049-20261107]
+    paths:
+      - scripts/mercenary/optimize_real_equipped_v049.py
+      - scripts/mercenary/render_web_mercenary_v049.py
+      - .github/workflows/mercenary-game-asset-v049.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  create-compact-static-mercenary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 52
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve verified v048 REAL Quaternius guard pose + approved V12B + V015 combined source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v049 output/mercenary_web_display_v049
+          curl -fSL --retry 4 --max-time 260 \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13601682330/zip' \
+            -o /tmp/genesis_v049/equipped_v048.zip
+          unzip -oq /tmp/genesis_v049/equipped_v048.zip -d /tmp/genesis_v049
+          python3 - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          p=Path('/tmp/genesis_v049')
+          q=json.loads((p/'V048_MERCENARY_GENESIS_SWORD_SHIELD_QA.json').read_text())
+          b=(p/'GENESIS_MERCENARY_RANGER_V048_REAL_V12B_SWORD_V015_SHIELD_STATIC.glb').read_bytes()
+          assert hashlib.sha256(b).hexdigest()==q['combined_glb_sha256']
+          assert q['character_bones']==65 and q['character_head_present']
+          assert q['arm_lowered_rest_pose']['r']['wrist_drop_m']>.3
+          assert q['arm_lowered_rest_pose']['l']['wrist_drop_m']>.3
+          print('V049_SOURCE_PROVENANCE_ORIGINAL_V12B_AND_V015_65BONE',len(b),q['approved_sword_source_sha256'],q['approved_shield_source_sha256'])
+          PY
+      - name: Install Pillow for lossless PBR WebP normal maps and 1536 mobile outfit budget
+        run: |
+          python3 -m pip install --quiet Pillow==11.3.0
+      - name: Repair real forged-iron front and optimize existing authentic GLB textures (no mesh edits)
+        run: |
+          set -euo pipefail
+          python3 scripts/mercenary/optimize_real_equipped_v049.py \
+            --source /tmp/genesis_v049/GENESIS_MERCENARY_RANGER_V048_REAL_V12B_SWORD_V015_SHIELD_STATIC.glb \
+            --out output/mercenary_web_display_v049
+      - name: Download same physically valid 32-bit EXR HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v049/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v049/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v049/blender.tar.xz
+          mkdir -p /tmp/genesis_v049/blender
+          tar -xJf /tmp/genesis_v049/blender.tar.xz \
+            -C /tmp/genesis_v049/blender --strip-components=1
+          /tmp/genesis_v049/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Reimport actual standalone compressed 65-bone GLB, render front three-quarter and shield face in Cycles
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v049/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/render_web_mercenary_v049.py -- \
+            --glb output/mercenary_web_display_v049/GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb \
+            --hdri /tmp/genesis_v049/studio_small_09_4k.exr \
+            --out output/mercenary_web_display_v049
+      - name: Verify WebP original gear, real 65-bone skeleton and Cycles QA
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,struct,hashlib
+          from pathlib import Path
+          d=Path('output/mercenary_web_display_v049')
+          glb=d/'GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb'
+          raw=glb.read_bytes()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<II',raw,4)==(2,len(raw))
+          n,k=struct.unpack_from('<I4s',raw,12);assert k==b'JSON'
+          g=json.loads(raw[20:20+n])
+          assert len(g['skins'])==1 and len(g['skins'][0]['joints'])==65
+          names=[n.get('name','') for n in g['nodes']]
+          assert any('GENESIS_V048_APPROVED_SWORD_V12B' in n for n in names)
+          assert any('GENESIS_V048_APPROVED_SHIELD_V015' in n for n in names)
+          assert len(g['meshes'])==16 and len(g['materials'])==9
+          assert all(x['mimeType']=='image/webp' for x in g['images'])
+          assert 'EXT_texture_webp' in g['extensionsRequired']
+          qa=json.loads((d/'V049_WEB_GLB_QA.json').read_text())
+          assert qa['output_sha256']==hashlib.sha256(raw).hexdigest()
+          assert qa['size_reduction_percent']>=20
+          visual=json.loads((d/'V049_ACTUAL_RENDER_IMPORT_QA.json').read_text())
+          assert len(visual['renders'])==3 and visual['original_bones']==65
+          assert all((d/img['file']).stat().st_size>55000 for img in visual['renders'])
+          assert visual['V015_forged_iron_material_PBR_base_color'][0]<.30
+          assert qa['human_approved'] is False and qa['main_changed'] is False
+          print('V049_GAME_DISPLAY_GLB_AND_FORGED_FACE_CYCLES32_REAL_PASS',len(raw),qa['size_reduction_percent'])
+          PY
+      - name: Make candidate available to the real game from the same public GitHub assets organization, experimental branch ONLY
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p candidates/mercenary/stand_v049
+          cp output/mercenary_web_display_v049/GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb \
+            candidates/mercenary/stand_v049/
+          cp output/mercenary_web_display_v049/V049_WEB_GLB_QA.json \
+            candidates/mercenary/stand_v049/
+          cp output/mercenary_web_display_v049/V049_ACTUAL_RENDER_IMPORT_QA.json \
+            candidates/mercenary/stand_v049/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/stand_v049/
+          if ! git diff --cached --quiet; then
+            git commit -m "experiment(mercenary): publish v049 compact static approved-gear GLB on candidate branch only"
+            git push origin HEAD:experiment/mercenary-web-display-v049-20261107
+          fi
+          echo 'GENESIS_V049_PUBLIC_CANDIDATE_READY_NO_MAIN_CHANGE'
+      - name: Preserve complete real game-ready test candidate and three true Cycles32 previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v049-real-quaternius-mercenary-with-genesis-V12B-sword-V015-shield-web
+          path: output/mercenary_web_display_v049/
+          retention-days: 10
+          if-no-files-found: warn
