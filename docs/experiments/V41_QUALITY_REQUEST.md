@@ -1,0 +1,3 @@
+# V41 review: both visual and motion >=7/10
+
+Preserve V40 animation baseline. Preserve **approved** V03 iron sword and V175/V12B base texture/metal/roughness unmodified. Correct fact: image at ZERO ice was already grey/mottled; adjust only neutral cinematic HDRI-compatible reflection lighting. New frost PBR layer more translucent and bounded. Render with Blender 4.5.13 LTS, 32bpc EXR HDRI, Cycles 56spp, 0/20/50/100 snapshots and moving 50% hero GIF, close-up. Machine check frost-motion difference >=15 RGB/255 and area>=2.9%; separately inspect visually for iron reflections and organic frost shape. Neither score counts as valid until actual frame review. No main, no approved asset edits.
