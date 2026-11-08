@@ -1,0 +1,3 @@
+# V45 — Real HDRI EXR32 Cycles animation of V03 original V175/V12B
+
+No ImageGen, no concepts. Use original signed/hash-matched V03 sword 2150tris, approved V175/V12B Cycles roughness and metal; original Poly Haven studio EXR 32bits per RGB channel, shader master HIELO V175. Animate original V18 Unity CC0 flowing fire geometry and atlas cells, reproduce travelling V07 lightning geometry faithfully as a physically rendered helix, and retain original V42 ice crystal phase independent of intensity. 24 native Blender Cycles frames, 12fps MP4/GIF. Do NOT say three independent preexisting effect GLBs exist: repository contains source shader systems and procedural meshes, not standalone animated GLB VFX. No main changes; user must approve preview.
