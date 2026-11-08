@@ -101,7 +101,7 @@ assert assigned.get('VitSkin')==1 and assigned.get('VitMouth')==1
 # The mouth is a different original UDIM tile (1006), and already has
 # a local 0..1 UV1 on the GLB. Use that UV for mouth image.
 for ob in meshes:
-  if mats['VitMouth'] not in ob.data.materials:continue
+  if not any(mat is mats['VitMouth'] for mat in ob.data.materials):continue
   assert len(ob.data.uv_layers)>=2,(ob.name,list(ob.data.uv_layers))
   mouth_node=next(n for n in mats['VitMouth'].node_tree.nodes if n.type=='TEX_IMAGE')
   uv=bpy.data.materials['GENESIS_V046B_MOUTH_TEXTURE'].node_tree.nodes.new('ShaderNodeUVMap')
