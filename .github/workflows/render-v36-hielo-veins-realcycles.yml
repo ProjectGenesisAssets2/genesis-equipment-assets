@@ -164,6 +164,7 @@ jobs:
           cp /tmp/v36-render/V36_Escarcha_*.png public-previews/v36-vetas-vivas-hielo-v175-cycles32/
           cp /tmp/v36-render/v36_hielo_vetas_vivas_audit.json public-previews/v36-vetas-vivas-hielo-v175-cycles32/
           cp /tmp/v36-render/V36_HieloV175_VetasVivas_50pct.gif public-previews/v36-vetas-vivas-hielo-v175-cycles32/
+          cp /tmp/v36-render/V36_HieloV175_VetasVivas_Zoom_50pct.gif public-previews/v36-vetas-vivas-hielo-v175-cycles32/
           git add public-previews/v36-vetas-vivas-hielo-v175-cycles32/
           if ! git diff --cached --quiet; then
             git commit -m 'review(v36): ORIGINAL V175 HIELO material on V03 with independent cold vein motion'
