@@ -63,7 +63,7 @@ jobs:
           from pathlib import Path
           import struct,json
           root=Path('/tmp/v42-render')
-          a=json.loads((root/'v42_hierro_escarcha_audit.json').read_text())
+          a=json.loads((root/'v42_escarcha_cristal_audit.json').read_text())
           assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
           assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
           assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
@@ -122,7 +122,7 @@ jobs:
           pingpong=frames
           pingpong[0].save(root/'V42_HieloV175_CristalesVivos_50pct.gif',save_all=True,
                            append_images=pingpong[1:],duration=190,loop=0,optimize=True)
-          assert (root/'V42_HieloV175_HierroEspejoEscarcha_50pct.gif').stat().st_size>30000
+          assert (root/'V42_HieloV175_CristalesVivos_50pct.gif').stat().st_size>30000
           # Quantify displacement on frosted pixels, not entire dark background.
           from PIL import ImageChops,ImageStat
           import json
@@ -139,7 +139,7 @@ jobs:
           active_delta=float(sum(sample)/3)
           coverage=float(m_sum/(255*m.width*m.height))
           print('V42_ACTIVE_FROST_RGB_DELTA_0_255',round(active_delta,4),'coverage',round(coverage,4))
-          audit_path=root/'v42_hierro_escarcha_audit.json'
+          audit_path=root/'v42_escarcha_cristal_audit.json'
           data=json.loads(audit_path.read_text())
           data['motion_mean_delta_active_frost_pixels']=active_delta
           data['active_frost_blade_rect_fraction']=coverage
@@ -153,23 +153,23 @@ jobs:
               with Image.open(root/f'V42_Escarcha_V175_I050_T{v:03d}_Hero.png') as im:
                   zoom_frames.append(im.convert('RGB').crop((380,220,815,1010))
                                      .resize((552,1000),Image.Resampling.LANCZOS))
-          zoom_frames[0].save(root/'V42_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif',
+          zoom_frames[0].save(root/'V42_HieloV175_CristalesVivos_Zoom_50pct.gif',
                               save_all=True,append_images=zoom_frames[1:],
                               duration=190,loop=0,optimize=True)
-          assert (root/'V42_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif').stat().st_size>30000
+          assert (root/'V42_HieloV175_CristalesVivos_Zoom_50pct.gif').stat().st_size>30000
 
           PY
       - name: Archive render previews
         run: |
           mkdir -p public-previews/v42-cristal-fisico-movil-32bpc
-          cp /tmp/v42-render/V42_Escarcha_*.png public-previews/v42-hierro-espejo-frost-32bpc/
-          cp /tmp/v42-render/V42_HieloV175_HierroEspejoEscarcha_50pct.gif public-previews/v42-hierro-espejo-frost-32bpc/
-          cp /tmp/v42-render/V42_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif public-previews/v42-hierro-espejo-frost-32bpc/
-          cp /tmp/v42-render/v42_hierro_escarcha_audit.json public-previews/v42-hierro-espejo-frost-32bpc/
+          cp /tmp/v42-render/V42_Escarcha_*.png public-previews/v42-cristal-fisico-movil-32bpc/
+          cp /tmp/v42-render/V42_HieloV175_CristalesVivos_50pct.gif public-previews/v42-cristal-fisico-movil-32bpc/
+          cp /tmp/v42-render/V42_HieloV175_CristalesVivos_Zoom_50pct.gif public-previews/v42-cristal-fisico-movil-32bpc/
+          cp /tmp/v42-render/v42_escarcha_cristal_audit.json public-previews/v42-cristal-fisico-movil-32bpc/
       - uses: actions/upload-artifact@v4
         with:
           name: Genesis-V42-ORIGINAL-HIELO-V175-Cycles32-ReviewOnly
-          path: public-previews/v42-hierro-espejo-frost-32bpc/
+          path: public-previews/v42-cristal-fisico-movil-32bpc/
           retention-days: 14
       - name: Publish visual review images ONLY to V42 experimental branch
         run: |
@@ -178,12 +178,12 @@ jobs:
           git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
           git fetch origin experiment/v42-hierro-v175-reflejos-escarcha-20261108
           git checkout -B experiment/v42-hierro-v175-reflejos-escarcha-20261108 FETCH_HEAD
-          mkdir -p public-previews/v42-hierro-espejo-frost-32bpc
-          cp /tmp/v42-render/V42_Escarcha_*.png public-previews/v42-hierro-espejo-frost-32bpc/
-          cp /tmp/v42-render/v42_hierro_escarcha_audit.json public-previews/v42-hierro-espejo-frost-32bpc/
-          cp /tmp/v42-render/V42_HieloV175_HierroEspejoEscarcha_50pct.gif public-previews/v42-hierro-espejo-frost-32bpc/
-          cp /tmp/v42-render/V42_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif public-previews/v42-hierro-espejo-frost-32bpc/
-          git add public-previews/v42-hierro-espejo-frost-32bpc/
+          mkdir -p public-previews/v42-cristal-fisico-movil-32bpc
+          cp /tmp/v42-render/V42_Escarcha_*.png public-previews/v42-cristal-fisico-movil-32bpc/
+          cp /tmp/v42-render/v42_escarcha_cristal_audit.json public-previews/v42-cristal-fisico-movil-32bpc/
+          cp /tmp/v42-render/V42_HieloV175_CristalesVivos_50pct.gif public-previews/v42-cristal-fisico-movil-32bpc/
+          cp /tmp/v42-render/V42_HieloV175_CristalesVivos_Zoom_50pct.gif public-previews/v42-cristal-fisico-movil-32bpc/
+          git add public-previews/v42-cristal-fisico-movil-32bpc/
           if ! git diff --cached --quiet; then
             git commit -m 'review(v42): source V03 and V175 shader plus PBR ice facets and specular reflections'
             git push origin HEAD:experiment/v42-hierro-v175-reflejos-escarcha-20261108
