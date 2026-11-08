@@ -1,0 +1,114 @@
+name: Genesis | V046b real Vitruvian human PBR skin and authentic Cycles HDRI32 tri-view
+on:
+  push:
+    branches: [experiment/mercenary-human-face-PBR-v046b-20261107]
+    paths:
+      - scripts/mercenary/apply_vitruvian_original_skin_PBR_v046b.py
+      - .github/workflows/mercenary-v046b-real-skin-pbr.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  actual-original-human-skin-material:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore exact V046 original GLB from verified source audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v046b/original output/mercenary_face_skin_pbr_v046b
+          curl -fSL --retry 3 --max-time 180 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13600531398/zip' \
+            -o /tmp/genesis_v046b/source_glb.zip
+          unzip -oq /tmp/genesis_v046b/source_glb.zip -d /tmp/genesis_v046b/original
+          python3 - <<'PY'
+          import struct,hashlib,json
+          from pathlib import Path
+          d=Path('/tmp/genesis_v046b/original')
+          p=d/'vitruvian_head_CC0_original.glb'
+          b=p.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<II',b,4)==(2,len(b))
+          meta=json.loads((d/'V046_PHOTOREAL_HEAD_SOURCE_AUDIT.json').read_text())
+          assert hashlib.sha256(b).hexdigest()==meta['source_sha256']
+          print('V046B_VERIFIED_PREVIOUS_GLTF',meta['source_sha256'],len(b))
+          PY
+      - name: Retrieve exact original CC0 PBR UV maps from the human head's GitHub repository
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v046b/textures
+          for f in vit_face_bc.png vit_face_n.png vit_face_rough.png vit_iris.png vit_sclera.png vit_mouth.png; do
+            curl -fSL --retry 4 --max-time 240 \
+              "https://raw.githubusercontent.com/ibrews/VitruvianGodot/main/godot_project/$f" \
+              -o "/tmp/genesis_v046b/textures/$f"
+            test -s "/tmp/genesis_v046b/textures/$f"
+          done
+      - name: Download actual 32bit-channel EXR HDRI reference, verify original SHA256
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v046b/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v046b/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install official Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v046b/blender.tar.xz
+          mkdir -p /tmp/genesis_v046b/blender
+          tar -xJf /tmp/genesis_v046b/blender.tar.xz \
+            -C /tmp/genesis_v046b/blender --strip-components=1
+          /tmp/genesis_v046b/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Apply original physically coherent face PBR and render actual three facial views
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v046b/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/apply_vitruvian_original_skin_PBR_v046b.py -- \
+            --source /tmp/genesis_v046b/original/vitruvian_head_CC0_original.glb \
+            --textures /tmp/genesis_v046b/textures \
+            --hdri /tmp/genesis_v046b/studio_small_09_4k.exr \
+            --out output/mercenary_face_skin_pbr_v046b
+      - name: Verify final GLB really embeds skin color, normal and eye/mouth PBR, not white defaults
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,struct,hashlib
+          from pathlib import Path
+          d=Path('output/mercenary_face_skin_pbr_v046b')
+          p=d/'GENESIS_VITRUVIAN_HUMAN_FACE_PBR_V046B.glb'
+          b=p.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<II',b,4)==(2,len(b))
+          n,k=struct.unpack_from('<I4s',b,12);assert k==b'JSON'
+          g=json.loads(b[20:20+n])
+          assert len(g['meshes'])==7
+          assert len(g.get('images',[]))>=5,('missing embedded original skin textures',len(g.get('images',[])))
+          mats={m['name']:m for m in g['materials']}
+          skin=next(m for name,m in mats.items() if 'HUMAN_SKIN_SOURCE_UV0' in name)
+          assert 'baseColorTexture' in skin.get('pbrMetallicRoughness',{}),skin
+          assert skin.get('normalTexture') is not None,skin
+          # Blender may bake a packed metallicRoughnessTexture from a single
+          # original roughness channel; require actual skin mapping.
+          assert 'metallicRoughnessTexture' in skin.get('pbrMetallicRoughness',{}),('roughness not exported to GLB',skin)
+          assert any('IRIS_TEXTURE' in n and 'baseColorTexture' in m.get('pbrMetallicRoughness',{}) for n,m in mats.items())
+          assert any('MOUTH_TEXTURE' in n and 'baseColorTexture' in m.get('pbrMetallicRoughness',{}) for n,m in mats.items())
+          qa=json.loads((d/'V046B_SOURCE_SKIN_QA.json').read_text())
+          assert len(qa['renders'])==3 and all((d/x['file']).stat().st_size>65000 for x in qa['renders'])
+          assert qa['original_glb_uv0_preserved'] and qa['unmodified_geometry']
+          assert qa['fitted_to_Ranger'] is False and qa['main_changed'] is False
+          assert hashlib.sha256(b).hexdigest()==qa['output_glb_sha256']
+          print('GENESIS_V046B_REAL_PBR_FACE_GLB_EXR32_CYCLES_VERIFIED',qa['output_glb_sha256'],'images',len(g['images']))
+          PY
+      - name: Keep only experimental face GLB, three real Cycles PNG and source QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v046b-vitruvian-real-male-skin-PBR-3-Cycles32-views-experimental
+          path: output/mercenary_face_skin_pbr_v046b/
+          retention-days: 10
+          if-no-files-found: warn
