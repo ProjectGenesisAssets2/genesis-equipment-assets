@@ -1,0 +1,93 @@
+name: Genesis | V046 actual adult Meshy face on 65-bone Ranger Cycles32
+on:
+  push:
+    branches: [experiment/mercenary-ranger-mature-meshy-head-v046-20261107]
+    paths:
+      - scripts/mercenary/transplant_meshy_real_face_to_ranger_v046.py
+      - .github/workflows/mercenary-ranger-mature-meshy-face-v046.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authentic-adult-face-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 47
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore originals and verify immutable CC0 source SHA256
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v046 output/mercenary_real_face_v046
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13599181223/zip' \
+            -o /tmp/genesis_v046/original_ranger_head.zip
+          unzip -oq /tmp/genesis_v046/original_ranger_head.zip -d /tmp/genesis_v046
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13594319410/zip' \
+            -o /tmp/genesis_v046/original_meshy.zip
+          unzip -oq /tmp/genesis_v046/original_meshy.zip -d /tmp/genesis_v046
+          echo 'fc1baff512c38a59660f7240b0da9e4a2bd19d038ccd055357b3635572fed7b4  /tmp/genesis_v046/GENESIS_QUATERNIUS_RANGER_MALE_FACE_PBR_V045B.glb' | sha256sum -c
+          echo '0452096d35bb41d992bc3508ee05f9cdc2a6ee34bb472a60c33eb9b22b66f005  /tmp/genesis_v046/MESHY_CANDIDATE1_ORIGINAL.glb' | sha256sum -c
+      - name: Real studio_small_09 4K EXR 32 bits per RGB channel
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v046/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v046/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v046/blender.tar.xz
+          mkdir -p /tmp/genesis_v046/blender
+          tar -xJf /tmp/genesis_v046/blender.tar.xz \
+            -C /tmp/genesis_v046/blender --strip-components=1
+          /tmp/genesis_v046/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Isolate actual Meshy mature face, skin to Quaternius 65-joint Head, render 4 genuine views
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v046/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/transplant_meshy_real_face_to_ranger_v046.py -- \
+            --ranger /tmp/genesis_v046/GENESIS_QUATERNIUS_RANGER_MALE_FACE_PBR_V045B.glb \
+            --meshy /tmp/genesis_v046/MESHY_CANDIDATE1_ORIGINAL.glb \
+            --hdri /tmp/genesis_v046/studio_small_09_4k.exr \
+            --out output/mercenary_real_face_v046
+      - name: Validate actual skinned glb and evidence, keep unapproved
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,struct,hashlib
+          d=Path('output/mercenary_real_face_v046')
+          p=d/'GENESIS_QUATERNIUS_RANGER_MESHY_MATURE_FACE_V046_EXPERIMENTAL.glb'
+          r=p.read_bytes()
+          assert r[:4]==b'glTF' and struct.unpack_from('<II',r,4)==(2,len(r))
+          n,t=struct.unpack_from('<I4s',r,12);assert t==b'JSON'
+          g=json.loads(r[20:20+n])
+          assert len(g.get('skins',[]))==1 and len(g['skins'][0]['joints'])==65
+          names=[g['nodes'][i].get('name','') for i in g['skins'][0]['joints']]
+          assert sum(n.endswith('_r') and 'thumb' in n for n in names)>=3
+          assert sum(n.endswith('_l') and 'thumb' in n for n in names)>=3
+          assert any('GENESIS_V046_AUTHENTIC_MESHY_MATURE_FACE' in n.get('name','') for n in g['nodes'])
+          qa=json.loads((d/'V046_ADULT_MESHY_FACE_QA.json').read_text())
+          assert qa['source_face_selected_triangles']>45
+          assert len(qa['renders'])==4 and len(list(d.glob('V046_*.png')))==4
+          assert hashlib.sha256(r).hexdigest()==qa['output_sha256']
+          assert qa['human_approved'] is False and qa['main_modified'] is False
+          print('V046_REAL_ASSET_TECHNICALLY_REVIEWABLE_NOT_VISUALLY_APPROVED',qa['source_face_selected_triangles'],p.stat().st_size)
+          PY
+      - name: Upload actual Blender previews and experimental GLB only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V046-Real-Meshy-Face-Quaternius-Ranger-Cycles32-UNAPPROVED
+          path: output/mercenary_real_face_v046/
+          if-no-files-found: warn
+          retention-days: 10
