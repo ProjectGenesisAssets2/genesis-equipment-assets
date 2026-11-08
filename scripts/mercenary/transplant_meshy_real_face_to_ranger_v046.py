@@ -20,6 +20,7 @@ assert sha(a.meshy)=='0452096d35bb41d992bc3508ee05f9cdc2a6ee34bb472a60c33eb9b22b
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=str(a.ranger.resolve()))
 ranger_meshes=[o for o in bpy.data.objects if o.type=='MESH']
+ranger_names=[o.name for o in ranger_meshes]
 arms=[o for o in bpy.data.objects if o.type=='ARMATURE']
 assert len(arms)==1 and len(arms[0].data.bones)==65
 arm=arms[0]
@@ -111,7 +112,7 @@ bpy.data.objects.remove(old_face,do_unlink=True)
 
 newpath=a.out/'GENESIS_QUATERNIUS_RANGER_MESHY_MATURE_FACE_V046_EXPERIMENTAL.glb'
 bpy.ops.object.select_all(action='DESELECT')
-for o in [arm,src]+[x for x in ranger_meshes if x.name in bpy.data.objects]:
+for o in [arm,src]+[bpy.data.objects.get(name) for name in ranger_names if bpy.data.objects.get(name) is not None]:
  o.select_set(True)
 bpy.context.view_layer.objects.active=arm
 bpy.ops.export_scene.gltf(filepath=str(newpath.resolve()),export_format='GLB',
