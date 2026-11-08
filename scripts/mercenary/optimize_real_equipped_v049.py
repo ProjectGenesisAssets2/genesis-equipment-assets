@@ -109,7 +109,7 @@ while len(newbin)%4:newbin.append(0)
 g['buffers'][0]['byteLength']=len(newbin)
 data_json=json.dumps(g,ensure_ascii=False,separators=(',',':')).encode('utf8')
 data_json+=b' '*(-len(data_json)%4)
-out=b'glTF'+struct.pack('<II',2,20+8+len(data_json)+8+len(newbin))+struct.pack('<I4s',len(data_json),b'JSON')+data_json+struct.pack('<I4s',len(newbin),b'BIN\0')+newbin
+out=b'glTF'+struct.pack('<II',2,12+8+len(data_json)+8+len(newbin))+struct.pack('<I4s',len(data_json),b'JSON')+data_json+struct.pack('<I4s',len(newbin),b'BIN\0')+newbin
 assert len(out)<len(data)*.8,('not a meaningful load-time reduction',len(out),len(data))
 dst=a.out/'GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb'
 dst.write_bytes(out)
