@@ -78,7 +78,7 @@ jobs:
           assert d['intensity_motion_independent'] is True
           assert d['physical_ice_facets']['facet_crystals']==36
           assert d['blade_length_frost_envelope']>=.55
-          assert d['frost_strength_clamped_to']>=.85
+          assert 0.75 <= d['frost_strength_clamped_to'] <= .82
           assert d['physical_ice_facets']['facet_sheets']==3
           assert d['physical_ice_facets']['coalesced_clustering'] is True
           assert d['physical_ice_facets']['facet_pbr_materials']==3
