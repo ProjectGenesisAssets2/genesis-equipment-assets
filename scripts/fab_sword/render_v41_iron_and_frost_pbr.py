@@ -391,7 +391,7 @@ def add_iron_lighting():
     global IRON_LIGHTS_ADDED
     if IRON_LIGHTS_ADDED:
         return
-    studio=ref.studio
+    studio=ref.v12.studio
     source=ref.swordref.collect_blade()
     origin,along,side,normal,samples,data=source
     center=origin+along*.48
