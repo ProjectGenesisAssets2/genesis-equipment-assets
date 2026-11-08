@@ -1,0 +1,3 @@
+# V42 CRYSTALLIZATION AND ANIMATION QA
+
+Goal: both visual and crystal aesthetic >=7/10, independent 50%-intensity animation >=7/10, with original V03 sword V175/V12B material. V41 physical crystals were static, shader emitted chalky white streaks. V42 applies phase-staggered crystal growth to FOUR small connected translucent PBR ice colonies (48 physical facets), restores ice-like IOR 1.31 and surface roughness, refractive highlights without neon emission. The original Hielo V175 graph is preserved, V12B iron geometry/material unchanged; HDRI studio EXR 32 bits per channel and Blender 4.5.13 LTS Cycles. Compare V41 full hero and close-up, 0/20/50/100% and moving 50%. User visual approval only, never auto-merge main.
