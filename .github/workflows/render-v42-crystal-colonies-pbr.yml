@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/v42-render
-          /tmp/v42-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v42_iron_and_frost_pbr.py -- --input /tmp/v42-original-v03.glb --hdri /tmp/v42-studio.exr --output-dir /tmp/v42-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 56 --channels Hielo --hielo-blend /tmp/v42-original-hielo-master.blend
+          /tmp/v42-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v42_moving_crystal_ice.py -- --input /tmp/v42-original-v03.glb --hdri /tmp/v42-studio.exr --output-dir /tmp/v42-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 56 --channels Hielo --hielo-blend /tmp/v42-original-hielo-master.blend
           for name in V42_Escarcha_V175_I000_T001_Hero.png V42_Escarcha_V175_I020_T001_Hero.png V42_Escarcha_V175_I050_T001_Hero.png V42_Escarcha_V175_I100_T001_Hero.png V42_Escarcha_V175_I050_T013_Hero.png V42_Escarcha_V175_I050_T025_Hero.png V42_Escarcha_V175_I050_T037_Hero.png V42_Escarcha_V175_I050_T049_Hero.png V42_Escarcha_V175_I050_T061_Hero.png V42_Escarcha_V175_I050_T073_Hero.png V42_Escarcha_V175_I050_T085_Hero.png V42_Escarcha_V175_I050_T097_Hero.png V42_Escarcha_V175_I100_T001_Detalle.png v42_escarcha_cristal_audit.json; do test -s "/tmp/v42-render/$name"; done
       - name: Verify original sword and shader plus faceted frost PBR details
         run: |
