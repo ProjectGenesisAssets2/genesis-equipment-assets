@@ -1,0 +1,186 @@
+name: Genesis V41 - V175/V12B Hierro reflejos reales + Escarcha animada EXR32
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [experiment/v41-hierro-v175-reflejos-escarcha-20261108]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: genesis-v41-crystal-front-test-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  render-v41:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source scripts and approved presets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/render_v41_iron_and_frost_pbr.py
+          python3 -m py_compile scripts/fab_sword/render_v25_hielo_cycles_hdri32.py
+          test -s presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json
+          test -s render-input/v03-blob-manifest.json
+          test -s render-input/v35-v175-hielo/Genesis_V175_MaterialMaster_4_Afinidades_EXPERIMENTAL.blend.xz.b64
+      - name: Recover original V03 sword from existing repository blob manifest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/v41-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/v41-original-v03.glb' | sha256sum -c
+      - name: Recover 32-bit/channel HDRI EXR (never JPG)
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/v41-studio.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/v41-studio.exr' | sha256sum -c
+      - name: Reconstitute exact ORIGINAL user V175 HIELO material Blender master and verify SHA256
+        run: |
+          set -euo pipefail
+          base64 -d < render-input/v35-v175-hielo/Genesis_V175_MaterialMaster_4_Afinidades_EXPERIMENTAL.blend.xz.b64 | xz -dc > /tmp/v41-original-hielo-master.blend
+          echo '9a24ffe1865ccf33c80b535ba27db0726fa1caca0f352425c82c8ae91e34ec89  /tmp/v41-original-hielo-master.blend' | sha256sum -c
+          test "$(stat -c %s /tmp/v41-original-hielo-master.blend)" -eq 2779174
+      - name: Install Blender Foundation 4.5.13 LTS
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/v41-blender.tar.xz
+          mkdir -p /tmp/v41-blender
+          tar -xJf /tmp/v41-blender.tar.xz -C /tmp/v41-blender --strip-components=1
+          /tmp/v41-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render V41 V175/V12B iron metallic reflection and independent moving frost
+        timeout-minutes: 66
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v41-render
+          /tmp/v41-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v41_iron_and_frost_pbr.py -- --input /tmp/v41-original-v03.glb --hdri /tmp/v41-studio.exr --output-dir /tmp/v41-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 56 --channels Hielo --hielo-blend /tmp/v41-original-hielo-master.blend
+          for name in V41_Escarcha_V175_I000_T001_Hero.png V41_Escarcha_V175_I020_T001_Hero.png V41_Escarcha_V175_I050_T001_Hero.png V41_Escarcha_V175_I100_T001_Hero.png V41_Escarcha_V175_I050_T013_Hero.png V41_Escarcha_V175_I050_T025_Hero.png V41_Escarcha_V175_I050_T037_Hero.png V41_Escarcha_V175_I050_T049_Hero.png V41_Escarcha_V175_I050_T061_Hero.png V41_Escarcha_V175_I050_T073_Hero.png V41_Escarcha_V175_I050_T085_Hero.png V41_Escarcha_V175_I050_T097_Hero.png V41_Escarcha_V175_I100_T001_Detalle.png v41_hierro_escarcha_audit.json; do test -s "/tmp/v41-render/$name"; done
+      - name: Verify original sword and shader plus faceted frost PBR details
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct,json
+          root=Path('/tmp/v41-render')
+          a=json.loads((root/'v41_hierro_escarcha_audit.json').read_text())
+          assert a['renderer']=='Cycles' and a['blender'].startswith('4.5.13')
+          assert a['hdri_RGB_bits_per_channel']==32 and a['hdri_bits_per_pixel']==96
+          assert a['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert a['geometry_modified'] is False and a['base_material_modified'] is False
+          assert a['material_source_exact_original_blend'] is True
+          d=a['results'][0]['details']
+          assert d['source_blend_sha256']=='9a24ffe1865ccf33c80b535ba27db0726fa1caca0f352425c82c8ae91e34ec89'
+          assert d['source_hielo_material']=='M_Ingot_Universal_Affinity_HIELO'
+          assert d['source_original_node_count']>=8
+          assert d['source_graph_preserved_and_only_wrapped'] is True
+          assert d['original_hielo_blend_applied'] is True
+          assert d['intensity_motion_independent'] is True
+          assert d['physical_ice_facets']['facet_crystals']==36
+          assert d['blade_length_frost_envelope']>=.55
+          assert d['frost_strength_clamped_to']>=.85
+          assert d['physical_ice_facets']['facet_sheets']==3
+          assert d['physical_ice_facets']['coalesced_clustering'] is True
+          assert d['physical_ice_facets']['facet_pbr_materials']==3
+          assert d['physical_ice_facets']['facet_transmission'] is True
+          assert d['physical_ice_facets']['no_opaque_white_shards'] is True
+          assert d['physical_ice_facets']['intensity_controls_facets'] is True
+          assert d['frost_bump_microfacets'] is True
+          assert d['original_iron_shader_modified'] is False
+          assert a['experimental_studio_light_added'] is True
+          assert a['iron_base_material_preserved'] is True
+          assert len(a['studio_lights'])==2
+          assert a['intensity_has_animation'] is False
+          assert a['continuous_ice_motion_animated_in_blender'] is True
+          assert a['intensity_and_motion_independent'] is True
+          assert a['results'][0]['details']['intensity_has_animation_keyframes'] is False
+          assert a['results'][0]['details']['intensity_motion_independent'] is True
+          for intensity,frame,view in [(0,1,'Hero'),(20,1,'Hero'),(50,1,'Hero'),(100,1,'Hero'),(50,13,'Hero'),(50,25,'Hero'),(50,37,'Hero'),(50,49,'Hero'),(50,61,'Hero'),(50,73,'Hero'),(50,85,'Hero'),(50,97,'Hero'),(100,1,'Detalle')]:
+            p=root/f'V41_Escarcha_V175_I{intensity:03d}_T{frame:03d}_{view}.png'
+            raw=p.read_bytes()
+            assert raw[:8]==b'\x89PNG\r\n\x1a\n' and struct.unpack_from('>II',raw,16)==(1200,1500)
+            assert len(raw)>90000
+          print('V41_REAL_CYCLES_PRELIMINARY_PASS')
+          PY
+      - name: Assemble actual rendered frames into animated GIF (no synthetic frames)
+        run: |
+          python3 -m venv /tmp/v41-gif-env
+          /tmp/v41-gif-env/bin/pip install --quiet pillow
+          /tmp/v41-gif-env/bin/python - <<'PY'
+          from PIL import Image,ImageOps
+          from pathlib import Path
+          root=Path('/tmp/v41-render')
+          values=(1,13,25,37,49,61,73,85)
+          frames=[]
+          for v in values:
+              with Image.open(root/f'V41_Escarcha_V175_I050_T{v:03d}_Hero.png') as im:
+                  frames.append(im.convert('RGB').resize((600,750),Image.Resampling.LANCZOS))
+          pingpong=frames
+          pingpong[0].save(root/'V41_HieloV175_HierroEspejoEscarcha_50pct.gif',save_all=True,
+                           append_images=pingpong[1:],duration=190,loop=0,optimize=True)
+          assert (root/'V41_HieloV175_HierroEspejoEscarcha_50pct.gif').stat().st_size>30000
+          # Quantify displacement on frosted pixels, not entire dark background.
+          from PIL import ImageChops,ImageStat
+          import json
+          base=Image.open(root/'V41_Escarcha_V175_I000_T001_Hero.png').convert('RGB')
+          p1=Image.open(root/'V41_Escarcha_V175_I050_T001_Hero.png').convert('RGB')
+          p2=Image.open(root/'V41_Escarcha_V175_I050_T049_Hero.png').convert('RGB')
+          blade=(400,180,810,970)
+          m=ImageChops.difference(p1.crop(blade),base.crop(blade)).convert('L')
+          m=m.point(lambda c: 255 if c>=4 else 0)
+          delta=ImageChops.difference(p1.crop(blade),p2.crop(blade))
+          m_sum=sum(ImageStat.Stat(m).sum)
+          if m_sum<=0:raise RuntimeError('V41_HIELO_LAYER_NOT_VISIBLE')
+          sample=ImageStat.Stat(delta,mask=m).mean
+          active_delta=float(sum(sample)/3)
+          coverage=float(m_sum/(255*m.width*m.height))
+          print('V41_ACTIVE_FROST_RGB_DELTA_0_255',round(active_delta,4),'coverage',round(coverage,4))
+          audit_path=root/'v41_hierro_escarcha_audit.json'
+          data=json.loads(audit_path.read_text())
+          data['motion_mean_delta_active_frost_pixels']=active_delta
+          data['active_frost_blade_rect_fraction']=coverage
+          data['motion_visibility_threshold_passed']=active_delta>15.0 and coverage>.029
+          audit_path.write_text(json.dumps(data,indent=2,ensure_ascii=False))
+          assert active_delta>15.0 and coverage>.029, 'V41_HERO_FROST_MOTION_BELOW_TARGET'
+          # A real-image zoom crop helps verify subtle surface motion.
+          # It does not synthesize or change any frame.
+          zoom_frames=[]
+          for v in values:
+              with Image.open(root/f'V41_Escarcha_V175_I050_T{v:03d}_Hero.png') as im:
+                  zoom_frames.append(im.convert('RGB').crop((380,220,815,1010))
+                                     .resize((552,1000),Image.Resampling.LANCZOS))
+          zoom_frames[0].save(root/'V41_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif',
+                              save_all=True,append_images=zoom_frames[1:],
+                              duration=190,loop=0,optimize=True)
+          assert (root/'V41_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif').stat().st_size>30000
+
+          PY
+      - name: Archive render previews
+        run: |
+          mkdir -p public-previews/v41-hierro-espejo-frost-32bpc
+          cp /tmp/v41-render/V41_Escarcha_*.png public-previews/v41-hierro-espejo-frost-32bpc/
+          cp /tmp/v41-render/V41_HieloV175_HierroEspejoEscarcha_50pct.gif public-previews/v41-hierro-espejo-frost-32bpc/
+          cp /tmp/v41-render/V41_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif public-previews/v41-hierro-espejo-frost-32bpc/
+          cp /tmp/v41-render/v41_hierro_escarcha_audit.json public-previews/v41-hierro-espejo-frost-32bpc/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Genesis-V41-ORIGINAL-HIELO-V175-Cycles32-ReviewOnly
+          path: public-previews/v41-hierro-espejo-frost-32bpc/
+          retention-days: 14
+      - name: Publish visual review images ONLY to V41 experimental branch
+        run: |
+          set -euo pipefail
+          git config user.name 'Genesis Studio Preview CI'
+          git config user.email '41898282+genesis-preview[bot]@users.noreply.github.com'
+          git fetch origin experiment/v41-hierro-v175-reflejos-escarcha-20261108
+          git checkout -B experiment/v41-hierro-v175-reflejos-escarcha-20261108 FETCH_HEAD
+          mkdir -p public-previews/v41-hierro-espejo-frost-32bpc
+          cp /tmp/v41-render/V41_Escarcha_*.png public-previews/v41-hierro-espejo-frost-32bpc/
+          cp /tmp/v41-render/v41_hierro_escarcha_audit.json public-previews/v41-hierro-espejo-frost-32bpc/
+          cp /tmp/v41-render/V41_HieloV175_HierroEspejoEscarcha_50pct.gif public-previews/v41-hierro-espejo-frost-32bpc/
+          cp /tmp/v41-render/V41_HieloV175_HierroEspejoEscarcha_Zoom_50pct.gif public-previews/v41-hierro-espejo-frost-32bpc/
+          git add public-previews/v41-hierro-espejo-frost-32bpc/
+          if ! git diff --cached --quiet; then
+            git commit -m 'review(v41): source V03 and V175 shader plus PBR ice facets and specular reflections'
+            git push origin HEAD:experiment/v41-hierro-v175-reflejos-escarcha-20261108
+          fi
