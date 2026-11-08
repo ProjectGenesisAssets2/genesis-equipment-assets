@@ -104,11 +104,7 @@ def add_ice_layer(coord,along,side,normal,intensity):
         MOTION.outputs[0].default_value=value
         MOTION.outputs[0].keyframe_insert('default_value',frame=frame)
     MOTION.outputs[0].default_value=0.
-    # Explicit linear time: no ease-in/ease-out stall at start/end.
-    for fc in material.node_tree.animation_data.action.fcurves:
-        if fc.data_path.endswith('default_value'):
-            for kp in fc.keyframe_points:
-                kp.interpolation='LINEAR'
+    # Timeline drives only the moving frost field, never the intensity.
     phase=mathn(nodes,links,'MULTIPLY',MOTION.outputs[0],math.tau)
     sine=mathn(nodes,links,'SINE',phase)
     cosine=mathn(nodes,links,'COSINE',phase)
