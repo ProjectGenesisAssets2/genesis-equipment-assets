@@ -87,11 +87,16 @@ for side in ('l','r'):
     pose_info[side]={'selected_sign':best[1],'wrist_drop_m':round(drop,3)}
 print('V048_EXHIBITION_STANCE_HAND_DROPS',pose_info,flush=True)
 bpy.ops.object.select_all(action='DESELECT')
+baked_objects=[]
 for ob in body:
     bpy.context.view_layer.objects.active=ob
     ob.select_set(True)
     source_modifiers=[m for m in ob.modifiers if m.type=='ARMATURE' and m.object==rig]
-    assert source_modifiers,('No existing original Ranger skin mod',ob.name)
+    if not source_modifiers:
+        print('V048_SOURCE_UNSKINNED_ACCESSORY_PRESERVED',ob.name,flush=True)
+        ob.select_set(False)
+        continue
+    baked_objects.append(ob)
     for mod in source_modifiers:
         bpy.ops.object.modifier_apply(modifier=mod.name)
     ob.select_set(False)
@@ -102,7 +107,7 @@ rig.select_set(True)
 bpy.ops.object.mode_set(mode='POSE')
 bpy.ops.pose.armature_apply(selected=False)
 bpy.ops.object.mode_set(mode='OBJECT')
-for ob in body:
+for ob in baked_objects:
     modifier=ob.modifiers.new('GENESIS_V048_GUARD_STANCE_SKIN','ARMATURE')
     modifier.object=rig
 bpy.context.view_layer.update()
