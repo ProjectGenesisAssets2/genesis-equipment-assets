@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           cp candidates/shield/iron_v015_pbr2k_v022/blender_compatible/escudo_v015_PBR2K_NO_MESHOPT.glb \
             /tmp/genesis_v047/src/escudo_v015_PBR2K_NO_MESHOPT.glb
-          echo 'a169a827b70621ec21eeaa894b3cf10eeb1ed5bb575d9ff8f275a6ec2  /tmp/genesis_v047/src/escudo_v015_PBR2K_NO_MESHOPT.glb' | sha256sum -c
+          echo 'a169a827b70621ec21eeaa894b3cf10eebfacc0eb1ed5bb575d9ff8f275a6ec2  /tmp/genesis_v047/src/escudo_v015_PBR2K_NO_MESHOPT.glb' | sha256sum -c
       - name: Fetch actual verified 32-bit EXR PolyHaven studio environment
         run: |
           set -euo pipefail
