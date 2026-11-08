@@ -1,0 +1,3 @@
+# V40 — moving physically reflective crystalline frost film
+
+V39 obtained source-verified Blender Cycles delta 16.43 RGB/255 active frost vs V38 5.69 but visual still resembled thin white streaks, not a real growing icy front. V40 changes the actual PBR BSDF of advancing frost into reflective/refraction ice on its footprint, while preserving approved sword V03, V175 base metal, original V175 Hielo shader, 32-bit EXR HDRI, independent intensity 0..100, and V38 small translucent crystals. Require mean delta >18 and active coverage >3.2%, inspect full hero at fixed intensity 50%. Do not claim 7/10 merely from numerical threshold. No main modifications. Owner approves >=8/10 overall.
