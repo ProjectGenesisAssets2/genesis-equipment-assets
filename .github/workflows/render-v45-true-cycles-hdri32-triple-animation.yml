@@ -54,7 +54,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/v45-render
-          /tmp/v45-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v45_triple_elemental_cycles.py -- --input /tmp/v45-original-v03.glb --hdri /tmp/v45-studio.exr --hielo-blend /tmp/v45-hielo-original.blend --flame-exr /tmp/v45-flame/SmallFlame01-mini_16x4.exr --flame-tga /tmp/v45-flame/SmallFlame01-mini_16x4.tga --output-dir /tmp/v45-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 40
+          /tmp/v45-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v45_hdri32_triple_animated.py -- --input /tmp/v45-original-v03.glb --hdri /tmp/v45-studio.exr --hielo-blend /tmp/v45-hielo-original.blend --flame-exr /tmp/v45-flame/SmallFlame01-mini_16x4.exr --flame-tga /tmp/v45-flame/SmallFlame01-mini_16x4.tga --output-dir /tmp/v45-render --preset presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json --samples 40
       - name: Verify real Cycles output and effect provenance
         run: |
           python3 - <<'PY'
