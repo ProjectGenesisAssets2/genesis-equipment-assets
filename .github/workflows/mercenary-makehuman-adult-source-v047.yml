@@ -1,0 +1,71 @@
+name: Genesis | V047 inspect real CC0 MakeHuman adult face before modifying Ranger
+on:
+  push:
+    branches: [experiment/mercenary-ranger-makehuman-adult-head-v047-20261107]
+    paths:
+      - scripts/mercenary/audit_makehuman_real_male_head_v047.py
+      - .github/workflows/mercenary-makehuman-adult-source-v047.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-MakeHuman-CC0-face:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download original third-party CC0 generated MakeHuman base body, no GPL code copied into game
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v047 output/mercenary_MakeHuman_source_v047
+          curl -fSL --retry 3 --max-time 170 \
+            'https://raw.githubusercontent.com/kblood/CharacterCreator/master/output/base_body.glb' \
+            -o /tmp/genesis_v047/MakeHuman_CC0_BaseBody.glb
+          test "$(stat -c%s /tmp/genesis_v047/MakeHuman_CC0_BaseBody.glb)" -gt 6000000
+          sha256sum /tmp/genesis_v047/MakeHuman_CC0_BaseBody.glb
+      - name: Fetch original real EXR HDRI32 lighting
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v047/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v047/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v047/blender.tar.xz
+          mkdir -p /tmp/genesis_v047/blender
+          tar -xJf /tmp/genesis_v047/blender.tar.xz -C /tmp/genesis_v047/blender --strip-components=1
+          /tmp/genesis_v047/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render real mature source human head closeups in Cycles PBR with 32bit EXR
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v047/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/audit_makehuman_real_male_head_v047.py -- \
+            --source /tmp/genesis_v047/MakeHuman_CC0_BaseBody.glb \
+            --hdri /tmp/genesis_v047/studio_small_09_4k.exr \
+            --out output/mercenary_MakeHuman_source_v047
+      - name: Validate original real-source face preview QA
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          o=Path('output/mercenary_MakeHuman_source_v047')
+          q=json.loads((o/'V047_MAKEHUMAN_SOURCE_REAL_PREVIEW_QA.json').read_text())
+          assert q['actual_mesh_count']>=2 and q['bone_count']>=40
+          assert q['body_verts']>=8000 and len(q['real_Cycles_32bit_hdr_renders'])>=2
+          for f in q['real_Cycles_32bit_hdr_renders']:assert (o/f).stat().st_size>40000
+          print('MAKEHUMAN_SOURCE_GENUINE_CC0_FACIAL_PREVIEW_PASSED',q['source_sha256'],q['bone_count'])
+          PY
+      - name: Preserve only diagnostic renders and provenance, not integrate Ranger automatically
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v047-genuine-MakeHuman-CC0-mature-face-Cycles32-source-review
+          path: output/mercenary_MakeHuman_source_v047/
+          retention-days: 8
+          if-no-files-found: warn
