@@ -51,7 +51,7 @@ bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
 verts=len(mesh.data.vertices)
 assert verts==9277,verts
 vcoords=[v.co.copy() for v in mesh.data.vertices]
-bounds=[tuple(round(x,4) for x in fn(v[k] for v in vcoords)) for k in range(3) for fn in (min,max)]
+bounds=[[round(fn(v[k] for v in vcoords),4) for fn in (min,max)] for k in range(3)]
 assert 1.95<max(v.z for v in vcoords)<2.06
 print('V044_ACTUAL_MESHY_ORIGINAL_BOUNDS',bounds,flush=True)
 
