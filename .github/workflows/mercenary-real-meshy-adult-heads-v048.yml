@@ -1,0 +1,84 @@
+name: Genesis | V048 download public CC0 rugged and older male real Meshy heads
+on:
+  push:
+    branches: [experiment/mercenary-realistic-adult-head-source-v048-20261107]
+    paths:
+      - scripts/mercenary/render_real_meshy_adult_heads_v048.py
+      - .github/workflows/mercenary-real-meshy-adult-heads-v048.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  source-selection-real-GLB:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download public CC0 adult faces with user's open-source GitHub downloader, pinned upstream
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v048 output/mercenary_adult_face_v048
+          set +e
+          uvx --from 'git+https://github.com/Shuvam-Banerji-Seal/meshy-glb-downloader@c30d6a23768f2cd90a2cf5134e21a6620d7854e8' \
+            meshy-glb \
+            'https://www.meshy.ai/es/posts/019f64b7-5462-717c-962a-39808b8f5dba' \
+            -o /tmp/genesis_v048/rugged_bearded_original.glb -v
+          x=$?
+          uvx --from 'git+https://github.com/Shuvam-Banerji-Seal/meshy-glb-downloader@c30d6a23768f2cd90a2cf5134e21a6620d7854e8' \
+            meshy-glb \
+            'https://www.meshy.ai/es/posts/019f9d4e-e06a-7b9b-b5dc-61aa095ea621' \
+            -o /tmp/genesis_v048/realistic_old_man_original.glb -v
+          y=$?
+          set -e
+          echo "RUGGED_STATUS=$x OLD_MAN_STATUS=$y"
+          if [ "$x" -ne 0 ] && [ "$y" -ne 0 ]; then exit 1; fi
+          for p in /tmp/genesis_v048/*original.glb; do
+            test -s "$p" || continue
+            sha256sum "$p"
+          done
+      - name: Use fixed exact real HDRI EXR 32-bit
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v048/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v048/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v048/blender.tar.xz
+          mkdir -p /tmp/genesis_v048/blender
+          tar -xJf /tmp/genesis_v048/blender.tar.xz \
+            -C /tmp/genesis_v048/blender --strip-components=1
+          /tmp/genesis_v048/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Real Cycles 32bit HDRI multi-angle face QA on each available Meshy source
+        run: |
+          set -euo pipefail
+          tested=0
+          for name in rugged_bearded realistic_old_man; do
+            f="/tmp/genesis_v048/${name}_original.glb"
+            if [ ! -s "$f" ]; then continue; fi
+            /tmp/genesis_v048/blender/blender -b -t 4 --python-exit-code 1 \
+              --python scripts/mercenary/render_real_meshy_adult_heads_v048.py -- \
+              --source "$f" \
+              --hdri /tmp/genesis_v048/studio_small_09_4k.exr \
+              --name "$name" --out output/mercenary_adult_face_v048
+            cp "$f" "output/mercenary_adult_face_v048/${name}_original.glb"
+            tested=$((tested+1))
+          done
+          [ "$tested" -gt 0 ]
+      - name: Preserve genuine original files and multiview inspection only, no Ranger modifications
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v048-two-authentic-Meshy-CC0-mature-male-head-candidate-renders
+          path: output/mercenary_adult_face_v048/
+          retention-days: 8
+          if-no-files-found: warn
