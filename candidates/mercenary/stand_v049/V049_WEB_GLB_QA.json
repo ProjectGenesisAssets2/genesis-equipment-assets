@@ -1,0 +1,211 @@
+{
+  "status": "V049_SINGLE_GLB_ORIGINAL_REAL_GENESIS_EQUIPMENT_WEB_3D_CANDIDATE",
+  "input_sha256": "ac04fa2eaa59b2c6814682c09b43f4ca324a0aac46b2ea64383343b51574f569",
+  "output_sha256": "e2466851abcdb0c925dcc17296c05d2aa9ea555500e21cc8d54c3a09e6199dd0",
+  "input_bytes": 65937964,
+  "output_bytes": 27133964,
+  "size_reduction_percent": 58.85,
+  "original_mesh_count": 16,
+  "original_joint_count": 65,
+  "original_gear_nodes_preserved": [
+    "GENESIS_V048_APPROVED_SWORD_V12B_IN_RIGHT_HAND_STATIC",
+    "GENESIS_V048_APPROVED_SHIELD_V015_IN_LEFT_HAND_STATIC"
+  ],
+  "v015_forced_glTF_pbr_repair": {
+    "doubleSided": true,
+    "name": "V015_IronV175_Hammered_Only_Front_DERIVED",
+    "pbrMetallicRoughness": {
+      "metallicFactor": 0.8,
+      "baseColorFactor": [
+        0.15,
+        0.165,
+        0.185,
+        1
+      ],
+      "roughnessFactor": 0.38
+    },
+    "normalTexture": {
+      "index": 12,
+      "scale": 0.18
+    }
+  },
+  "approved_original_sword_geometry_unchanged": true,
+  "approved_original_shield_geometry_unchanged": true,
+  "lossless_roughness_and_normal": true,
+  "all_image_textures_webp_embedded": 21,
+  "source_images_converted": [
+    {
+      "name": "T_Regular_Male_Normal",
+      "old_bytes": 4064184,
+      "new_bytes": 2669952,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": true
+    },
+    {
+      "name": "T_Regular_Male_Dark_BaseColor",
+      "old_bytes": 1316151,
+      "new_bytes": 135694,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": false
+    },
+    {
+      "name": "T_Regular_Male_Roughness",
+      "old_bytes": 3160102,
+      "new_bytes": 1637832,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": true
+    },
+    {
+      "name": "T_Ranger_Normal",
+      "old_bytes": 12713653,
+      "new_bytes": 1511330,
+      "old_dimensions": [
+        4096,
+        4096
+      ],
+      "new_dimensions": [
+        1536,
+        1536
+      ],
+      "lossless": true
+    },
+    {
+      "name": "T_Ranger_BaseColor",
+      "old_bytes": 6630927,
+      "new_bytes": 266932,
+      "old_dimensions": [
+        4096,
+        4096
+      ],
+      "new_dimensions": [
+        1536,
+        1536
+      ],
+      "lossless": false
+    },
+    {
+      "name": "T_Ranger_ORM",
+      "old_bytes": 10792085,
+      "new_bytes": 1289772,
+      "old_dimensions": [
+        4096,
+        4096
+      ],
+      "new_dimensions": [
+        1536,
+        1536
+      ],
+      "lossless": true
+    },
+    {
+      "name": "Image_2",
+      "old_bytes": 4019854,
+      "new_bytes": 2805728,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": true
+    },
+    {
+      "name": "Image_0",
+      "old_bytes": 1452531,
+      "new_bytes": 760240,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": false
+    },
+    {
+      "name": "Image_1",
+      "old_bytes": 1111225,
+      "new_bytes": 695386,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": true
+    },
+    {
+      "name": "Genesis_V175_Hierro_Normal_2K",
+      "old_bytes": 4292869,
+      "new_bytes": 2638660,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": true
+    },
+    {
+      "name": "Genesis_V175_Hierro_ORM_2K",
+      "old_bytes": 4204746,
+      "new_bytes": 2623664,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": true
+    },
+    {
+      "name": "Genesis_V175_APPROVED_PALETTE_BAKED_V03",
+      "old_bytes": 2456032,
+      "new_bytes": 374628,
+      "old_dimensions": [
+        2048,
+        2048
+      ],
+      "new_dimensions": [
+        2048,
+        2048
+      ],
+      "lossless": false
+    }
+  ],
+  "ready_for_publisher_visual_integration_test": true,
+  "game_scene_tested": false,
+  "animation_clips": 0,
+  "main_changed": false,
+  "human_approved": false
+}

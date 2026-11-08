@@ -1,0 +1,34 @@
+{
+  "status": "V049_REAL_STANDALONE_GLB_REIMPORT_AND_CYCLES32_RENDERED_UNAPPROVED",
+  "glb_sha256": "e2466851abcdb0c925dcc17296c05d2aa9ea555500e21cc8d54c3a09e6199dd0",
+  "imported_mesh_count": 17,
+  "original_bones": 65,
+  "V015_forged_iron_material_PBR_base_color": [
+    0.15,
+    0.165,
+    0.185,
+    1.0
+  ],
+  "V015_forged_metallic_factor": 0.800000011920929,
+  "V015_forged_roughness_factor": 0.3799999952316284,
+  "hdri": "studio_small_09_4k.exr",
+  "hdri_depth": 96,
+  "render_engine": "CYCLES",
+  "renders": [
+    {
+      "file": "V049_01_REAL_GENESIS_MERCENARY_SWORD_SHIELD_FRONT.png",
+      "bytes": 859961
+    },
+    {
+      "file": "V049_02_REAL_GENESIS_MERCENARY_SWORD_SHIELD_THREE_QUARTER.png",
+      "bytes": 826572
+    },
+    {
+      "file": "V049_03_REAL_V015_FORGED_IRON_SHIELD_DETAIL.png",
+      "bytes": 970491
+    }
+  ],
+  "in_game_scene_playwright_tested": false,
+  "human_approved": false,
+  "main_changed": false
+}
