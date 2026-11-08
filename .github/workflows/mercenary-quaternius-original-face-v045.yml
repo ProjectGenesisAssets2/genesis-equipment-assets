@@ -1,0 +1,96 @@
+name: Genesis | V045 genuine Quaternius Male Ranger plus same-rig original male face
+on:
+  push:
+    branches: [experiment/mercenary-quaternius-original-head-v045-20261107]
+    paths:
+      - scripts/mercenary/attach_original_quaternius_head_v045.py
+      - .github/workflows/mercenary-quaternius-original-face-v045.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-face-in-hood:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Load verified CC0 original ranger and exact 65-bone Quaternius male base
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis_v045 output/mercenary_quaternius_head_v045
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13595866940/zip' \
+            -o /tmp/genesis_v045/original_ranger.zip
+          unzip -oq /tmp/genesis_v045/original_ranger.zip -d /tmp/genesis_v045
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13595242163/zip' \
+            -o /tmp/genesis_v045/original_base.zip
+          unzip -oq /tmp/genesis_v045/original_base.zip -d /tmp/genesis_v045
+          echo '2b8a1358f165fb7a1afa5930c4a3d92a9fff11ea01c63df18d368735fdbb29af  /tmp/genesis_v045/GENESIS_QUATERNIUS_MALE_RANGER_ORIGINAL_RIGGED_V043.glb' | sha256sum -c
+          echo 'd6f3b64cab629f6ddca9ba063811aeffd3663a8a4e49ade47cd9505dc2bbd70f  /tmp/genesis_v045/QUATERNIUS_FINGER_RIG_BASE_SOURCE.glb' | sha256sum -c
+      - name: Fetch actual reference EXR studio_small_09 at 32 bits/channel
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 \
+            'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' \
+            -o /tmp/genesis_v045/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/genesis_v045/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install exact Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 360 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' \
+            -o /tmp/genesis_v045/blender.tar.xz
+          mkdir -p /tmp/genesis_v045/blender
+          tar -xJf /tmp/genesis_v045/blender.tar.xz \
+            -C /tmp/genesis_v045/blender --strip-components=1
+          /tmp/genesis_v045/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Attach authentic head face eyes brows from base, render 5 real Cycles EXR32 previews
+        run: |
+          set -euo pipefail
+          /tmp/genesis_v045/blender/blender -b -t 4 --python-exit-code 1 \
+            --python scripts/mercenary/attach_original_quaternius_head_v045.py -- \
+            --ranger /tmp/genesis_v045/GENESIS_QUATERNIUS_MALE_RANGER_ORIGINAL_RIGGED_V043.glb \
+            --base /tmp/genesis_v045/QUATERNIUS_FINGER_RIG_BASE_SOURCE.glb \
+            --hdri /tmp/genesis_v045/studio_small_09_4k.exr \
+            --out output/mercenary_quaternius_head_v045
+      - name: Validate actual combined GLB preserves existing 65-bone finger rig and real head mesh nodes
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,struct,json
+          o=Path('output/mercenary_quaternius_head_v045')
+          p=o/'GENESIS_QUATERNIUS_RANGER_WITH_ORIGINAL_MALE_HEAD_V045.glb'
+          raw=p.read_bytes();assert raw[:4]==b'glTF'
+          assert struct.unpack_from('<II',raw,4)==(2,len(raw))
+          n,t=struct.unpack_from('<I4s',raw,12);assert t==b'JSON'
+          g=json.loads(raw[20:20+n]);assert len(g['skins'])==1
+          skin=g['skins'][0];assert len(skin['joints'])==65
+          names=[g['nodes'][i].get('name','') for i in skin['joints']]
+          assert sum('thumb' in n and n.endswith('_r') for n in names)>=3
+          assert sum('thumb' in n and n.endswith('_l') for n in names)>=3
+          meshes=[x.get('name','') for x in g['meshes']]
+          assert any('GENESIS_V045_BASE_MALE_REAL_FACE_AND_NECK' in n for n in meshes),meshes
+          assert any('GENESIS_V045_BASE_MALE_EYES' in n for n in meshes),meshes
+          qa=json.loads((o/'V045_QUATERNIUS_RANGER_ORIGINAL_FACE_QA.json').read_text())
+          assert qa['ranger_bones']==65 and qa['ranger_skeleton_unchanged']
+          assert qa['male_source_selected_head_verts']>100
+          assert len(qa['renders'])==5 and len(list(o.glob('V045_*.png')))==5
+          assert hashlib.sha256(raw).hexdigest()==qa['combined_glb_sha256']
+          assert qa['human_approved'] is False and qa['main_modified'] is False
+          print('V045_ACTUAL_QUATERNIUS_RANGER_FACE_GLB_AND_CYCLES_PREVIEW_VERIFIED',qa['combined_glb_sha256'])
+          PY
+      - name: Save experimental GLB and 5 real face render previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-v045-original-quaternius-ranger-authentic-male-face-Cycles32-experimental
+          path: output/mercenary_quaternius_head_v045/
+          retention-days: 10
+          if-no-files-found: warn
