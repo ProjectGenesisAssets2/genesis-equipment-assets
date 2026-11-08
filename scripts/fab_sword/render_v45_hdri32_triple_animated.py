@@ -157,6 +157,9 @@ def replace_flame_geometry(time):
     Rebuild only VFX meshes. Do not alter V03 original blade or V175/V12B iron.
     """
     global FIRE_LIVE_OBJS
+    if not FIRE_LIVE_OBJS:
+        # Remove first static source preview from V43 (avoids double fire).
+        FIRE_LIVE_OBJS=[o for o in bpy.data.objects if 'V45_FUEGO_V18_' in o.name]
     for ob in FIRE_LIVE_OBJS:
         if ob.name not in bpy.data.objects:continue
         mesh=ob.data
@@ -176,6 +179,9 @@ def replace_helix_geometry(time):
     This is a Cycles adaptation, NOT a substitution for the approved WebGL GLSL.
     """
     global RAY_LIVE_OBJS
+    if not RAY_LIVE_OBJS:
+        # Remove static V43 source helix on first frame; keep ONE moving helix.
+        RAY_LIVE_OBJS=[o for o in bpy.data.objects if 'V45_RayoV07_' in o.name]
     for ob in RAY_LIVE_OBJS:
         if ob.name not in bpy.data.objects:continue
         curve=ob.data
