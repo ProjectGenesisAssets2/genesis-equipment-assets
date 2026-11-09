@@ -1,0 +1,49 @@
+name: V050 experimental in-game shield fit (unchanged source GLB)
+on:
+  push:
+    branches: [experiment/mercenary-v050-ui-4t-shield-fit-20261109]
+    paths:
+      - 'scripts/mercenary/fit_v050_shield_glb_json.py'
+      - '.github/workflows/mercenary-v050-shield-fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fit-shield-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/mercenary-v050-ui-4t-shield-fit-20261109
+      - name: Preserve GLB binary and PBR, change shield node scale only
+        run: python3 scripts/mercenary/fit_v050_shield_glb_json.py
+      - name: Verify only shield scale changed, other glTF content and bytes identical
+        run: |
+          python3 - <<'PY'
+          import json,struct,pathlib,copy
+          a=pathlib.Path('candidates/mercenary/stand_v049/GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb').read_bytes()
+          b=pathlib.Path('candidates/mercenary/stand_v050/GENESIS_MERCENARY_V050_4T_SHIELD_FIT_V12B_V015.glb').read_bytes()
+          def unpack(raw):
+            cur=12;items=[]
+            while cur<len(raw):
+              n,k=struct.unpack_from('<I4s',raw,cur);items.append((k,raw[cur+8:cur+8+n]));cur+=8+n
+            return items
+          aa=unpack(a);bb=unpack(b);assert len(aa)==len(bb)
+          assert aa[1:]==bb[1:],'Binary and non-JSON chunks must be identical'
+          x=json.loads(aa[0][1]);y=json.loads(bb[0][1])
+          ids=[i for i,n in enumerate(x['nodes']) if 'SHIELD_V015' in n.get('name','').upper()]
+          assert len(ids)==1
+          i=ids[0];x['nodes'][i]['scale']=y['nodes'][i]['scale']
+          assert x==y,'Only the V015 shield node scale is allowed to change'
+          assert abs(y['nodes'][i]['scale'][0]/(json.loads(aa[0][1])['nodes'][i].get('scale',[1,1,1])[0])-.76)<.0001
+          print('PASS: GLB V050 authentic geometry, rig, sword V12B, shield V015 and textures unchanged')
+          PY
+      - name: Commit separate experimental V050 candidate
+        run: |
+          git config user.name 'genesis-asset-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/stand_v050/
+          if git diff --staged --quiet; then exit 0; fi
+          git commit -m 'assets(v050): true V12B sword and proportionally fitted V015 shield [skip ci]'
+          git push origin HEAD:experiment/mercenary-v050-ui-4t-shield-fit-20261109
