@@ -1,0 +1,50 @@
+name: Render exact V050 4T Cycles HDRI32 alpha
+on:
+  push:
+    branches: [experiment/mercenary-v050-ui-4t-shield-fit-20261109]
+    paths:
+      - 'scripts/mercenary/render_v050_4t_cycles.py'
+      - '.github/workflows/mercenary-v050-4t-cycles.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  real-cycles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/mercenary-v050-ui-4t-shield-fit-20261109
+      - name: Fetch exact studio EXR 32 bits per channel
+        run: |
+          curl -fSL --retry 3 --max-time 240 https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS on Github
+        run: |
+          curl -fSL --retry 3 --max-time 420 https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz -o /tmp/blender45.tar.xz
+          mkdir -p /tmp/blender45
+          tar -xJf /tmp/blender45.tar.xz -C /tmp/blender45 --strip-components=1
+          /tmp/blender45/blender --version | grep 'Blender 4.5.13'
+      - name: Render real GLB V050 Cycles EXR32 with transparent background
+        run: |
+          mkdir -p public-previews/mercenary-v050-4t
+          /tmp/blender45/blender -b -t 4 --python-exit-code 1 --python scripts/mercenary/render_v050_4t_cycles.py -- \
+            --glb candidates/mercenary/stand_v050/GENESIS_MERCENARY_V050_4T_SHIELD_FIT_V12B_V015.glb \
+            --hdri /tmp/studio_small_09_4k.exr \
+            --out public-previews/mercenary-v050-4t/V050_CYCLES_EXR32_RGBA.png
+          test -s public-previews/mercenary-v050-4t/V050_CYCLES_EXR32_RGBA.png
+      - name: Commit true rendered poster only in experiment
+        run: |
+          git config user.name 'genesis-render-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public-previews/mercenary-v050-4t/
+          git commit -m 'render(v050): real Cycles EXR32 mercenary fitted V015 shield [skip ci]'
+          git push origin HEAD:experiment/mercenary-v050-ui-4t-shield-fit-20261109
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: genesis-v050-real-cycles32-preview
+          path: public-previews/mercenary-v050-4t/
+          retention-days: 10
+          if-no-files-found: warn
