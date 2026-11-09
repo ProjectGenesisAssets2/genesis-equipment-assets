@@ -1,0 +1,14 @@
+{
+  "status": "EXPERIMENTAL_REAL_BLENDER_CYCLES_V050_GLTF_NOT_OWNER_APPROVED",
+  "glb_sha256": "e0f38c9d08bcb36396acbf824efae1fb2d798b9bcea1281b315332c8bc7b5ff2",
+  "render_sha256": "b8f41a467b7713414ab84bdb3d2afa0ab3e5a512f773523c5c7abeaa6c550bc5",
+  "hdr_format": "32-bit EXR per channel",
+  "renderer": "Blender 4.5.13 LTS Cycles",
+  "image_pixels": [
+    820,
+    900
+  ],
+  "mesh_count": 17,
+  "height_m": 2.865,
+  "in_game_tested": false
+}
