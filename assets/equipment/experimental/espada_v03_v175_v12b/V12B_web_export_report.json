@@ -1,0 +1,35 @@
+{
+  "asset": "Genesis Sword V03 Iron V175 V12B",
+  "status": "EXPERIMENTAL_NOT_APPROVED_FOR_GAME",
+  "source_sha256": "e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b",
+  "approved_preset": "presets/approved/Genesis_Espada_V03_Hierro_V175_V12B.json",
+  "source_geometry_triangles": 2150,
+  "geometry_unchanged": true,
+  "blender": "4.5.13 LTS",
+  "renderer": "Cycles",
+  "hdri": "studio_small_09_4k.exr",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "hdri_bits_per_channel": 32,
+  "hdri_dimensions": [
+    4096,
+    2048
+  ],
+  "v12b_roughness_multiplier": 0.34,
+  "v12b_oxidation_roughness": 0.1,
+  "v12b_game_metallic": 0.98,
+  "blender_procedural_roughness_baked_to_uv": true,
+  "baked_texture_bits_per_channel": 8,
+  "game_glb": "Genesis_Sword_Iron_V03_V175_V12B_PBR_WebGL_CANDIDATE.glb",
+  "glb_bytes": 13862104,
+  "glb_sha256": "2c3e2dd8761ad337dd1d0c63ecab2fab68a8698d072dbeb8594b257cb1cdecc3",
+  "gltf_mesh_count": 1,
+  "gltf_material_count": 2,
+  "gltf_image_count": 6,
+  "game_integrated": false,
+  "visual_approved_for_mercenary": false,
+  "caution": "Verify V12B actual imported GLB appearance. Do not confuse float32 EXR HDRI used for Cycles rendering with 8bit PBR textures used for WebGL.",
+  "render_refs": [
+    "V12_V175_Color_J_Rugosidad034_Hero.png",
+    "V12_V175_Color_J_Rugosidad042_Detalle_Filo.png"
+  ]
+}
