@@ -1,0 +1,70 @@
+name: Genesis | Publicar V016001 web preview separado del juego principal
+on:
+  push:
+    branches:
+      - experiment/mercenary-v050-ui-4t-shield-fit-20261109
+    paths:
+      - '.github/workflows/preview-genesis-v016001-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Pages configuration
+        id: pages
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -o /tmp/pages-api.json -w 'GH_PAGES_HTTP=%{http_code}\n' -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/pages
+          python3 -c 'import json;print(open("/tmp/pages-api.json").read()[:1200])'
+      - name: Clone clean experimental game without modifying game main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --single-branch --branch experiment/v016001-main-clean-20261109 https://github.com/gburdesedev/Project-genesis.git /tmp/genesis-game
+          mkdir -p /tmp/v016001-publish
+          cp /tmp/genesis-game/*.{html,js,css,mjs} /tmp/v016001-publish/ 2>/dev/null || :
+          cp -a /tmp/genesis-game/assets /tmp/v016001-publish/
+          cp /tmp/genesis-game/.nojekyll /tmp/v016001-publish/ 2>/dev/null || touch /tmp/v016001-publish/.nojekyll
+          test -s /tmp/v016001-publish/index.html
+          test -s /tmp/v016001-publish/genesis_sword_runtime_v001.html
+          test -s /tmp/v016001-publish/assets/ui/resultado/oras/01_Base.png
+          echo 'V016001_FILES_VERIFIED'
+      - name: Publish preview-only gh-pages branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd /tmp/v016001-publish
+          git init -q
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -qb gh-pages
+          git add -A
+          git commit -qm 'preview: Genesis V016.001 from verified main-clean experimental branch'
+          git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push --force 'https://github.com/ProjectGenesisAssets2/genesis-equipment-assets.git' HEAD:refs/heads/gh-pages
+          echo 'PREVIEW_BRANCH_DEPLOYED'
+      - name: Enable Pages source on preview repository (never game main)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /tmp/result.json -w '%{http_code}' -X POST -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/pages -d '{"source":{"branch":"gh-pages","path":"/"},"build_type":"legacy"}')"
+          echo "PAGE_CREATE_HTTP=$code"
+          cat /tmp/result.json | head -c 1800; echo
+          if [ "$code" != '201' ] && [ "$code" != '409' ] && [ "$code" != '422' ]; then exit 1; fi
+      - name: Verify Pages state and preview URL
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/pages | python3 -c 'import json,sys;d=json.load(sys.stdin);print({k:d.get(k) for k in ["status","html_url","source","build_type","message"]})'
