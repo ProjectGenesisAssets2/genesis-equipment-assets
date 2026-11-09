@@ -1,0 +1,247 @@
+/* Original approved artwork is an immutable raster background. CSS positions interactive/data overlays only. */
+.modal.preparationModal.genesisApprovedModal{
+ width:min(1672px,calc(100vw - 12px),calc((100dvh - 12px)*1672/941))!important;
+ max-height:calc(100dvh - 12px)!important;max-width:100%!important;
+ aspect-ratio:1672/941!important;height:auto!important;
+ overflow:hidden!important;padding:0!important;border:0!important;background:#080605!important;
+ box-shadow:0 16px 65px #000e!important;
+}
+.gApprovedBoard{position:relative;isolation:isolate;box-sizing:border-box;width:100%;height:100%;aspect-ratio:1672/941;background-color:#080605;background-position:center;background-size:100% 100%;background-repeat:no-repeat;container-type:inline-size;overflow:hidden;font-family:Georgia,'Times New Roman',serif;color:#ead0a2}
+.gApprovedBoard *{box-sizing:border-box}
+.gApprovedBoard button{font-family:inherit;color:inherit;cursor:pointer}
+.gApprovedBoard button:focus-visible{outline:2px solid #ffd28b;outline-offset:-2px}
+.gApprovedHit,.gApprovedInfoButton,.gApprovedPrepAction,.gApprovedCraftAction,.gApprovedRecipe,.gApprovedFamily{position:absolute;border:0;background:transparent;z-index:3;padding:0}
+.gApprovedHit:hover{background:linear-gradient(#ffb8490c,#ffb84924)}
+.gApprovedHit[data-go="Cerrar"]{z-index:15}
+.gApprovedSlot,.gApprovedPrepSlot{position:absolute;z-index:4;background:transparent;border:0;display:flex;align-items:center;justify-content:center;padding:3px;overflow:hidden}
+.gApprovedSlot.is-selected,.gApprovedPrepSlot:focus-visible{box-shadow:inset 0 0 0 2px #f5a934,0 0 12px #ff9d2788;border-radius:4px}
+.gApprovedSlotAsset{width:100%;height:80%;display:grid;place-items:center;overflow:hidden;pointer-events:none}
+.gApprovedSlotAsset img,.gApprovedPrepSlot img{max-width:94%;max-height:94%;object-fit:contain;filter:drop-shadow(0 3px 4px #000)}
+.gApprovedQty{position:absolute;bottom:1%;right:3%;font:normal 1.05cqw Georgia,serif;color:#ffdc9d;text-shadow:0 2px 3px #000,0 0 4px #000}
+.gApprovedHero{position:absolute;z-index:3;display:grid;place-items:center;overflow:hidden;pointer-events:auto}
+.gApprovedHero img{max-width:96%;max-height:96%;object-fit:contain;filter:drop-shadow(0 8px 12px #000c)}
+.gApprovedHero model-viewer{width:100%;height:100%;background:transparent;--progress-bar-color:transparent}
+.gApprovedInfoValues{position:absolute;z-index:4;display:grid;grid-template-rows:repeat(3,1fr);font:normal 1.05cqw Georgia,serif;color:#f6d5a1;text-shadow:0 2px 4px #000;pointer-events:none;overflow:hidden}
+.gApprovedInfoValues span{text-align:right;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;padding-right:2%}
+.gApprovedInfoButton:hover,.gApprovedPrepAction:hover,.gApprovedCraftAction:hover{background:#ffc05919;box-shadow:inset 0 0 0 1px #edaa5488}
+.gApprovedInfoButton:disabled,.gApprovedPrepAction:disabled,.gApprovedCraftAction:disabled{cursor:not-allowed;filter:grayscale(.5)}
+.gApprovedFamily.is-selected{box-shadow:inset 0 0 0 2px #e9a43a;border-radius:3px}
+.gApprovedFamily:hover,.gApprovedRecipe:hover{box-shadow:inset 0 0 0 1px #f6c36d}
+.gApprovedPagePrev,.gApprovedPageNext{position:absolute;z-index:5;border:1px solid #9a652b;background:#17100bdc;color:#edc590;font-size:1.3cqw}
+.gApprovedSheet{position:absolute;z-index:20;inset:14% 24% 9% 24%;padding:3%;overflow-y:auto;background:linear-gradient(#22170ff7,#090706fb);border:2px solid #b77b36;box-shadow:0 0 0 900px #0009,0 20px 45px #000;font-size:1.2cqw}
+.gApprovedSheet h2{text-align:center;font-size:2cqw}.gApprovedSheet h3{font-size:1.4cqw;color:#f3cb8c;border-bottom:1px solid #7d562e;padding-bottom:1%}
+.gApprovedSheet div{display:flex;justify-content:space-between;padding:1.1%;border-bottom:1px solid #684528}.gApprovedSheetClose{position:absolute;right:2%;top:2%;background:#26170c;border:1px solid #a97d45;font-size:2cqw}
+.gApprovedPrepSlot{font-size:1cqw}.gApprovedPrepSlot b{position:absolute;right:2%;bottom:1%;text-shadow:0 1px 3px #000}
+.gApprovedPrepData{position:absolute;z-index:4;font-size:1.12cqw;line-height:1.3;padding:2% 3%;color:#ead3ab;text-shadow:0 1px 4px #000}
+.gApprovedPrepData h3{font-size:1.5cqw;margin:0 0 8%}.gApprovedPrepData p{margin:3% 0 5%}
+.gApprovedPrepQty{display:flex;align-items:center;justify-content:center;gap:10%;margin:6% 0}.gApprovedPrepQty button{background:#201309;border:1px solid #d39b53;min-width:12%;font-size:1.7cqw}
+.gApprovedRequired{position:absolute;z-index:4;padding:1% 3%;background:#110d0c;font:normal 1.05cqw Georgia,serif;overflow:hidden}
+.gApprovedRequired h3{font:normal 1.18cqw Georgia,serif;margin:0 0 3%;color:#ffe1ae}.gApprovedRequired p{margin:1% 0;display:flex;justify-content:space-between;color:#e3cfb1}
+.gApprovedCraftState{position:absolute;z-index:4;text-align:center;padding:1%;font-size:1.25cqw;background:#0c0b09}.gApprovedCraftState.is-ready{color:#91e79e}.gApprovedCraftState.is-blocked{color:#e2a47d}
+.gApprovedRecipe.is-selected{box-shadow:inset 0 0 0 2px #c78b39,0 0 8px #bd793e66}
+.gApprovedRecipeHeroSwap{position:absolute;z-index:4;display:grid;place-items:center;overflow:hidden;background:#17110c url('assets/ui/preparacion/01_Capas/Paneles/FondoVisorHerreria.png') center/cover no-repeat;border:1px solid #5e422b}
+.gApprovedRecipeHeroSwap img{max-width:82%;max-height:82%;object-fit:contain}.gApprovedRecipeHeroSwap span{position:absolute;bottom:4%;text-shadow:0 2px 4px #000;font-size:1.2cqw}
+.gApprovedNoModel{font-size:1.2cqw;text-align:center;color:#d7b98c}.gApprovedItemGlyph{font-size:3cqw;color:#c89b53}
+@media(max-width:760px){.gApprovedInfoValues{font-size:1.35cqw}.gApprovedPrepData{font-size:1.25cqw}}
+
+/* Runtime-only selection states. The approved source PNG remains byte-identical. */
+.gApproved-Inventario:not([data-family="Escudos"])::after{
+ content:"";position:absolute;z-index:2;pointer-events:none;
+ left:3.23%;top:34.10%;width:17.25%;height:4.6%;
+ background:#0b090aa8;mix-blend-mode:multiply;
+}
+.gApprovedRecipeTitle{position:absolute;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0e0b09;color:#efd4a5;text-align:center}
+.gApprovedRecipeTitle h2{font:normal 2.0cqw Georgia,serif;text-transform:uppercase;letter-spacing:.045em;margin:0}
+.gApprovedRecipeTitle p{font:normal 1.1cqw Georgia,serif;margin:1% 0}
+
+/* V014.024 inventory visual regression: the source artwork already contains
+   the golden slot frames. An additional selected border creates two frames. */
+.gApproved-Inventario .gApprovedSlot,
+.gApproved-Inventario .gApprovedSlot.is-selected {
+  border:0!important;outline:0;box-shadow:none!important;border-radius:0!important;
+}
+.gApproved-Inventario .gApprovedSlot.is-selected {
+  background:radial-gradient(ellipse at center,rgba(240,167,57,.13),transparent 72%);
+}
+.gApproved-Inventario .gApprovedSlotAsset {height:78%;max-height:78%}
+.gApproved-Inventario .gApprovedSlotAsset img {
+  display:block;max-height:100%;max-width:100%;object-fit:contain;
+}
+/* Materials are static stock previews, not rotatable fabricated objects.
+   Fit their posters inside the viewer instead of clipping the larger poster. */
+.gApproved-Inventario .gApprovedMaterialHero {
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  padding:0 8% 4%;pointer-events:none;
+}
+.gApproved-Inventario .gApprovedMaterialHero img {
+  display:block!important;position:static!important;inset:auto!important;
+  width:auto!important;height:auto!important;max-width:82%!important;
+  max-height:82%!important;object-fit:contain!important;transform:none!important;
+}
+.gApproved-Inventario[data-family="Materiales"] .gApprovedMaterialRotationMask {
+  position:absolute;z-index:6;pointer-events:none;
+  left:58.79%;top:43.89%;width:6.95%;height:9.03%;
+  background:linear-gradient(115deg,#120e0c 0%,#100c0a 55%,#100c09 100%);
+  border-radius:10px;
+}
+.gApproved-Inventario[data-family="Materiales"] .gApprovedMaterialFichaMask {
+  position:absolute;z-index:6;pointer-events:none;
+  left:68.8%;top:45.8%;width:27.4%;height:7.9%;
+  backdrop-filter:grayscale(1) brightness(.28);
+  -webkit-backdrop-filter:grayscale(1) brightness(.28);
+  background:rgba(0,0,0,.22);
+  border-radius:4px;
+}
+.gApproved-Inventario[data-family="Materiales"] .gApprovedInfoButton {
+  pointer-events:none!important;cursor:default!important;
+}
+
+/* V014.025: large product display in its own approved panel. */
+.gApproved-Inventario .gApprovedMaterialHero{
+  padding:0 1% 1%!important;
+  display:flex;align-items:center;justify-content:center;
+}
+.gApproved-Inventario .gApprovedMaterialHero img{
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;
+}
+.gApprovedPrepProduct{
+  position:absolute;z-index:4;display:flex;justify-content:center;
+  align-items:center;overflow:hidden;pointer-events:none;
+}
+.gApprovedPrepProduct img{
+  display:block;width:auto;height:auto;max-width:100%;max-height:100%;
+  object-fit:contain;filter:drop-shadow(0 8px 12px #000b);
+}
+.gApproved-Preparacion .gApprovedPrepSlot.gPrepLocked{
+  cursor:default;opacity:.72;pointer-events:none;
+}
+.gApproved-Preparacion .gApprovedPrepSlot.gPrepEligible:focus-visible,
+.gApproved-Preparacion .gApprovedPrepSlot.gPrepEligible:hover{
+  box-shadow:inset 0 0 0 1px #ffc16c77;
+}
+
+/* V014.026: approved Preparación includes its own golden cell frames;
+   runtime slots are only hit targets and must not draw secondary frames. */
+.gApproved-Preparacion .gApprovedPrepSlot,
+.gApproved-Preparacion .gApprovedPrepSlot:focus,
+.gApproved-Preparacion .gApprovedPrepSlot:focus-visible,
+.gApproved-Preparacion .gApprovedPrepSlot:hover,
+.gApproved-Preparacion .gApprovedPrepSlot.gPrepEligible:hover {
+  background:transparent!important;border:0!important;outline:0!important;
+  box-shadow:none!important;border-radius:0!important;
+}
+.gApproved-Preparacion .gApprovedPrepSlot img{
+  max-width:90%!important;max-height:88%!important;
+  object-fit:contain;pointer-events:none;
+}
+/* During the thermal game, keep the actual 1672x941 artwork and replace
+   ONLY dynamic content over its central and details panels. */
+.gApproved-Thermal .gApprovedHit:disabled{cursor:default;pointer-events:none}
+.gPrepThermalPanel,.gPrepThermalDetails{
+  position:absolute;z-index:8;box-sizing:border-box;
+  background:linear-gradient(135deg,#160f0bea,#080707f3);
+  color:#edd3aa;border:1px solid #8e6028;
+  box-shadow:inset 0 0 25px #000a,0 0 12px #0006;
+  border-radius:4px;font:normal 1.05cqw Georgia,serif;
+}
+.gPrepThermalPanel{padding:2.1% 2.5%;display:flex;flex-direction:column;justify-content:space-around;gap:1%}
+.gPrepThermalPanel h2{font:normal 1.7cqw Georgia,serif;text-align:center;margin:0;color:#ffe0a7;letter-spacing:.06em}
+.gPrepThermalPanel p{margin:0;text-align:center;font-size:1.06cqw}
+.gPrepThermalGauge{width:100%;height:12%;position:relative;border:2px solid #d09b51;border-radius:4px;box-shadow:inset 0 0 14px #000a}
+.gPrepThermalTarget{position:absolute;top:-12%;height:124%;width:2px;background:#ffe5a4;opacity:.8;pointer-events:none}
+.gPrepThermalNeedle{position:absolute;top:-18%;height:136%;width:4px;background:#fff;box-shadow:0 0 8px #fff;transform:translateX(-50%)}
+.gPrepThermalLegend{display:flex;justify-content:space-between;font-size:.85cqw;color:#bba98d}
+.gPrepThermalProgressHeader{display:flex;justify-content:space-between;font-size:.95cqw}
+.gPrepThermalProgressBar{height:9%;background:#100b08;border:1px solid #b28c50;border-radius:3px;overflow:hidden}
+.gPrepThermalProgressBar span{display:block;width:0;height:100%;background:linear-gradient(90deg,#ae6e27,#e7bf63);transition:width .12s linear}
+.gPrepThermalBellows{display:flex;gap:2%;min-height:22%}
+.gPrepThermalBellows button{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5%;border:1px solid #a77838;background:linear-gradient(#382318,#170f0b);font-size:1.02cqw;padding:2%}
+.gPrepThermalBellows button:hover{background:linear-gradient(#654024,#24130c)}
+.gPrepThermalBellows small{font-size:.76cqw;color:#d9c1a0}.gPrepThermalBellows em{font-size:.85cqw;color:#ffd88a}
+.gPrepThermalPanel .gPrepThermalNote{font-size:.88cqw;color:#beac90}
+.gPrepThermalDetails{padding:2% 2%;display:flex;flex-direction:column;justify-content:space-between}
+.gPrepThermalDetails h3{text-align:center;font:normal 1.5cqw Georgia,serif;margin:0 0 2%;color:#ffe0a7}
+.gPrepThermalDetails div{display:flex;justify-content:space-between;gap:4%;border-bottom:1px solid #76502e;padding:2% 0}
+.gPrepThermalDetails p{font-size:.95cqw;line-height:1.3;min-height:6%}
+.gPrepThermalDetails [data-tone="good"]{color:#9be2ac}
+.gPrepThermalDetails [data-tone="cold"],.gPrepThermalDetails [data-tone="hot"]{color:#e5a778}
+.gPrepThermalDetails button{border:1px solid #ad7b3f;background:#21130c;color:#f1d1a0;padding:3%;font-size:1.02cqw}
+.gPrepThermalDetails button:hover{background:#4a2818}
+
+/* V014.027 result: maintain exact current approved 16:9 art, refresh material images. */
+.gApproved-PrepResult .gPrepResultSlot {
+  display:flex;position:absolute;align-items:center;justify-content:center;
+  border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;overflow:hidden;pointer-events:none;
+}
+.gApproved-PrepResult .gPrepResultSlot img {
+  display:block;width:auto;height:auto;max-width:91%;max-height:82%;
+  object-fit:contain;filter:drop-shadow(0 3px 4px #000b);
+}
+.gApproved-PrepResult .gPrepResultSlot b {
+  position:absolute;right:3%;bottom:1%;
+  font-size:1cqw;color:#f1d5a1;text-shadow:0 2px 4px #000;
+}
+.gApprovedPrepResultDisplay,.gApprovedPrepResultInfo {
+  position:absolute;box-sizing:border-box;z-index:7;
+}
+.gApprovedPrepResultDisplay {
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  gap:2%;text-align:center;color:#f3d6a4;
+}
+.gApprovedPrepResultDisplay img {
+  width:auto;max-width:84%;height:auto;max-height:70%;object-fit:contain;
+  filter:drop-shadow(0 9px 13px #000c);
+}
+.gPrepResultHeadline {
+  font:normal 1.6cqw Georgia,serif;
+  color:#b6e4a3;text-shadow:0 2px 5px #000;
+}
+.gApprovedPrepResultDisplay p{font:normal 1.05cqw Georgia,serif}
+.gApprovedPrepResultInfo{
+  background:linear-gradient(135deg,#120d09e8,#0c0908e9);
+  border:1px solid #9c6934;border-radius:4px;padding:2%;
+  display:flex;flex-direction:column;gap:3%;
+  font:normal 1.12cqw Georgia,serif;color:#f0d5a5;
+}
+.gApprovedPrepResultInfo h2{font:normal 1.2cqw Georgia,serif;text-align:center;letter-spacing:.08em}
+.gApprovedPrepResultInfo h3{font:normal 1.4cqw Georgia,serif;text-align:center;margin:0 0 5%}
+.gApprovedPrepResultInfo div{display:flex;justify-content:space-between;border-bottom:1px solid #735030;padding:3% 0}
+.gApprovedPrepResultInfo button{
+  border:1px solid #a77739;background:#312014;
+  color:#f0d3a7;padding:3%;font:normal 1.05cqw Georgia,serif;
+}
+.gApprovedPrepResultInfo button:hover{background:#4c2d18}
+/* The PREPARAR action uses the golden button already baked in the approved PNG;
+   no added hover border or colored rectangle offset from the source frame. */
+.gApproved-Preparacion #gPrepAction,
+.gApproved-Preparacion #gPrepAction:hover,
+.gApproved-Preparacion #gPrepAction:focus-visible {
+  background:transparent!important;box-shadow:none!important;
+  border:0!important;outline:0!important;
+}
+
+/* V014.028: read generated recipes without painting a second frame over
+   Fabricaciones V07's approved gold art; all required materials stay visible. */
+.gApproved-Fabricaciones .gApprovedRecipe.is-selected{
+  box-shadow:none!important;border:0!important;outline:0!important;
+  background:radial-gradient(ellipse,rgba(231,159,61,.12),transparent 75%);
+}
+.gApproved-Fabricaciones .gApprovedRequired.is-compact{
+  padding:.35% 2%;display:flex;flex-direction:column;justify-content:center;
+}
+.gApproved-Fabricaciones .gApprovedRequired.is-compact h3{
+  font-size:.98cqw;margin:0 0 1%;
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+}
+.gApproved-Fabricaciones .gApprovedRequired.is-compact p{
+  font-size:.85cqw;margin:0;line-height:1.18;
+}
+.gApproved-Fabricaciones .gApprovedRequired.is-missing b{color:#e6a081}
+.gApproved-Fabricaciones .gApprovedRequired.is-supplied b{color:#afdfad}
+.gApproved-Fabricaciones #gApprovedCraftAction:hover,
+.gApproved-Fabricaciones #gApprovedCraftAction:focus-visible {
+  border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;
+}

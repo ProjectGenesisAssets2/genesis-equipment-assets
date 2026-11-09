@@ -1,0 +1,10 @@
+/* Project Genesis experimental workshop reconstruction V001 */
+#repairHudV001{position:fixed;right:18px;top:74px;z-index:38;max-width:min(315px,35vw);padding:12px 14px;background:linear-gradient(140deg,rgba(12,24,30,.92),rgba(29,31,31,.90));border:1px solid #b19660a8;border-radius:11px;color:#e9dfc9;box-shadow:0 8px 24px #0007;font:12px/1.5 system-ui,sans-serif;pointer-events:auto}
+#repairHudV001[hidden]{display:none!important}
+#repairHudV001 strong{display:block;letter-spacing:.06em;color:#e3bc7c;font-size:12px}
+#repairHudV001 p{margin:6px 0 9px;color:#d5d9d2}
+#repairResetV001{font:inherit;border:1px solid #9d8b68;color:#f3e6c3;background:#253033;border-radius:6px;padding:6px 10px;cursor:pointer}
+#repairResetV001:disabled{opacity:.4;cursor:default}
+.genesisRepairDust{position:absolute;width:32px;height:32px;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#bd9a6ea0 0%,#9a83704c 40%,transparent 72%);filter:blur(3px);animation:genesisRepairDust 1.04s ease-out forwards}
+@keyframes genesisRepairDust{0%{opacity:.8;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(var(--driftX),var(--driftY)) scale(2.2)}}
+@media(max-width:780px){#repairHudV001{top:auto;right:12px;bottom:10px;max-width:210px;padding:8px 9px;font-size:10px}#repairHudV001 strong{font-size:11px}#repairHudV001 p{margin:4px 0 6px}#repairResetV001{padding:5px 8px}}

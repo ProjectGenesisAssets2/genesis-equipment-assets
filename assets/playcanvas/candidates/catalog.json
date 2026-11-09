@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "status": "PLAYCANVAS_CANDIDATES_NOT_ART_APPROVED",
+  "purpose": "Materiales 3D reales para validar interaccion en slots de Preparacion; el lingote central permanece como PNG V175 estatico",
+  "interaction": "Mouse hover o dedo mantenido ±45 grados; al salir o soltar vuelve suavemente a 0",
+  "base_version": "b4ad9f2f2c6a96865e70040d05b0385a557cba78",
+  "entries": [
+    {
+      "material": "Mineral de hierro",
+      "state": "CANDIDATE_WEB_PLAYTEST",
+      "source": "Genesis V008 mineral PBR sobre malla V006",
+      "source_actions_run": 40150559173,
+      "license": "Poly Haven Boulder 01 scan CC0; Project Genesis material edits",
+      "glb": {
+        "path": "assets/playcanvas/candidates/materials/iron_ore/v008/mineral_hierro_v008_web_candidate.glb",
+        "sha256": "2448449ebfb5fbb841aed5dbab730fa5b0dde6f17045978fbcaf411f01ecb4c7",
+        "bytes": 2415628,
+        "triangles": 16000,
+        "materials": 1,
+        "images": 3
+      },
+      "transparent_poster": {
+        "path": "assets/playcanvas/candidates/materials/iron_ore/v008/mineral_hierro_v008_web_transparent.png",
+        "sha256": "998a3c1761322e58c6f75c9feb0218231a99116f23e002bec5bd7e8475f2e7c8",
+        "bytes": 158226,
+        "alpha_verified": true
+      }
+    },
+    {
+      "material": "Lingote de hierro",
+      "state": "CANDIDATE_WEB_PLAYTEST",
+      "source": "V175 Blender master aprobado; GLB candidato sin normal map horneado",
+      "source_actions_run": 40143233270,
+      "license": "Project Genesis original",
+      "glb": {
+        "path": "assets/playcanvas/candidates/materials/iron_ingot/v175/iron_v175_web_candidate.glb",
+        "sha256": "f6c13b3a1b7125b116ddc6841b72e2ccab95a51b02bca2aa777217e30190997e",
+        "bytes": 1027508,
+        "triangles": 1787,
+        "materials": 1,
+        "images": 2
+      },
+      "transparent_poster": {
+        "path": "assets/playcanvas/approved/materials/iron/v175/iron_v175_transparent.png",
+        "sha256": "ce2cc3df57050215f14426ce1e417447ef6652a977c8a16178e5db8a8378eee0",
+        "bytes": 425045,
+        "alpha_verified": true
+      }
+    }
+  ]
+}

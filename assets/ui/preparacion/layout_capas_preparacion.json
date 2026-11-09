@@ -1,0 +1,786 @@
+{
+  "proyecto": "Project Genesis",
+  "pantalla": "Taller del Herrero / Preparacion",
+  "version": "V002-CAPAS",
+  "resolucion": [
+    1536,
+    1024
+  ],
+  "referencia": "00_Referencia/Concept_Aprobado_21Oct2026.png",
+  "preview": "02_Preview/Preparacion_Reconstruida.png",
+  "capas": [
+    {
+      "nombre": "FondoEstructural",
+      "archivo": "01_Capas/Fondo/FondoEstructural.png",
+      "x": 0,
+      "y": 0,
+      "ancho": 1536,
+      "alto": 1024,
+      "rol": "fondo_marco_principal",
+      "detalle": "Base sin casillas, pestañas ni bloques funcionales incrustados",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Pestana_Inventario",
+      "archivo": "01_Capas/Pestanas/Pestana_Inventario.png",
+      "x": 164,
+      "y": 42,
+      "ancho": 294,
+      "alto": 94,
+      "rol": "pestana",
+      "detalle": "Reemplazar por su variante en estado activo al navegar",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Pestana_Preparacion",
+      "archivo": "01_Capas/Pestanas/Pestana_Preparacion.png",
+      "x": 458,
+      "y": 42,
+      "ancho": 320,
+      "alto": 94,
+      "rol": "pestana",
+      "detalle": "Reemplazar por su variante en estado activo al navegar",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Pestana_Fabricaciones",
+      "archivo": "01_Capas/Pestanas/Pestana_Fabricaciones.png",
+      "x": 778,
+      "y": 42,
+      "ancho": 328,
+      "alto": 94,
+      "rol": "pestana",
+      "detalle": "Reemplazar por su variante en estado activo al navegar",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Pestana_Comparacion",
+      "archivo": "01_Capas/Pestanas/Pestana_Comparacion.png",
+      "x": 1106,
+      "y": 42,
+      "ancho": 298,
+      "alto": 94,
+      "rol": "pestana",
+      "detalle": "Reemplazar por su variante en estado activo al navegar",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "PanelBasicos",
+      "archivo": "01_Capas/Paneles/PanelBasicos.png",
+      "x": 17,
+      "y": 153,
+      "ancho": 562,
+      "alto": 380,
+      "rol": "grupo_de_10_materiales_basicos",
+      "detalle": "",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "PanelPreparados",
+      "archivo": "01_Capas/Paneles/PanelPreparados.png",
+      "x": 17,
+      "y": 533,
+      "ancho": 562,
+      "alto": 380,
+      "rol": "grupo_de_10_materiales_preparados",
+      "detalle": "",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "FondoVisorHerreria",
+      "archivo": "01_Capas/Paneles/FondoVisorHerreria.png",
+      "x": 579,
+      "y": 153,
+      "ancho": 548,
+      "alto": 760,
+      "rol": "fondo_visor",
+      "detalle": "Imagen decorativa; reemplazable por RenderTarget",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "PanelDatos",
+      "archivo": "01_Capas/Paneles/PanelDatos.png",
+      "x": 1127,
+      "y": 153,
+      "ancho": 399,
+      "alto": 624,
+      "rol": "contenedor_sin_campos_estaticos",
+      "detalle": "",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "PanelAccionSinBoton",
+      "archivo": "01_Capas/Paneles/PanelAccionSinBoton.png",
+      "x": 1127,
+      "y": 777,
+      "ancho": 399,
+      "alto": 136,
+      "rol": "panel_accion_sin_boton",
+      "detalle": "",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_01",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_01.png",
+      "x": 37,
+      "y": 274,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 01; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_02",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_02.png",
+      "x": 145,
+      "y": 274,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 02; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_03",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_03.png",
+      "x": 245,
+      "y": 274,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 03; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_04",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_04.png",
+      "x": 348,
+      "y": 274,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 04; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_05",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_05.png",
+      "x": 451,
+      "y": 274,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 05; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_06",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_06.png",
+      "x": 37,
+      "y": 387,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 06; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_07",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_07.png",
+      "x": 145,
+      "y": 387,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 07; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_08",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_08.png",
+      "x": 245,
+      "y": 387,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 08; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_09",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_09.png",
+      "x": 348,
+      "y": 387,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 09; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Basicos_10",
+      "archivo": "01_Capas/Casillas/Casilla_Basicos_10.png",
+      "x": 451,
+      "y": 387,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Basicos 10; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_01",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_01.png",
+      "x": 37,
+      "y": 646,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 01; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_02",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_02.png",
+      "x": 145,
+      "y": 646,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 02; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_03",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_03.png",
+      "x": 245,
+      "y": 646,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 03; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_04",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_04.png",
+      "x": 348,
+      "y": 646,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 04; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_05",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_05.png",
+      "x": 451,
+      "y": 646,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 05; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_06",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_06.png",
+      "x": 37,
+      "y": 757,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 06; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_07",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_07.png",
+      "x": 145,
+      "y": 757,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 07; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_08",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_08.png",
+      "x": 245,
+      "y": 757,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 08; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_09",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_09.png",
+      "x": 348,
+      "y": 757,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 09; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "Casilla_Preparados_10",
+      "archivo": "01_Capas/Casillas/Casilla_Preparados_10.png",
+      "x": 451,
+      "y": 757,
+      "ancho": 99,
+      "alto": 108,
+      "rol": "casilla_marco_transparente",
+      "detalle": "Preparados 10; interior transparente; colocar icono dinamico debajo del marco",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "MarcoVisorSuperior",
+      "archivo": "01_Capas/Paneles/MarcoVisorSuperior.png",
+      "x": 579,
+      "y": 153,
+      "ancho": 548,
+      "alto": 760,
+      "rol": "marco_visor_superpuesto",
+      "detalle": "Colocar encima del objeto dinámico",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "BotonPreparar_Normal",
+      "archivo": "01_Capas/BotonPreparar/BotonPreparar_Normal.png",
+      "x": 1137,
+      "y": 777,
+      "ancho": 378,
+      "alto": 122,
+      "rol": "boton_normal",
+      "detalle": "Solo mostrar un estado por vez",
+      "visible_por_defecto": true
+    },
+    {
+      "nombre": "BotonPreparar_Hover",
+      "archivo": "01_Capas/BotonPreparar/BotonPreparar_Hover.png",
+      "x": 1137,
+      "y": 777,
+      "ancho": 378,
+      "alto": 122,
+      "rol": "boton_hover",
+      "detalle": "Solo mostrar un estado por vez",
+      "visible_por_defecto": false
+    },
+    {
+      "nombre": "BotonPreparar_Presionado",
+      "archivo": "01_Capas/BotonPreparar/BotonPreparar_Presionado.png",
+      "x": 1137,
+      "y": 777,
+      "ancho": 378,
+      "alto": 122,
+      "rol": "boton_presionado",
+      "detalle": "Solo mostrar un estado por vez",
+      "visible_por_defecto": false
+    },
+    {
+      "nombre": "BotonPreparar_Deshabilitado",
+      "archivo": "01_Capas/BotonPreparar/BotonPreparar_Deshabilitado.png",
+      "x": 1137,
+      "y": 777,
+      "ancho": 378,
+      "alto": 122,
+      "rol": "boton_deshabilitado",
+      "detalle": "Solo mostrar un estado por vez",
+      "visible_por_defecto": false
+    },
+    {
+      "nombre": "Pestana_Inventario_HoverBrillo",
+      "archivo": "01_Capas/Efectos/Pestana_Inventario_HoverBrillo.png",
+      "x": 164,
+      "y": 42,
+      "ancho": 294,
+      "alto": 94,
+      "rol": "hover_overlay",
+      "detalle": "Capa opcional, desactivada por defecto",
+      "visible_por_defecto": false
+    },
+    {
+      "nombre": "Pestana_Preparacion_HoverBrillo",
+      "archivo": "01_Capas/Efectos/Pestana_Preparacion_HoverBrillo.png",
+      "x": 458,
+      "y": 42,
+      "ancho": 320,
+      "alto": 94,
+      "rol": "hover_overlay",
+      "detalle": "Capa opcional, desactivada por defecto",
+      "visible_por_defecto": false
+    },
+    {
+      "nombre": "Pestana_Fabricaciones_HoverBrillo",
+      "archivo": "01_Capas/Efectos/Pestana_Fabricaciones_HoverBrillo.png",
+      "x": 778,
+      "y": 42,
+      "ancho": 328,
+      "alto": 94,
+      "rol": "hover_overlay",
+      "detalle": "Capa opcional, desactivada por defecto",
+      "visible_por_defecto": false
+    },
+    {
+      "nombre": "Pestana_Comparacion_HoverBrillo",
+      "archivo": "01_Capas/Efectos/Pestana_Comparacion_HoverBrillo.png",
+      "x": 1106,
+      "y": 42,
+      "ancho": 298,
+      "alto": 94,
+      "rol": "hover_overlay",
+      "detalle": "Capa opcional, desactivada por defecto",
+      "visible_por_defecto": false
+    }
+  ],
+  "casillas": [
+    {
+      "categoria": "Basicos",
+      "numero": 1,
+      "x": 37,
+      "y": 274,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        46,
+        285,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 2,
+      "x": 145,
+      "y": 274,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        154,
+        285,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 3,
+      "x": 245,
+      "y": 274,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        254,
+        285,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 4,
+      "x": 348,
+      "y": 274,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        357,
+        285,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 5,
+      "x": 451,
+      "y": 274,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        460,
+        285,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 6,
+      "x": 37,
+      "y": 387,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        46,
+        398,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 7,
+      "x": 145,
+      "y": 387,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        154,
+        398,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 8,
+      "x": 245,
+      "y": 387,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        254,
+        398,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 9,
+      "x": 348,
+      "y": 387,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        357,
+        398,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Basicos",
+      "numero": 10,
+      "x": 451,
+      "y": 387,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        460,
+        398,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 1,
+      "x": 37,
+      "y": 646,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        46,
+        657,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 2,
+      "x": 145,
+      "y": 646,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        154,
+        657,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 3,
+      "x": 245,
+      "y": 646,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        254,
+        657,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 4,
+      "x": 348,
+      "y": 646,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        357,
+        657,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 5,
+      "x": 451,
+      "y": 646,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        460,
+        657,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 6,
+      "x": 37,
+      "y": 757,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        46,
+        768,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 7,
+      "x": 145,
+      "y": 757,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        154,
+        768,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 8,
+      "x": 245,
+      "y": 757,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        254,
+        768,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 9,
+      "x": 348,
+      "y": 757,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        357,
+        768,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    },
+    {
+      "categoria": "Preparados",
+      "numero": 10,
+      "x": 451,
+      "y": 757,
+      "w": 99,
+      "h": 108,
+      "icono_rect": [
+        460,
+        768,
+        81,
+        85
+      ],
+      "cantidad_esquina": "inferior derecha"
+    }
+  ],
+  "layout_umg": {
+    "blur": {
+      "fuera_de_la_imagen": true,
+      "bajo_todas_las_capas": true,
+      "widget_ue": "BackgroundBlur+OverlayOscuro"
+    },
+    "pantalla": {
+      "recomendacion": "ScaleBox centrado aspect ratio 1536:1024"
+    },
+    "datos_rect": [
+      1157,
+      213,
+      331,
+      545
+    ],
+    "preparar_rect": [
+      1137,
+      777,
+      378,
+      122
+    ],
+    "orden": [
+      "BackgroundBlur",
+      "FondoEstructural",
+      "Pestanas",
+      "Paneles",
+      "IconsDeMaterialesDinamicos",
+      "Casillas",
+      "Modelo3DVisor",
+      "MarcoVisorSuperior",
+      "BotonPreparar",
+      "DatosDinamicos",
+      "Efectos"
+    ]
+  },
+  "pruebas": {
+    "mae_rgb": 0.024,
+    "porcentaje_pixeles_diferencia_mayor_16": 0.066,
+    "interior_casilla_transparente_pixeles": 6946,
+    "ue5_ejecutado": false,
+    "version_aprobada": "concept de imagen, no aprobacion de implementacion"
+  }
+}

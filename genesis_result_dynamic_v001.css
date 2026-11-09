@@ -1,0 +1,78 @@
+/* Project Genesis result V4.1 — experimental. Does not alter approved menu masters. */
+#modal.genesisResultModal{
+  width:min(1600px,calc(100vw - 14px),calc((100dvh - 14px)*16/9))!important;
+  aspect-ratio:16/9!important;
+  max-width:100%!important;max-height:calc(100dvh - 14px)!important;height:auto!important;
+  padding:0!important;overflow:hidden!important;background:#08070a!important;
+  border:1px solid #8a622f!important;box-shadow:0 25px 80px #000e!important;
+}
+.genesisResultModal *{box-sizing:border-box}
+.grScreen{display:grid;grid-template-columns:37% 63%;height:100%;width:100%;
+  color:#f7dbac;font-family:Georgia,'Times New Roman',serif;overflow:hidden;
+  background:radial-gradient(ellipse at 35% 20%,#332015,#090808 70%);}
+.grLeft{position:relative;overflow:hidden;border-right:2px solid #b28a4a;
+  padding:2.2% 3%;display:flex;flex-direction:column;gap:1.2%;
+  background:radial-gradient(ellipse at 50% 51%,#3c281956,transparent 55%),
+   linear-gradient(180deg,#15100ed8,#0a090b);min-height:0;}
+.grLeft:before,.grRight:before{content:"";pointer-events:none;position:absolute;inset:1%;
+ border:1px solid #9a703e99;box-shadow:inset 0 0 0 2px #20150c;z-index:1}
+.grSectionLabel{font-size:clamp(10px,1.5vw,24px);white-space:nowrap;letter-spacing:.09em;
+ text-align:center;border-bottom:1px solid #a3733b;padding-bottom:2.5%;z-index:2}
+.grViewer{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 60%,#3b2c235c 0,#0e1015 55%,#06070b 100%);
+ border:1px solid #654525;box-shadow:inset 0 0 65px #000a;z-index:2}
+.grViewer model-viewer{width:100%;height:100%;background:transparent;--progress-bar-color:#cb9034}
+.grViewer .grSwordPoster{height:94%;max-width:98%;object-fit:contain;filter:drop-shadow(0 12px 18px #000d)}
+.grViewer .grOtherItem{height:100%;width:100%;display:grid;place-items:center}
+.grViewer .grOtherItem img{width:95%;height:90%;object-fit:contain}
+.grViewer .grOtherItem model-viewer{width:100%;height:100%}
+.grViewerStatus{position:absolute;bottom:1%;left:2%;right:2%;font-size:clamp(9px,.86vw,13px);
+ text-align:center;background:#090a0bdf;border:1px solid #98724c66;padding:1.3% 2%;z-index:2}
+.grViewerFooter{font-size:clamp(10px,1.1vw,16px);letter-spacing:.07em;text-align:center;z-index:2}
+.grRight{position:relative;padding:2.2% 3.2%;min-height:0;display:flex;flex-direction:column;gap:2%;overflow:hidden}
+.grHeader{display:flex;justify-content:space-between;align-items:center;gap:1.5%;z-index:2;
+ border-bottom:2px solid #a77834;padding-bottom:1.4%}
+.grHeading{font-size:clamp(15px,2.8vw,43px);line-height:1.12;text-shadow:0 2px 5px #000;min-width:0}
+.grRarity{white-space:nowrap;flex-shrink:0;font-size:clamp(11px,1.35vw,22px);color:#f0cb79;
+ border:1px solid #ba8b4c;padding:.8% 2%;background:#21140e;}
+.grChannelTitle{font-size:clamp(11px,1.25vw,21px);font-weight:bold;z-index:2;display:flex;align-items:center;justify-content:space-between}
+.grChannelTitle small{font-size:.72em;color:#bea58a}
+.grChannelScroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;
+ scrollbar-color:#9b672b #130e0b;scrollbar-width:thin;padding-right:1%;z-index:2;}
+.grChannelGroup{margin-bottom:2%;width:100%;break-inside:avoid}
+.grChannelRow{position:relative;width:100%;aspect-ratio:990/167;display:flex;align-items:center;justify-content:space-between;
+ border:1px solid #8b6038;background:linear-gradient(110deg,#20180e,#160e10);overflow:hidden;
+ box-shadow:inset 0 0 14px #a46d2a44}
+.grChannelFallback{position:absolute;inset:8% 10% 8% 0;border:1px solid var(--grColor);
+ background:linear-gradient(95deg,#080707, color-mix(in srgb,var(--grColor) 32%,#100d0d) 55%,#0d080a);}
+.grOra{position:absolute;inset:0 auto 0 0;width:88%;height:100%;object-fit:contain;object-position:left center;opacity:0;pointer-events:none;}
+.grHasOra .grOra{opacity:1}.grHasOra .grChannelFallback{display:none}
+.grChannelLabel{position:relative;margin-left:21%;font-size:clamp(14px,2.5vw,35px);
+ font-variant:small-caps;text-shadow:0 2px 3px #000;z-index:1;pointer-events:none}
+.grHasOra .grChannelLabel{opacity:0}
+.grChannelNumber{position:relative;z-index:2;margin-right:1%;min-width:10%;
+ text-align:center;font-weight:normal;background:#070608d9;border:1px solid #bc8b47;
+ padding:2% 1%;font-size:clamp(12px,1.55vw,25px)}
+.grSubRows{display:flex;flex-direction:column;gap:2px;margin:1% 5% 0 13%}
+.grSub{display:flex;justify-content:space-between;gap:3%;font-size:clamp(9px,1.04vw,16px);
+ padding:1.4% 2.5%;border:1px solid #6b432b;background:linear-gradient(#27120f,#100d0d)}
+.grSub b{font-weight:normal;color:#f7d69a}
+.grDescription{border:1px solid #98672b;background:#0b090a;z-index:2;padding:1% 2%;max-height:17%;overflow:auto}
+.grDescription strong{font-size:clamp(10px,1.3vw,20px)}
+.grDescription p{margin:1% 0;font-style:italic;font-size:clamp(10px,1.0vw,16px)}
+.grControls{flex-shrink:0;display:flex;justify-content:flex-end;z-index:2}
+.grControls button{border:2px solid #ba8739;color:#f0d49d;font-family:Georgia,serif;
+ font-size:clamp(11px,1.4vw,22px);background:linear-gradient(#4e3322,#22130e);
+ padding:.75% 7%;cursor:pointer;box-shadow:inset 0 0 0 1px #f3b4535c}
+.grControls button:hover{background:#6b4625}
+.grViewerError{color:#f2be87;text-align:center;padding:3%}
+@media (max-width:760px){.grScreen{grid-template-columns:38% 62%}
+ .grLeft{padding:2%}.grRight{padding:1.7% 2%}
+ .grChannelLabel{font-size:clamp(10px,2.15vw,17px)}
+ .grChannelNumber{font-size:clamp(9px,1.65vw,14px)}
+ .grSectionLabel{letter-spacing:0}
+ .grDescription{max-height:20%}
+}
+
+.grViewer .grSwordInteractive{display:block;width:100%;height:100%;border:0;background:transparent;position:absolute;inset:0;}
+.grViewer .grSwordInteractive+.grViewerStatus{pointer-events:none;}

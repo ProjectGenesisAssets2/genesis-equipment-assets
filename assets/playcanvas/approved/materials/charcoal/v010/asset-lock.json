@@ -1,0 +1,24 @@
+{
+  "id": "PG_CarbonVegetal_V010_3Pieces",
+  "status": "integrated_visual_approval_for_playcanvas_test",
+  "source": "https://raw.githubusercontent.com/ProjectgenesisAssets/genesis-workshop-assets/main/previews/charcoal_pile_v009/model_web.glb",
+  "source_sha256": "6292ba7660ebe60bca240bb32357e6336e9df92a8e2179a09416efbc0f848c0b",
+  "license": "CC0 Poly Haven Dead Tree Trunk 02 + Project Genesis carbonization and assembly",
+  "model_path": "assets/playcanvas/approved/materials/charcoal/v010/carbon_vegetal_v010_tres_piezas_web.glb",
+  "poster_path": "assets/playcanvas/approved/materials/charcoal/v010/carbon_vegetal_v010_poster.png",
+  "size_bytes": 1258700,
+  "sha256": "6e653a6ff93c734c3e0c8fbd7eaf59ee316c710bdc1ea2b73118b4ba9ba018a7",
+  "unique_meshes": 1,
+  "instances": 3,
+  "triangles_per_instance": 23312,
+  "rendered_triangles": 69936,
+  "texture_resolution": "1536x1536",
+  "pbr_maps": [
+    "albedo",
+    "normal",
+    "roughness"
+  ],
+  "original_recipe_unchanged": true,
+  "hover_degrees": 45,
+  "mobile_fallback": "RGBA poster"
+}

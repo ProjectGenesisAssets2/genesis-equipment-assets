@@ -1,0 +1,24 @@
+{
+  "asset_id": "MINERAL_HIERRO_V008_55K_PBR1536_V007",
+  "status": "FINAL_APPROVED_BY_GABRIEL",
+  "approved_date": "2026-10-25",
+  "source_repository": "gburdesedev/genesis-blender-render",
+  "source_commit": "2718612f4f7feb9900e8ba20df2a823733c9d3da",
+  "source_run": 40225582488,
+  "license": "CC0-1.0 (Poly Haven Boulder 01 scan); Project Genesis material edits",
+  "triangles": 55000,
+  "texture_dimensions": [
+    1536,
+    1536
+  ],
+  "files": {
+    "mineral_hierro_v008_55k_pbr1536_v007.glb": {
+      "bytes": 13239988,
+      "sha256": "22c2392c49cece478f6609d9103e37a1b0501c395aeb8ba71ebbb8a4583c5481"
+    },
+    "mineral_hierro_v008_transparent_0.png": {
+      "bytes": 453052,
+      "sha256": "13730dde334d47bcdff0f29238edd2d22d80963d580dda80fc617c023741293d"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "scope": "Project Genesis | PlayCanvas approved materials",
+  "updated_on": "2026-11-04",
+  "assets": [
+    {
+      "id": "cordel_canamo",
+      "name": "Cordel de cáñamo",
+      "approved_version": "V018_hemp_candidate",
+      "approval": "final_visual_by_owner",
+      "source_repo": "ProjectgenesisAssets/genesis-workshop-assets",
+      "source_branch": "asset/hemp-cord",
+      "source_run_id": 41337930484,
+      "source_artifact_id": 13096250978,
+      "glb_sha256": "843cba9d3181cffe544ba9a0799c7dbf2d77d4304e08a75ff931308b8a1af46f",
+      "glb_bytes": 3916368,
+      "target_path": "assets/playcanvas/approved/materials/cordel_canamo/v018/cordel_canamo_v018.glb",
+      "published_in_main": false,
+      "runtime_qa": false
+    },
+    {
+      "id": "hilo_lino",
+      "name": "Hilo de lino",
+      "approved_version": "V021_candidate",
+      "approval": "final_visual_by_owner",
+      "source_repo": "ProjectgenesisAssets/genesis-workshop-assets",
+      "source_branch": "asset/linen-thread",
+      "source_run_id": 41338668438,
+      "source_artifact_id": 13096771197,
+      "glb_sha256": "2a0018a6354113662f535a19aef2bdf1c4e8659bc1e23649d7b5eca163b7ac0d",
+      "glb_bytes": 7010672,
+      "target_path": "assets/playcanvas/approved/materials/hilo_lino/v021/hilo_lino_v021.glb",
+      "published_in_main": false,
+      "runtime_qa": false
+    }
+  ],
+  "note": "Approval registered. Do not label the GLB as integrated until the exact bytes have been committed and checked on main. Original approved models must not be modified."
+}

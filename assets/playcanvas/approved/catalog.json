@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "project": "Project Genesis",
+  "platform": "PlayCanvas / WebGL",
+  "registry_root": "assets/playcanvas/approved",
+  "updated_on": "2026-10-31",
+  "policy": {
+    "ship_only_approved": true,
+    "no_unapproved_candidates": true,
+    "one_canonical_file_per_variant": true,
+    "no_blend_or_zip_in_web_bundle": true,
+    "asset_variants_require_runtime_validation": true
+  },
+  "approved_existing_assets": [
+    {
+      "id": "ui_preparacion_v002",
+      "category": "ui",
+      "version": "V002",
+      "approval": "approved_visual_layout",
+      "current_status": "already_used_by_prototype",
+      "path": "assets/ui/preparacion/01_Capas/",
+      "file_count": 39,
+      "directory_migration": "deferred_to_preserve_existing_references",
+      "reason": "Fuente de las 39 capas aprobadas del menú. Sin copia duplicada."
+    },
+    {
+      "id": "material_iron_ingot_v175_transparent_poster",
+      "category": "material_preparado_preview",
+      "version": "V175_WEB_RGBA_01",
+      "approval": "approved_visual_for_preparation_ui",
+      "current_status": "ready_for_static_preview",
+      "path": "assets/playcanvas/approved/materials/iron/v175/iron_v175_transparent.png",
+      "format": "PNG_RGBA",
+      "width": 1024,
+      "height": 576,
+      "bytes": 425045,
+      "sha256": "ce2cc3df57050215f14426ce1e417447ef6652a977c8a16178e5db8a8378eee0",
+      "transparent_background_verified": true,
+      "source_run": "https://github.com/gburdesedev/genesis-blender-render/actions/runs/40143233270",
+      "note": "Poster estático aprobado para la interfaz. El GLB sigue como candidato sin aprobación visual ni mapa normal."
+    },
+    {
+      "id": "mineral_hierro_v008_55k_pbr1536_v007",
+      "profession": "Herrero",
+      "category": "material_bruto_model",
+      "version": "V008_55K_PBR1536_V007",
+      "approval": "final_approved_by_Gabriel",
+      "current_status": "integrated_in_playcanvas_v0.11.006",
+      "path": "assets/playcanvas/approved/materials/iron_ore/v008_55k_pbr1536_v007/mineral_hierro_v008_55k_pbr1536_v007.glb",
+      "poster": "assets/playcanvas/approved/materials/iron_ore/v008_55k_pbr1536_v007/mineral_hierro_v008_transparent_0.png",
+      "integrity_manifest": "assets/playcanvas/approved/materials/iron_ore/v008_55k_pbr1536_v007/asset-lock.json",
+      "format": "GLB",
+      "triangles": 55000,
+      "pbr_max_dimension": 1536,
+      "bytes": 13239988,
+      "sha256": "22c2392c49cece478f6609d9103e37a1b0501c395aeb8ba71ebbb8a4583c5481",
+      "original_master_preserved": true,
+      "iron_ingot_v175_untouched": true,
+      "source_run": "https://github.com/gburdesedev/genesis-blender-render/actions/runs/40225582488",
+      "load_policy": "web desktop model-viewer; mobile RGBA poster"
+    },
+    {
+      "id": "material_charcoal_v010_three_pieces",
+      "profession": "Herrero",
+      "category": "material_bruto_model",
+      "name": "Carbón vegetal",
+      "version": "V010_3PIEZAS_PBR1536",
+      "approval": "visual_source_accepted_user_requested_live_playcanvas_integration",
+      "current_status": "superseded_by_v011_retained_as_rollback",
+      "path": "assets/playcanvas/approved/materials/charcoal/v010/carbon_vegetal_v010_tres_piezas_web.glb",
+      "poster": "assets/playcanvas/approved/materials/charcoal/v010/carbon_vegetal_v010_poster.png",
+      "integrity_manifest": "assets/playcanvas/approved/materials/charcoal/v010/asset-lock.json",
+      "format": "GLB",
+      "pieces": 3,
+      "unique_geometry_meshes": 1,
+      "triangles_per_piece": 23312,
+      "rendered_triangles": 69936,
+      "pbr_max_dimension": 1536,
+      "bytes": 1258700,
+      "sha256": "6e653a6ff93c734c3e0c8fbd7eaf59ee316c710bdc1ea2b73118b4ba9ba018a7",
+      "original_v008_source_preserved": true,
+      "original_recipes_unchanged": true,
+      "source_run": "https://github.com/gburdesedev/Project-genesis/actions/runs/41215722563",
+      "hover_degrees_range": [
+        -45,
+        45
+      ],
+      "load_policy": "desktop model-viewer, safePreviews/mobile transparent PNG",
+      "superseded_by": "material_charcoal_v011_three_pieces_final"
+    },
+    {
+      "id": "material_charcoal_v011_three_pieces_final",
+      "profession": "Herrero",
+      "category": "material_bruto_model",
+      "name": "Carbón vegetal",
+      "version": "V011_CENIZA_SUTIL_PBR1536",
+      "approval": "final_approved_by_user",
+      "current_status": "integrated_in_live_playcanvas_inventory",
+      "path": "assets/playcanvas/approved/materials/charcoal/v011/carbon_vegetal_v011_final_3_piezas_web.glb",
+      "poster": "assets/playcanvas/approved/materials/charcoal/v011/carbon_vegetal_v011_poster.png",
+      "integrity_manifest": "assets/playcanvas/approved/materials/charcoal/v011/asset-lock.json",
+      "format": "GLB",
+      "pieces": 3,
+      "unique_geometry_meshes": 1,
+      "triangles_per_piece": 23312,
+      "rendered_triangles": 69936,
+      "pbr_max_dimension": 1536,
+      "bytes": 1361452,
+      "sha256": "13f295f3c39659e4422feab217dadb3927722553c17414a14c19130d5434c756",
+      "pbr_normal_roughness_identical_to_v010": true,
+      "geometry_uv_identical_to_v010": true,
+      "v010_backup_untouched": true,
+      "original_recipes_unchanged": true,
+      "source_audit": "previews/carbon_vegetal_v011/AUDIT.json",
+      "hover_degrees_range": [
+        -45,
+        45
+      ],
+      "load_policy": "desktop model-viewer; mobile/safePreviews transparent PNG",
+      "game_version": "v0.14b",
+      "game_build": "20261031.01"
+    }
+  ],
+  "approved_masters_pending_web_conversion": [
+    {
+      "id": "material_iron_ingot",
+      "profession": "Herrero",
+      "category": "material_preparado",
+      "approved_master_version": "V175",
+      "approval": "approved_master_reference",
+      "current_status": "transparent_poster_ready__glb_pending_visual_review",
+      "reference_render": {
+        "path": "assets/ui/preparacion/modelos/PG_Iron_Ingot_V175_CHECKPOINT_APROBADO.png",
+        "git_blob_sha": "f0c91b0b4a92ab3cecfcbb0a9e22ba4ba7b4c069",
+        "has_effective_transparency": false,
+        "for_reference_only": true
+      },
+      "web_variants": {
+        "thumbnail": null,
+        "model_glb": null,
+        "transparent_poster": "assets/playcanvas/approved/materials/iron/v175/iron_v175_transparent.png"
+      },
+      "notes": "El render existente conserva fondo gris. No usar como versión web aprobada final."
+    }
+  ],
+  "hover_contract": {
+    "small_3d_slots": {
+      "yaw_min_degrees": -45,
+      "yaw_max_degrees": 45,
+      "continuous_while_hover": true,
+      "smooth_return_to_front_on_leave": true,
+      "static_slot_frame_and_counter": true
+    }
+  }
+}

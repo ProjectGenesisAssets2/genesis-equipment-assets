@@ -1,0 +1,187 @@
+/* Shared viewport policy: CSS pixels, safe areas and native menu scrolling.
+   The 3D app retains its own canvas resizing and camera aspect management. */
+:root{--view-height:100vh;--edge:clamp(8px,1.5vw,18px);--safe-top:max(var(--edge),env(safe-area-inset-top));--safe-bottom:max(var(--edge),env(safe-area-inset-bottom));--safe-left:max(var(--edge),env(safe-area-inset-left));--safe-right:max(var(--edge),env(safe-area-inset-right));--menu-height:calc(var(--view-height) - var(--safe-top) - var(--safe-bottom))}
+@supports(height:100dvh){:root{--view-height:100dvh}}
+html,body{height:var(--view-height)}
+pc-app,#hud,#grade,#modalLayer,#loading,#prototypeIntro{height:var(--view-height);min-width:0}
+#modalLayer,#prototypeIntro,#loading{padding:var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.modal,.protoIntroCard,.loadingCard{max-width:100%;max-height:var(--menu-height);min-width:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.modal.dialogue{overflow:auto}
+.modal :is(section,article,div),.protoIntroCard :is(section,article,div){min-width:0}
+.modal :is(p,h2,h3,h4,span),.protoIntroCard :is(p,h1,h2){overflow-wrap:anywhere}
+.modal img,.protoIntroCard img{max-width:100%}
+.modal button,.protoIntroCard button{white-space:normal;touch-action:manipulation}
+.compareGrid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+.inventoryGrid{grid-template-columns:repeat(auto-fit,minmax(min(165px,100%),1fr))}
+.inventoryCraftGrid{grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr))}
+.mercDossierModal{width:min(1360px,100%);height:min(900px,var(--menu-height));max-height:var(--menu-height)}
+.mercSheetStack{overflow:visible;grid-template-rows:auto auto}
+.mercSheetBody{overflow:auto;overscroll-behavior:contain;grid-template-columns:minmax(0,.72fr) minmax(0,1.38fr) minmax(0,1fr)}
+.mercChannelsPanel{overflow:visible}
+#prompt,#toast{max-width:calc(100% - var(--safe-left) - var(--safe-right));text-align:center;overflow-wrap:anywhere}
+#quest{max-height:25dvh;overflow:auto;pointer-events:auto;touch-action:pan-y}
+#professionChip{max-width:calc(100% - var(--safe-left) - var(--safe-right));white-space:normal}
+#desktopHelp{right:var(--safe-right);bottom:var(--safe-bottom)}
+#joy,#lookZone{touch-action:none}
+#rotate{display:none}
+.prepCompactTitle{display:none}
+.prepSkinInventory{display:contents}
+.modal.preparationModal.prepSkinModal{width:min(1536px,100%,calc(var(--menu-height)*1.5));max-height:var(--menu-height)}
+.prepSkinScroll{max-height:var(--menu-height);touch-action:pan-y}
+.prepArtboard{min-width:0}
+.prepSkinClose{min-width:32px;min-height:32px}
+@media(max-width:1040px){
+ .mercSheetBody{grid-template-columns:minmax(0,.72fr) minmax(0,1.4fr)}
+ .mercInventoryPanel{grid-column:1/-1}
+ .gearColumns,.detailExplainGrid,.craftPlanner{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+ .compareGrid,.compareHero,.ngeDemoStats,.ngeVariationGrid,.professionGrid,.controlProfileGrid,.swordStage,.mercSheetBody,.mercSheetGrid,.mercDossier,.gearColumns{grid-template-columns:minmax(0,1fr)}
+ .compareScroll{overflow:visible}
+ .compareHeroCenter{text-align:center}
+ .mercInventoryPanel{grid-column:auto}
+ .mercSheetActions{flex-wrap:wrap}
+ .craftHeader,.mercTopline,.prepThermalHeading{flex-wrap:wrap}
+ .elementStatRow{grid-template-columns:minmax(0,1fr) 50px 50px;gap:4px}
+ .modal{padding:12px}
+ .actions button{min-height:44px;flex:1 1 auto}
+ #hud{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:20px auto auto auto 1fr;gap:6px;padding:var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left)}
+ #brand,#tech,#buttonsTop,#quest,#professionChip{position:static;max-width:100%;margin:0;align-self:start}
+ #brand{grid-area:1/1;font-size:8px;letter-spacing:.1em}
+ #tech{grid-area:1/2;font-size:7px;padding:3px 5px}
+ #buttonsTop{grid-area:2/1/3/-1;justify-self:end;flex-wrap:wrap;gap:5px}
+ #buttonsTop .uiBtn{min-height:36px;font-size:9px}
+ #quest{grid-area:3/1/4/-1;width:100%;max-height:20dvh;padding:8px 10px}
+ #quest h2{font-size:12px}#quest p{font-size:10px}
+ #professionChip{grid-area:4/1/5/-1;justify-self:start;font-size:7px}
+ #materialsPanel{left:var(--safe-left);bottom:calc(var(--safe-bottom) + 122px);width:min(220px,55vw);padding:6px}
+ #cameraGuide{left:var(--safe-left);right:var(--safe-right);bottom:calc(var(--safe-bottom) + 190px);max-height:60px;overflow:auto;font-size:9px}
+ #prompt{bottom:calc(var(--safe-bottom) + 88px);font-size:10px}
+ #ngeWatermark{right:var(--safe-right);bottom:calc(var(--safe-bottom) + 220px);width:100px;height:32px}
+ #lookHint{display:none}
+}
+@media(max-height:500px) and (orientation:landscape){
+ #quest{top:42px;width:min(340px,45vw);max-height:28dvh;padding:6px 9px}
+ #professionChip{top:calc(42px + 28dvh + 6px);max-width:45vw}
+ #buttonsTop{top:35px;right:var(--safe-right);max-width:48vw;flex-wrap:wrap}
+ #materialsPanel{bottom:calc(var(--safe-bottom) + 112px);width:min(200px,32vw)}
+ #cameraGuide{left:35%;right:170px;bottom:var(--safe-bottom);max-width:none;font-size:8px;max-height:50px;overflow:auto}
+ #ngeWatermark{display:none}
+}
+
+
+#mouseCaptureHint{position:absolute;left:50%;bottom:calc(var(--safe-bottom) + 38px);transform:translateX(-50%);max-width:calc(100% - var(--safe-left) - var(--safe-right));pointer-events:auto;z-index:15;padding:9px 12px;font-size:11px;line-height:1.4;background:#081b29ed;color:#f4dfa9;border:1px solid #d6a84d88;white-space:normal}
+#mouseCaptureHint[hidden]{display:none}
+
+#tech.fpsCounter{font-size:11px;font-weight:700;line-height:1.2;letter-spacing:0;color:#bce9cb;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;padding:4px 7px}
+@media(max-width:760px){#tech.fpsCounter{font-size:10px;padding:3px 5px}}
+
+@media(orientation:portrait){
+ .mobile-device #rotate{display:block;left:50%;right:auto;bottom:calc(var(--safe-bottom) + 116px);transform:translateX(-50%);width:min(300px,calc(100% - 24px));pointer-events:none;z-index:20;font-size:11px}
+ .mobile-device.modalOpen #rotate{display:none}
+}
+
+/* v0.11.002: preserve the original 1536x1024 artwork composition on every device. */
+.modal.preparationModal.prepSkinModal{width:max-content;max-width:100%;max-height:var(--menu-height);overflow:hidden}
+.prepSkinScroll{position:relative;overflow:hidden;width:var(--prep-layout-width,1536px);height:var(--prep-layout-height,1024px);max-height:none;max-width:none;touch-action:manipulation}
+.prepArtboard{position:absolute;left:0;top:0;width:1536px!important;min-width:1536px!important;height:1024px;aspect-ratio:1536/1024;transform:scale(var(--prep-scale,1));transform-origin:top left}
+.prepSkinInventory{display:contents}
+.prepCompactTitle{display:none}
+
+
+/* v0.11.010 · El prototipo táctil es exclusivamente horizontal.
+   Safari/iOS: orientación manual obligatoria; Android: fullscreen + lock cuando posible. */
+#rotate[hidden],#rotateLock[hidden]{display:none!important}
+html.mobile-device.genesis-landscape-required #rotate{
+  display:flex!important;position:fixed;inset:0;z-index:99999;box-sizing:border-box;
+  width:100vw;height:var(--view-height,100dvh);padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px);
+  background:radial-gradient(ellipse at 50% 30%,#263521 0%,#101b1c 45%,#070a0b 100%);
+  border:0;border-radius:0;transform:none;pointer-events:auto;
+  align-items:center;justify-content:center;flex-direction:column;gap:18px;
+  color:#efdfba;text-align:center;overflow:auto;overscroll-behavior:contain;
+}
+html.mobile-device.genesis-landscape-required #rotate .rotateGlyph{
+  font:normal 76px/1 Georgia,serif;color:#d7ad62;
+  text-shadow:0 2px 30px #a8652888;transform:rotate(-90deg);
+}
+html.mobile-device.genesis-landscape-required #rotate h2{
+  margin:0;font:normal clamp(23px,6vw,34px) Georgia,serif;
+  color:#f9dba0;text-shadow:0 2px 12px #000;
+}
+html.mobile-device.genesis-landscape-required #rotate p{
+  max-width:440px;font:normal 15px/1.5 system-ui,sans-serif;
+  color:#dbc6a4;margin:0;
+}
+html.mobile-device.genesis-landscape-required #rotate #rotateLock{
+  min-height:48px;padding:12px 22px;border:1px solid #d9a45a;border-radius:6px;
+  background:linear-gradient(#684020,#28180c);color:#ffdfa8;
+  font:normal 16px Georgia,serif;touch-action:manipulation;cursor:pointer;
+}
+html.mobile-device.genesis-landscape-required #rotate #rotateStatus{
+  font-size:12px;color:#c8aa7d;min-height:16px;
+}
+html.mobile-device.genesis-landscape-required{
+  overflow:hidden!important;overscroll-behavior:none;
+}
+html.mobile-device.genesis-landscape-required :is(pc-app,#hud,#modalLayer,#prototypeIntro){
+  pointer-events:none!important;
+}
+html.mobile-device:not(.genesis-landscape-required) #rotate{display:none!important}
+
+/* Tamaños dinámicos para todas las relaciones panorámicas reales
+   (16:9, 19.5:9 y otras), respetando notch y barras del navegador. */
+@media (orientation:landscape) and (pointer:coarse){
+  html.mobile-device,html.mobile-device body{width:100%;height:var(--view-height);margin:0;overflow:hidden}
+  html.mobile-device pc-app{width:100vw!important;height:var(--view-height)!important}
+  html.mobile-device #hud{display:block;width:100%;height:var(--view-height);padding:0}
+  html.mobile-device #brand{position:absolute;top:var(--safe-top);left:var(--safe-left);font-size:8px}
+  html.mobile-device #tech{position:absolute;top:var(--safe-top);right:var(--safe-right);font-size:8px}
+  html.mobile-device #buttonsTop{
+    position:absolute;top:calc(var(--safe-top) + 25px);right:var(--safe-right);
+    left:auto;width:auto;max-width:min(52vw,490px);display:flex;justify-content:flex-end;
+    flex-wrap:wrap;gap:4px;grid-area:auto;
+  }
+  html.mobile-device #buttonsTop .uiBtn{min-height:30px;padding:5px 7px;font-size:9px}
+  html.mobile-device #quest{
+    position:absolute;left:var(--safe-left);top:calc(var(--safe-top) + 32px);
+    width:min(31vw,310px);max-height:min(31vh,160px);
+    padding:7px 9px;grid-area:auto;font-size:10px;
+  }
+  html.mobile-device #professionChip{
+    position:absolute;left:var(--safe-left);top:auto;
+    bottom:calc(var(--safe-bottom) + min(25vh,105px) + 6px);
+    max-width:32vw;font-size:8px;grid-area:auto;
+  }
+  html.mobile-device #mobile{display:block}
+  html.mobile-device #joy{
+    left:var(--safe-left);bottom:var(--safe-bottom);
+    width:clamp(64px,22dvh,104px);height:clamp(64px,22dvh,104px);
+  }
+  html.mobile-device #joyKnob{left:calc(50% - 18px);top:calc(50% - 18px)}
+  html.mobile-device #interact{
+    right:var(--safe-right);bottom:var(--safe-bottom);
+    width:clamp(46px,15dvh,70px);height:clamp(46px,15dvh,70px);font-size:15px;
+  }
+  html.mobile-device #inventoryTouch{
+    right:calc(var(--safe-right) + clamp(50px,15dvh,70px) + 12px);
+    bottom:calc(var(--safe-bottom) + 3px);
+    width:clamp(44px,14dvh,58px);height:clamp(44px,14dvh,58px);
+  }
+  html.mobile-device #zoomControls{
+    right:var(--safe-right);bottom:calc(var(--safe-bottom) + clamp(58px,19dvh,88px));
+  }
+  html.mobile-device #zoomControls button{width:clamp(30px,9dvh,42px);height:clamp(30px,9dvh,42px)}
+  html.mobile-device #lookZone{width:56%;height:100%}
+  html.mobile-device #prompt{bottom:calc(var(--safe-bottom) + 18px);max-width:50vw}
+  html.mobile-device #cameraGuide{max-width:40vw;left:35%;right:auto;bottom:var(--safe-bottom)}
+  html.mobile-device #materialsPanel{left:var(--safe-left);bottom:calc(var(--safe-bottom) + 24vh)}
+}
+
+/* Keep tap targets above the right-side camera-look surface. */
+@media (orientation:landscape) and (pointer:coarse){
+  html.mobile-device #mobile{z-index:3}
+  html.mobile-device #buttonsTop,
+  html.mobile-device #quest,
+  html.mobile-device #professionChip{z-index:6}
+  html.mobile-device #cameraGuide{z-index:7}
+}

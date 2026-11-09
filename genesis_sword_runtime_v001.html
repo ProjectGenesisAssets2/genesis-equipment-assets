@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Genesis · visor interactivo V12B</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:radial-gradient(ellipse at 48% 42%,#332f28,#111319 80%);color:#ead7b8;font:12px Georgia}
+canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+#status{position:absolute;top:8px;left:8px;right:8px;padding:5px;background:#14110ac9;border:1px solid #86683c80;text-align:center;pointer-events:none}
+#help{position:absolute;bottom:6px;left:6px;right:6px;text-align:center;font-size:11px;background:#14110ab5;pointer-events:none}
+.embedded #help{display:none}
+</style></head>
+<body><canvas id="sword3d"></canvas><div id="status">Cargando geometría real de la espada V175/V12B…</div>
+<div id="help">Arrastrar: girar · Rueda: acercar/alejar · Doble clic: restablecer</div>
+<script type="module">
+import * as pc from 'https://cdn.jsdelivr.net/npm/playcanvas@2.22.1/build/playcanvas.mjs';
+if(window.parent!==window)document.documentElement.classList.add('embedded');
+const HDRI='https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/studio_small_09_2k.hdr';
+const MODEL='https://raw.githubusercontent.com/ProjectGenesisAssets2/genesis-equipment-assets/experiment/mercenary-v050-ui-4t-shield-fit-20261109/candidates/mercenary/stand_v049/GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb';
+const NODE='GENESIS_V048_APPROVED_SWORD_V12B_IN_RIGHT_HAND_STATIC';
+const status=document.getElementById('status');
+const state={phase:'loading',geometry:'V12B',dimensions:null,node:null,source:'V049 composite game GLB',hdri:'Studio Small 09 · RGBE HDR 2K',hdriReady:false,modelReady:false,error:null};
+window.__genesisSwordViewerStatus=state;
+function show(text){status.textContent=text}
+function readyCheck(){if(state.modelReady&&state.hdriReady){state.phase='ready';show('Espada 3D V175/V12B · GLB real · HDRI Studio Small 09 · arrastrá para girar')}}
+let app;
+try{
+ const canvas=document.getElementById('sword3d');
+ app=new pc.Application(canvas,{graphicsDeviceOptions:{antialias:true,alpha:true,preserveDrawingBuffer:true}});
+ app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+ app.setCanvasResolution(pc.RESOLUTION_AUTO);
+ app.scene.ambientLight=new pc.Color(.14,.13,.12);
+ app.scene.toneMapping=pc.TONEMAP_ACES;
+ app.scene.exposure=1.16;
+ app.start();
+ const cam=new pc.Entity('Genesis inspection camera');
+ cam.addComponent('camera',{clearColor:new pc.Color(.08,.09,.12),fov:39,nearClip:.01,farClip:250,frustumCulling:true});
+ app.root.addChild(cam);
+ const sun=new pc.Entity('Warm neutral key');
+ sun.addComponent('light',{type:'directional',color:new pc.Color(1,.93,.84),intensity:1.15,castShadows:false});
+ sun.setEulerAngles(36,35,0);app.root.addChild(sun);
+ const bounce=new pc.Entity('Cool fill');bounce.addComponent('light',{type:'directional',color:new pc.Color(.67,.77,1),intensity:.48,castShadows:false});bounce.setEulerAngles(-28,-140,0);app.root.addChild(bounce);
+ app.assets.loadFromUrl(HDRI,'texture',(error,asset)=>{
+  try{
+   if(error||!asset?.resource)throw Error('No se pudo cargar el HDRI RGBE: '+String(error||'sin recurso'));
+   const source=asset.resource;
+   const lighting=pc.EnvLighting.generateLightingSource(source);
+   app.scene.envAtlas=pc.EnvLighting.generateAtlas(lighting);
+   lighting.destroy();
+   // Use HDRI only for physically based illumination/reflections; no studio panorama behind the item.
+   app.scene.skybox=null;
+   app.scene.skyboxIntensity=1.22;
+   state.hdriReady=true;readyCheck();
+  }catch(err){state.phase='error';state.error='HDRI '+String(err?.message||err);show(state.error);console.error(err)}
+ });
+ app.assets.loadFromUrl(MODEL,'container',(error,asset)=>{
+  try{
+   if(error||!asset?.resource)throw Error('No se recibió el GLB original: '+String(error||'asset vacío'));
+   const compound=asset.resource.instantiateRenderEntity();
+   const approved=compound.findByName(NODE);
+   if(!approved)throw Error('Falta nodo V12B identificado en auditoría: '+NODE);
+   const isolated=approved.clone();isolated.name='ESPADA REAL · V175 V12B';
+   isolated.setLocalPosition(0,0,0);isolated.setLocalRotation(new pc.Quat());isolated.setLocalScale(1,1,1);
+   app.root.addChild(isolated);isolated.syncHierarchy();
+   let min=new pc.Vec3(Infinity,Infinity,Infinity),max=new pc.Vec3(-Infinity,-Infinity,-Infinity),meshes=0;
+   const stack=[isolated];
+   while(stack.length){const e=stack.pop();stack.push(...e.children);for(const mi of e.render?.meshInstances||[]){
+    const a=mi.aabb;if(!a)continue;meshes++;
+    const bmin=a.getMin(),bmax=a.getMax();
+    min.x=Math.min(min.x,bmin.x);min.y=Math.min(min.y,bmin.y);min.z=Math.min(min.z,bmin.z);
+    max.x=Math.max(max.x,bmax.x);max.y=Math.max(max.y,bmax.y);max.z=Math.max(max.z,bmax.z);
+   }}
+   if(!meshes||!Number.isFinite(min.x))throw Error('La espada no posee superficies renderizables');
+   const center=new pc.Vec3().add2(min,max).mulScalar(.5);
+   const extents=new pc.Vec3().sub2(max,min);const height=Math.max(.05,extents.length());
+   const pivot=new pc.Entity('Inspection pivot');app.root.addChild(pivot);
+   isolated.reparent(pivot);isolated.setLocalPosition(-center.x,-center.y,-center.z);
+   let yaw=26,pitch=-8,zoom=height*1.65;
+   let dragging=false,lastX=0,lastY=0;
+   function update(){pivot.setEulerAngles(pitch,yaw,0);cam.setPosition(0,height*.10,zoom);cam.lookAt(0,0,0)}
+   function down(e){dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)}
+   canvas.addEventListener('pointerdown',down);
+   canvas.addEventListener('pointerup',()=>dragging=false);
+   canvas.addEventListener('pointercancel',()=>dragging=false);
+   canvas.addEventListener('pointermove',e=>{if(!dragging)return;yaw+=(e.clientX-lastX)*.4;pitch=Math.max(-89,Math.min(89,pitch+(e.clientY-lastY)*.35));lastX=e.clientX;lastY=e.clientY;update()});
+   canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(height*.75,Math.min(height*4.5,zoom*Math.exp(e.deltaY*.001)));update()},{passive:false});
+   canvas.addEventListener('dblclick',()=>{yaw=26;pitch=-8;zoom=height*1.65;update()});
+   update();
+   state.modelReady=true;state.dimensions={x:extents.x,y:extents.y,z:extents.z,diagonal:height};state.node=NODE;state.meshes=meshes;
+   readyCheck();
+  }catch(err){state.phase='error';state.error=String(err.message||err);show('ERROR GLB: '+state.error);console.error(err)}
+ });
+}catch(e){state.phase='error';state.error=String(e?.message||e);show('Error del visor PlayCanvas: '+state.error);console.error(e)}
+</script></body></html>

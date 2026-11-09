@@ -1,0 +1,139 @@
+[
+  {
+    "material": "cobble",
+    "source_run": "https://github.com/gburdesedev/genesis-blender-render/actions/runs/39890541030",
+    "original_manifest": {
+      "material": "Calle_Adoquin_4K",
+      "resolution": [
+        4096,
+        4096
+      ],
+      "uv_tile_size_m": 2.0,
+      "source_cc0_url": "https://polyhaven.com/a/cobblestone_floor_001",
+      "source_author": "Rob Tuytel",
+      "scan_calibrated_size_m": 2.4,
+      "license": "CC0 - https://polyhaven.com/license",
+      "method": "photogrammetry source mapped into modified, Unreal-ready material",
+      "source_height_bits": 8,
+      "output_height_bits": 16,
+      "height_decode_m": "(unit_value - 0.5) * 0.04",
+      "normal_blender": "OpenGL",
+      "normal_unreal": "DirectX",
+      "source_sha256": {
+        "diff": {
+          "sha256": "d11ea1f0e0068683fa2313120650eb90a6c5ff74a477ae20425a27773dc032d2",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/cobblestone_floor_001/cobblestone_floor_001_diff_4k.png"
+        },
+        "nor_gl": {
+          "sha256": "17b0f75626a81c2222161663da2aee2aa154bf6e90528f2f79d809f432dc374a",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/cobblestone_floor_001/cobblestone_floor_001_nor_gl_4k.png"
+        },
+        "disp": {
+          "sha256": "bf14cdefb67de0fe0875ef54457b0b6430b67efc370dd212ef4835b4b8ce2fce",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/cobblestone_floor_001/cobblestone_floor_001_disp_4k.png"
+        },
+        "arm": {
+          "sha256": "de482e81bece887c4e4b14378c2c1365006351afde3c21fe343280aa1bc26124",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/cobblestone_floor_001/cobblestone_floor_001_arm_4k.png"
+        }
+      },
+      "notes": "Original scan maps were not created by us; derived PBR sets, relighting, UV setup and material remastering were assembled for Project Genesis.",
+      "revision": "v003: corrected flat upstream stone AO",
+      "ao_method": "height-derived screen-space neighborhood cavity approximation; source arm AO was uniform",
+      "ao_stats": {
+        "min": 135,
+        "max": 254,
+        "mean": 213.87,
+        "stdev": 23.32
+      }
+    },
+    "web_maps": {
+      "cobble_color.png": {
+        "source": "Calle_Adoquin_4K/BaseColor_sRGB.png",
+        "source_sha256": "0fba0647f1ed4ebbe9509cf81668a63e91c84c0b774770102d537e7183ca103d",
+        "size": 1024
+      },
+      "cobble_normal.png": {
+        "source": "Calle_Adoquin_4K/Normal_OpenGL_Blender.png",
+        "source_sha256": "838f8b70ae5adaf8e0aae5a8382d2e829454a0794ff72576c606a7a8dbdcb25b",
+        "size": 1024
+      },
+      "cobble_gloss.png": {
+        "source": "Calle_Adoquin_4K/Roughness_linear.png",
+        "source_sha256": "b3083b31109dba213a1f06d95125dfb10398845c077fc9e227f909b5a00eaab1",
+        "size": 512
+      },
+      "cobble_ao.png": {
+        "source": "Calle_Adoquin_4K/AO_linear.png",
+        "source_sha256": "d845e5645100ed9da1a350b718e20bf85d7b529953b8146312f14981fa5bcf2e",
+        "size": 512
+      }
+    }
+  },
+  {
+    "material": "traffic",
+    "source_run": "https://github.com/gburdesedev/genesis-blender-render/actions/runs/39950298390",
+    "original_manifest": {
+      "asset": "stone",
+      "resolution": [
+        4096,
+        4096
+      ],
+      "tile_world_size_m": 2.0,
+      "height_encodes_meters": {
+        "black": -0.02,
+        "midgrey": 0.0,
+        "white": 0.02
+      },
+      "metallic": 0,
+      "texture_repeat": true,
+      "normal_for_unreal": "Normal_DirectX_Unreal.png",
+      "normal_for_blender": "Normal_OpenGL_Blender.png",
+      "unreal_ORM": {
+        "R": "AmbientOcclusion",
+        "G": "Roughness",
+        "B": "Metallic"
+      },
+      "maps": [
+        "BaseColor_sRGB.png",
+        "Normal_OpenGL_Blender.png",
+        "Normal_DirectX_Unreal.png",
+        "Roughness_linear.png",
+        "AO_linear.png",
+        "Height_16bit_linear.png",
+        "Metallic_linear.png",
+        "ORM_Unreal_linear.png"
+      ],
+      "license": "CC0-1.0-derived",
+      "sources": [
+        "https://polyhaven.com/a/dense_sand",
+        "https://polyhaven.com/a/gravel_ground_01"
+      ],
+      "sand_origin": "Unmodified V003 production source (run 39890541030)",
+      "design": "Two compressed transit lanes, embedded aggregate and stony shoulders",
+      "physical_tile_m": 2
+    },
+    "web_maps": {
+      "traffic_color.png": {
+        "source": "Camino_Transito_Intenso_4K/BaseColor_sRGB.png",
+        "source_sha256": "30ae3f09b0dcd739cad537286f9a560169d20f2ebf70b0c657307d56eb26b2a0",
+        "size": 1024
+      },
+      "traffic_normal.png": {
+        "source": "Camino_Transito_Intenso_4K/Normal_OpenGL_Blender.png",
+        "source_sha256": "03e94d2aa257907d56421caf5f3def35ed0fc13f169e240e19398c0e4c88f1dc",
+        "size": 1024
+      },
+      "traffic_gloss.png": {
+        "source": "Camino_Transito_Intenso_4K/Roughness_linear.png",
+        "source_sha256": "6d79986a8769258d4e9db9a2aa88347bdbbb47f0a2530f10e934f82bf5ace0cf",
+        "size": 512
+      },
+      "traffic_ao.png": {
+        "source": "Camino_Transito_Intenso_4K/AO_linear.png",
+        "source_sha256": "ad9b7b78db732c38b326600308f5fd13ff87f0b42410a4057404f7fd7a98c96b",
+        "size": 512
+      }
+    }
+  }
+]

@@ -1,0 +1,649 @@
+/* Project Genesis · INVENTARIO V07 · 16:9 native
+ * Art exclusively reused from approved Preparación skin:
+ * PanelDatos / FondoEstructural / original tabs and button states / Casilla_Basicos.
+ * No anvil background in the object viewer: it was baked into the art.
+ * The 20-slot grid is rendered with dynamic live game data. */
+.modal.genInvModal{
+ width:min(calc(100vw - 16px),calc((100dvh - 16px)*16/9))!important;
+ max-width:100%!important; max-height:calc(100dvh - 16px)!important;
+ height:auto!important;aspect-ratio:16/9;overflow:hidden!important;
+ padding:0!important;border:0!important;background:#090706!important;
+ box-shadow:0 15px 65px #000e
+}
+.genInv{
+ position:relative;isolation:isolate;box-sizing:border-box;
+ width:100%;height:100%;aspect-ratio:16/9;
+ display:grid;grid-template-rows:14% 78% 8%;
+ font-family:Georgia,'Times New Roman',serif;
+ font-size:1cqw;container-type:inline-size;
+ color:#e4c89b;background:#080606
+}
+.genInv *, .genInv *::before, .genInv *::after{box-sizing:border-box}
+.genInv button,.genInv input{font:inherit;color:inherit}
+.genInv button{cursor:pointer}
+.genInv button:focus-visible,.genInv input:focus-visible{outline:2px solid #ffd389;outline-offset:2px}
+.genInv::before{
+ content:"";position:absolute;inset:0;z-index:30;pointer-events:none;
+ border:15px solid transparent;
+ border-image-source:url('assets/ui/preparacion/01_Capas/Fondo/FondoEstructural.png');
+ border-image-slice:18 18 18 18;border-image-width:15px;border-image-repeat:stretch
+}
+.genInvNav{
+ min-height:0;display:flex;align-items:center;justify-content:center;
+ gap:0.4%;padding:.55% 3% 1.3%;border-bottom:1px solid #6f4c29
+}
+.genInvTab{
+ min-width:0;width:24%;height:98%;display:grid;place-items:center;
+ background:transparent;border:0;padding:0
+}
+.genInvTab img{
+ width:100%;height:100%;max-height:100%;
+ display:block;object-fit:contain;filter:brightness(.42) saturate(.72)
+}
+.genInvTab[aria-current=page] img{
+ filter:brightness(1.18) drop-shadow(0 0 6px #b57933)
+}
+.genInvTab:hover img{filter:brightness(1.35)}
+.genInvMain{
+ display:grid;min-height:0;min-width:0;
+ grid-template-columns:22.5% 44.5% 33%;
+ grid-template-rows:minmax(0,59%) minmax(0,41%);
+ gap:0;padding:0 1.1%
+}
+.genInvFamilies,.genInvViewer,.genInvInfo,.genInvGrid{
+ position:relative;isolation:isolate;
+ min-height:0;min-width:0;overflow:hidden;
+ border:0;background:transparent;box-shadow:none
+}
+/* Original empty texture/frames; using 9-slice preserves ornamented corners. */
+.genInvFamilies::before,.genInvViewer::before,.genInvInfo::before,.genInvGrid::before{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:#0b0908;border:28px solid transparent;
+ border-image-source:url('assets/ui/preparacion/01_Capas/Paneles/PanelDatos.png');
+ border-image-slice:58 33 31 33 fill;border-image-width:28px;
+ border-image-repeat:stretch
+}
+.genInvFamilies>*,.genInvViewer>*,.genInvInfo>*,.genInvGrid>*{
+ position:relative;z-index:1
+}
+.genInvFamilies{grid-column:1;grid-row:1/3;margin:0 .6% 0 0;padding:14% 6% 4%}
+.genInvViewer{grid-column:2;grid-row:1;margin-right:.8%;padding:7% 5% 5%;
+ display:flex;flex-direction:column;align-items:center;justify-content:space-between
+}
+.genInvInfo{grid-column:3;grid-row:1;padding:10% 6% 5%;overflow-y:auto}
+.genInvGrid{grid-column:2/4;grid-row:2;margin-top:.4%;padding:4% 2% 1.5%;
+ display:flex;flex-direction:column;gap:.7%}
+.genInvHead,.genInvInfoTitle{
+ margin:0;padding-bottom:6%;text-align:center;color:#eacf9d;
+ border-bottom:1px solid #6f512e;font-size:1.5cqw;letter-spacing:.07em;
+ font-weight:normal
+}
+.genInvFamilies .genInvHead{text-align:left;padding-left:2%;margin:0 0 10%}
+.genInvFamily{
+ position:relative;display:flex;align-items:center;gap:5%;
+ width:96%;margin:2% 0 2% 4%;height:9.2%;min-height:0;
+ padding:1% 4%;text-align:left;border:1px solid #4c3a2b;
+ border-top-color:#84623f;background:linear-gradient(#1c1714,#0c0b0a);
+ color:#d2b899;font-size:1.25cqw;
+}
+.genInvFamily::before{
+ content:"";position:absolute;left:-4.5%;top:50%;height:1px;
+ width:4.5%;background:#816341
+}
+.genInvFamily[aria-pressed=true]{
+ border-color:#ae8650;color:#f5dba6;
+ background:linear-gradient(90deg,#4d321c,#1b1410 65%,#0e0c0a);
+ box-shadow:inset 0 0 0 1px #c5995866,inset 0 0 12px #a5672140
+}
+.genInvFamily:hover{border-color:#c3995b}
+.genInvFamIcon{display:inline-grid;place-items:center;font-size:1.1cqw;
+ min-width:1.4cqw;max-width:1.4cqw;color:#cfb07b}
+.genInvTreeNote{display:none}
+.genInvViewerTitle{
+ width:100%;margin:0;text-align:center;color:#f0d4a7;
+ letter-spacing:.02em;font-size:1.35cqw;
+ text-shadow:0 1px 5px #000
+}
+.genInvImageWrap{
+ flex:1;min-height:0;width:100%;display:grid;place-items:center;
+ overflow:hidden;margin:1% 0
+}
+/* No other baked object under the displayed item. */
+.genInvImageWrap img{
+ display:block;width:82%;height:92%;
+ max-width:82%;max-height:92%;
+ transform:none;object-fit:contain;object-position:center;
+ filter:drop-shadow(0 8px 15px #000b)
+}
+.genInvImageWrap :is(model-viewer,canvas){width:100%;height:100%;max-height:100%;object-fit:contain}
+.genInvViewLabel{
+ font-size:.9cqw;color:#c6ae8b;margin:0;padding-bottom:1%;
+ text-align:center
+}
+.genInvEmptyPreview{font-size:1.1cqw;text-align:center;color:#9a8264}
+.genInvInfoTitle{margin-bottom:9%;font-size:1.4cqw}
+.genInvInfoLine{
+ display:flex;align-items:start;justify-content:space-between;
+ gap:3%;font-size:1.03cqw;padding:4% 1%;border-bottom:1px solid #493927
+}
+.genInvInfoLine b{font-weight:normal;color:#f2d4a8;text-align:right}
+.genInvInfoSmall{display:none}
+.genInvInfoMore{
+ display:block;width:100%;margin-top:8%;padding:3% 2%;
+ color:#e2bb80;border:1px solid #957040;
+ background:linear-gradient(#362316,#120e09);
+ font-size:.94cqw
+}
+.genInvGridControls{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) auto;
+ gap:1.5%;align-items:center;min-height:15%;padding:0 1%;
+ font-size:1cqw
+}
+.genInvGridTitle{font-size:1.24cqw;color:#e9c68c;margin:0;font-weight:normal}
+.genInvFilter{
+ display:block;width:100%;min-width:0;outline:0;
+ background:#0c0a08;border:1px solid #745637;color:#e6c89c;
+ padding:2.2% 3%;font-size:.98cqw
+}
+.genInvNotice{font-size:.83cqw;color:#aa936e;white-space:nowrap}
+.genInvSlots{
+ flex:1;min-height:0;display:grid;
+ grid-template-columns:repeat(10,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));
+ gap:.7%
+}
+.genInvSlot{
+ min-width:0;min-height:0;position:relative;overflow:hidden;
+ border:0!important;background:#060504
+ url('assets/ui/preparacion/01_Capas/Casillas/Casilla_Basicos_01.png')
+ center/100% 100% no-repeat;
+ padding:1%;display:grid;place-items:center;isolation:isolate
+}
+.genInvSlot.selected{
+ outline:1px solid #c9a166;outline-offset:-3px;
+ box-shadow:inset 0 0 15px #f2b65e6b
+}
+.genInvSlot:not(:disabled):hover{filter:brightness(1.17)}
+.genInvSlot:disabled{cursor:default}
+.genInvSlot img,.genInvSlot model-viewer{max-width:92%;max-height:88%;width:100%;height:100%;object-fit:contain}
+.genInvSlot>span:not(.genInvCreationGlyph){
+ position:absolute;right:3%;bottom:2%;
+ width:auto;max-width:98%;padding:0 2%;font-size:.78cqw;
+ background:#100d0bcc;color:#e7c996;text-shadow:0 1px 1px #000
+}
+.genInvCreationGlyph{
+ position:static!important;display:grid;place-items:center;
+ width:100%;height:100%;font-size:2.0cqw;color:#d9b278;background:none!important
+}
+.genInvPage{
+ display:flex;align-items:center;justify-content:center;
+ gap:3%;min-height:11%;font-size:.9cqw;color:#c8aa82
+}
+.genInvPage button{
+ min-width:4%;border:1px solid #80613b;background:#20160c;
+ padding:0 .8%;font-size:.9cqw
+}
+.genInvFooter{
+ display:flex;align-items:center;justify-content:flex-end;
+ padding:.2% 2% .4%;min-height:0
+}
+.genInvAction{
+ width:26%;height:100%;position:relative;display:grid;place-items:center;
+ border:0;background:transparent
+ url('assets/ui/preparacion/01_Capas/BotonPreparar/BotonPreparar_Normal.png')
+ center/100% 100% no-repeat
+}
+.genInvAction:hover{background-image:url('assets/ui/preparacion/01_Capas/BotonPreparar/BotonPreparar_Hover.png')}
+.genInvAction:active{background-image:url('assets/ui/preparacion/01_Capas/BotonPreparar/BotonPreparar_Presionado.png')}
+.genInvAction::before{
+ content:"";position:absolute;inset:28% 14% 26%;
+ background:#25170df2;box-shadow:0 0 9px 4px #25170db9
+}
+.genInvAction span{
+ position:relative;z-index:2;
+ text-shadow:0 2px 2px #000,0 0 3px #000;
+ font-size:1.14cqw;color:#edce98;letter-spacing:.03em;text-align:center
+}
+.genInvOverlay{
+ position:absolute;inset:5%;z-index:8;overflow-y:auto;
+ background:#0b0909f4;border:1px solid #aa7e46;
+ padding:3%;font-size:1cqw
+}
+.genInvOverlay button{float:right}
+
+/* V08: 20 slots restored to near-square. Family hierarchy follows the
+ * approved Fabricaciones narrow-recess row language (not broad new buttons). */
+.genInvMain{grid-template-rows:minmax(0,53%) minmax(0,47%)!important}
+.genInvGrid{padding-top:3.1%!important;padding-bottom:1.1%!important;gap:.3%!important}
+.genInvGridControls{min-height:12%!important}
+.genInvPage{min-height:9%!important}
+.genInvSlots{gap:.7%!important}
+.genInvFamily{
+ width:93%!important;height:6.25%!important;min-height:0!important;
+ margin:1.3% 0 1.3% 7%!important;
+ padding:.3% 3%!important;
+ border:1px solid #3d3024!important;
+ border-top-color:#68533b!important;
+ border-radius:0!important;
+ background:linear-gradient(90deg,#121110,#191716 52%,#0a0909)!important;
+ box-shadow:inset 0 0 0 1px #090807!important;
+ font-size:1.06cqw!important;
+}
+.genInvFamily::before{left:-7.5%!important;width:7.5%!important;background:#716046!important}
+.genInvFamily[aria-pressed=true]{
+ border-color:#a5824e!important;
+ background:linear-gradient(90deg,#312317,#40301f 65%,#1a130e)!important;
+ box-shadow:inset 0 0 1px 1px #d0a45b9a!important;
+}
+.genInvFamilies::after{
+ content:"";position:absolute;left:7.5%;top:22.1%;bottom:57%;
+ border-left:1px solid #53422c;pointer-events:none;z-index:1
+}
+.genInvFamilies .genInvHead{margin-bottom:7%!important;font-size:1.3cqw!important}
+.genInvFamIcon{font-size:.92cqw!important;min-width:1.1cqw!important;max-width:1.1cqw!important}
+.genInvViewer{padding-top:8%!important;padding-bottom:4%!important}
+.genInvViewerTitle{font-size:1.35cqw!important}
+.genInvImageWrap img{width:83%!important;height:90%!important}
+.genInvInfo{padding-top:12%!important}
+.genInvInfoTitle{font-size:1.35cqw!important}
+
+/* V09 final alignment pass. Preserve original art; only whitespace changes. */
+.genInvImageWrap img{height:82%!important;max-height:82%!important;}
+.genInvViewLabel{min-height:7%;padding-bottom:2%;white-space:nowrap}
+.genInvFamily:first-of-type{margin-top:3%!important}
+.genInvFamilies .genInvHead{margin-bottom:7%!important}
+
+/* V10: art/image bbox physically contained. Avoid intrinsic image min-content
+ * forcing the viewer's footer below the artwork frame. */
+.genInvViewer{overflow:hidden!important}
+.genInvImageWrap{
+ position:relative!important;display:block!important;flex:1 1 0!important;
+ min-height:0!important;max-height:100%!important;
+ overflow:hidden!important;
+}
+.genInvImageWrap>img{
+ position:absolute!important;
+ left:10%!important;top:9%!important;
+ width:80%!important;height:82%!important;
+ max-width:80%!important;max-height:82%!important;
+ object-fit:contain!important;object-position:center!important;
+}
+.genInvImageWrap :is(model-viewer,canvas){
+ max-width:100%;max-height:100%;object-fit:contain
+}
+.genInvViewLabel{
+ flex:0 0 auto!important;position:relative;z-index:2;
+ margin-bottom:1%!important;padding:1% 0 0!important;min-height:0!important
+}
+
+/* LIVE crafted-object panel — same aged-gold/black art as approved Preparación.
+ * All rows are data-driven, no baked affinities, intensities, or narrative. */
+.genInvInfo{display:flex;flex-direction:column}
+.genInvInfoLine{flex:0 0 auto}
+.genInvSubhead{
+ flex:0 0 auto;text-align:center;font-family:Georgia,'Times New Roman',serif;
+ margin:4% 0 1%!important; padding:0 0 2%!important;
+ border-bottom:1px solid #6f502e;color:#e1c08d;
+ font-size:1.05cqw;font-weight:normal;letter-spacing:.03em
+}
+.genInvChannels{
+ display:flex;flex-direction:column;gap:3px;min-height:0;
+ overflow-y:auto;flex:1 1 auto;scrollbar-width:thin;
+ scrollbar-color:#937044 #15110e;
+}
+.genInvChannel{
+ display:flex;align-items:center;justify-content:space-between;gap:3%;
+ border:1px solid #79572c;border-top-color:#977044;
+ background:#0d0907;color:#e6c494;
+ padding:1.3% 3%;font-size:.91cqw;min-height:2.3cqw
+}
+.genInvChannel b{font-weight:normal;color:#f1d7a5}
+.genInvEmptyChannels{font-size:.9cqw;color:#a89171}
+.genInvNgeText{
+ flex:0 0 auto;max-height:4.1cqw;overflow:hidden;
+ font-family:Georgia,'Times New Roman',serif;
+ font-style:italic;line-height:1.4;color:#d1bba0;font-size:.91cqw;
+ margin:.8% 0 1.5%
+}
+.genInvNoStory{color:#a18c73}
+.genInvInfoMore{
+ flex:0 0 auto;position:relative;width:100%;
+ padding:4.4% 0!important;background:transparent
+ url('assets/ui/preparacion/01_Capas/BotonPreparar/BotonPreparar_Normal.png')
+ center/100% 100% no-repeat!important;border:0!important;
+ display:grid;place-items:center;isolation:isolate;min-height:3.0cqw
+}
+.genInvInfoMore:hover{background-image:url('assets/ui/preparacion/01_Capas/BotonPreparar/BotonPreparar_Hover.png')!important}
+.genInvInfoMore::before{
+ content:"";position:absolute;inset:25% 13% 22%;
+ background:#26180ced;box-shadow:0 0 5px 2px #26180ca5;z-index:0
+}
+.genInvInfoMore span{position:relative;z-index:1;text-shadow:0 1px 3px #000;font-size:.91cqw;color:#f4d8a7}
+
+/* Right-panel fit correction: never clip saved channels, NGE, or full-sheet button. */
+.genInvInfo{
+ padding:6.2% 5% 2.2%!important;
+ display:flex!important;flex-direction:column!important;
+ gap:0!important;overflow:hidden!important;
+}
+.genInvInfo .genInvInfoTitle{
+ flex:0 0 auto!important;
+ font-size:1.35cqw!important;margin:0 0 2%!important;
+ padding:0 0 2%!important;
+}
+.genInvInfo .genInvInfoLine{
+ flex:0 0 auto!important;
+ font-size:.96cqw!important;
+ padding:1.5% .5%!important;
+}
+.genInvInfo .genInvSubhead{
+ flex:0 0 auto!important;
+ font-size:.98cqw!important;
+ margin:2% 0 1%!important;
+ padding:0 0 .5%!important;
+}
+.genInvInfo .genInvChannels{
+ flex:1 1 28%!important;
+ min-height:2.4cqw!important;
+ max-height:26%!important;
+ overflow-y:auto!important;
+}
+.genInvInfo .genInvChannel{font-size:.89cqw!important;min-height:1.9cqw!important;padding:.6% 2%!important}
+.genInvInfo .genInvNgeText{
+ flex:0 1 auto!important;max-height:3.2cqw!important;
+ font-size:.88cqw!important;line-height:1.3!important;
+ margin:0 0 1%!important;overflow:hidden!important;
+}
+.genInvInfo .genInvInfoMore{
+ flex:0 0 auto!important;margin:1.5% 0 0!important;
+ padding:1.2% 0!important;min-height:2.8cqw!important;height:2.8cqw!important;
+}
+.genInvInfo .genInvInfoMore span{font-size:.9cqw!important;}
+
+/* INVENTARIO APROBADO · montaje estructural del concept fijado.
+ * Se reutilizan exclusivamente sprites de Preparación existentes.
+ * Fuente visual: /Project Genesis/Art/03_UI/Inventario/00_INVENTARIO_MAESTRO_APROBADO_16x9.png
+ * NO introducir valores ni imágenes de objetos estáticos en CSS.
+ */
+.genInv{
+ display:grid!important;grid-template-rows:11.2% minmax(0,88.8%)!important;
+ width:100%!important;height:100%!important;
+ background:radial-gradient(ellipse at 50% 50%,#100c09,#070605 75%)!important;
+}
+.genInvMain{
+ min-height:0!important;height:100%!important;
+ grid-template-columns:minmax(0,21.6%) minmax(0,45.0%) minmax(0,33.4%)!important;
+ grid-template-rows:minmax(0,51%) minmax(0,49%)!important;
+ padding:0 .9% 2%!important;
+}
+.genInvFooter,.genInvAction,.genInvActionWrap{display:none!important;}
+.genInvNav{gap:0!important;padding:.4% 1.5% 1%!important}
+.genInvTab{width:24%;height:100%}
+.genInvFamilies{padding:12% 6% 2%!important;margin:0 .8% 0 0!important}
+.genInvViewer{padding:8% 4% 4%!important}
+.genInvInfo{padding:7% 5% 4%!important}
+.genInvGrid{
+ padding:3% 2% 1.5%!important;
+ margin-top:.8%!important;
+}
+.genInvImageWrap{min-height:0!important;overflow:hidden!important}
+.genInvImageWrap img{
+ left:8%!important;top:7%!important;
+ width:84%!important;height:86%!important;
+ max-width:84%!important;max-height:86%!important;
+ object-fit:contain!important;transform:none!important;
+}
+.genInvSlots{grid-template-columns:repeat(10,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:1%!important}
+.genInvSlot{aspect-ratio:auto;min-height:0!important;box-sizing:border-box}
+.genInvFamilies .genInvHead{font-weight:normal!important;letter-spacing:.05em}
+.genInvFamily{height:6.25%!important;min-height:0!important;font-size:1.05cqw!important}
+.genInvInfo .genInvInfoMore{background-size:100% 100%!important;}
+
+
+/* CABECERA CANONICA - INVENTARIO (2026-11-02)
+ * Igualar la geometria de las cuatro pestanas a Preparacion V002:
+ * 294x94, 320x94, 328x94, 298x94 dentro del artboard de 1536x1024.
+ * Preparacion usa panorama 1820.444x1024 centrado. El Inventario
+ * conserva su cuerpo aprobado 16:9; solo cambia la franja superior.
+ * Se utilizan los mismos PNG originales y no se estiran sus pixeles.
+ */
+.genInv .genInvNav{
+  display:grid!important;
+  grid-template-columns:294fr 320fr 328fr 298fr!important;
+  /* 1240 / 1820.444... = 68.115%; primer x=(142.222+164)/1820.444=16.824%. */
+  width:68.115%!important;
+  margin-left:16.824%!important;
+  aspect-ratio:1240 / 94!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  gap:0!important;
+  border:0!important;
+  justify-self:start!important;
+  align-self:center!important;
+}
+.genInv .genInvTab{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.genInv .genInvTab img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  filter:none!important;
+}
+.genInv .genInvTab[aria-current=page] img,
+.genInv .genInvTab:hover img{
+  filter:none!important;
+}
+
+/* Estado activo sin pintar arte nuevo: el PNG de Preparacion tiene brillo
+ * horneado; al estar en Inventario se atenúa y se aplica el overlay original
+ * de Inventario procedente de las mismas 39 capas de Preparacion. */
+.genInv .genInvTab{position:relative!important;isolation:isolate}
+.genInv .genInvTab:not([aria-current=page]) img{
+  filter:brightness(.56) saturate(.72)!important;
+}
+.genInv .genInvTab[aria-current=page] img{
+  filter:brightness(1.22) saturate(1.06)!important;
+}
+.genInv .genInvTab[data-nav="Inventario"]{
+  --gen-tab-hover:url('assets/ui/preparacion/01_Capas/Efectos/Pestana_Inventario_HoverBrillo.png');
+}
+.genInv .genInvTab[data-nav="Preparacion"]{
+  --gen-tab-hover:url('assets/ui/preparacion/01_Capas/Efectos/Pestana_Preparacion_HoverBrillo.png');
+}
+.genInv .genInvTab[data-nav="Fabricaciones"]{
+  --gen-tab-hover:url('assets/ui/preparacion/01_Capas/Efectos/Pestana_Fabricaciones_HoverBrillo.png');
+}
+.genInv .genInvTab[data-nav="Comparacion"]{
+  --gen-tab-hover:url('assets/ui/preparacion/01_Capas/Efectos/Pestana_Comparacion_HoverBrillo.png');
+}
+.genInv .genInvTab[aria-current=page]::after,
+.genInv .genInvTab:hover::after{
+  content:"";position:absolute;inset:0;
+  background:var(--gen-tab-hover) center/100% 100% no-repeat;
+  pointer-events:none;opacity:.85;
+}
+
+/* Paridad de tamaño REAL con Preparación. La función syncOriginalLayout
+ * limita --prep-scale a 1 incluso en pantallas grandes: los gráficos no
+ * superan sus dimensiones originales. Este mismo límite se aplica SOLO
+ * a las pestañas del Inventario, conservando el cuerpo aprobado.
+ * 1240px = 294+320+328+298, 604px = 1820.444/2-(142.222+164).
+ */
+.genInv .genInvNav {
+  /* Igualar también el alto disponible REAL de Preparación: el modal
+   deja 36px para las holguras/padding del layer a 720p, frente a 16px
+   en el visor del Inventario. 1240 / 1024 = 1.2109375. */
+  --gen-tab-matched-width:min(68.115%, 1240px, calc((100dvh - 36px) * 1.2109375));
+  width:var(--gen-tab-matched-width)!important;
+  margin-left:calc(50% - var(--gen-tab-matched-width) * 0.487096774)!important;
+}
+
+/* Inventario: encabezado exactamente del sistema Preparación v0.11.014.
+ * La maqueta sigue siendo 16:9. Sus 4 botones usan PNG originales,
+ * sin regenerar imágenes, sin alterar ninguna capa de Preparación.
+ * Esta corrección reemplaza el posicionamiento aproximado de PR29/31.
+ */
+.modal.genInvModal{
+  width:min(1820.444444px, calc(100vw - 12px), calc((100dvh - 36px) * 16 / 9))!important;
+  max-height:calc(100dvh - 36px)!important;
+  aspect-ratio:16/9!important;
+}
+.genInv{
+  grid-template-rows:15% minmax(0,85%)!important;
+}
+.genInv::after{
+  content:"";position:absolute;z-index:1;pointer-events:none;
+  top:0;left:0;width:100%;height:15%;
+  /* Fondo panoramico extendido + artboard 3:2 superpuesto, como Preparacion.
+     Ambos usan el mismo PNG original, sin rehacer ni recortar pintura. */
+  background-image:
+    linear-gradient(90deg,#080605c9,#1d130eb3 45%,#080605d8),
+    linear-gradient(90deg,#080605c9,#1d130eb3 45%,#080605d8),
+    url('assets/ui/preparacion/01_Capas/Fondo/FondoEstructural.png'),
+    url('assets/ui/preparacion/01_Capas/Fondo/FondoEstructural.png');
+  background-position:left top,right top,center top,center top;
+  background-size:7.8125% 100%,7.8125% 100%,84.375% 666.666667%,100% 666.666667%;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
+}
+.genInv .genInvNav{
+  position:absolute!important;
+  z-index:5!important;
+  top:4.1015625%!important;left:16.82179%!important;
+  width:68.11585%!important;
+  height:9.1796875%!important;
+  margin:0!important;padding:0!important;
+  min-height:0!important;
+  aspect-ratio:auto!important;
+  display:grid!important;
+  grid-template-columns:294fr 320fr 328fr 298fr!important;
+  align-self:auto!important;
+  justify-self:auto!important;
+  gap:0!important;border:0!important;
+}
+.genInv .genInvMain{
+  grid-row:2!important;
+  position:relative!important;
+  z-index:2!important;
+}
+.genInv .genInvTab{
+  position:relative!important;
+  width:100%!important;height:100%!important;
+  padding:0!important;border:0!important;
+  background:none!important;
+  cursor:pointer!important;
+}
+.genInv .genInvTab img{
+  width:100%!important;height:100%!important;
+  display:block!important;object-fit:fill!important;
+  filter:none!important;
+}
+.genInv .genInvTab[data-nav="Preparacion"] img{
+  filter:brightness(.49) saturate(.7)!important;
+}
+.genInv .genInvTab[data-nav="Inventario"][aria-current="page"] img{
+  filter:brightness(1.32) saturate(1.17)!important;
+}
+/* Los hover son las capas PNG originales, no un dibujo de CSS.
+ * El subrayado del foco es el mismo de Preparación para pestañas no Preparación. */
+.genInv .genInvTab::after{
+  content:none!important;
+}
+.genInv .genInvTab:hover::before{
+  content:"";position:absolute;inset:0;
+  background:var(--gen-tab-hover) center/100% 100% no-repeat;
+  pointer-events:none;z-index:1;
+}
+.genInv .genInvTab[aria-current="page"]{
+  filter:none!important;
+}
+.genInv .genInvTab[aria-current="page"]::after{
+  content:""!important;
+  position:absolute!important;z-index:2!important;
+  left:10%!important;right:10%!important;
+  top:auto!important;bottom:15%!important;height:4px!important;
+  background:linear-gradient(90deg,transparent 0%,#ffc55e 13%,#ffeca8 48%,#ffc55e 87%,transparent 100%)!important;
+  border-radius:50%!important;
+  box-shadow:0 0 10px 3px #e6a439a6,0 0 3px 1px #ffe3a9!important;
+  pointer-events:none!important;
+}
+
+
+/* V014.023 · ORA: interactividad dentro de las casillas, pintura original intacta.
+   El movimiento sólo afecta al elemento móvil y nunca al marco, las cifras o
+   a las capas originales aprobadas. */
+.genInv .genInvSlot>.genInvSlotArtwork{
+  display:grid!important;place-items:center!important;
+  position:relative!important;inset:auto!important;
+  width:87%!important;height:83%!important;
+  max-width:87%!important;max-height:83%!important;
+  padding:0!important;border:0!important;background:transparent!important;
+  pointer-events:none!important;
+  transform:perspective(350px) rotateY(var(--gen-slot-yaw,0deg))!important;
+  transform-origin:center center!important;
+  transition:transform 150ms ease-out;
+  backface-visibility:visible;
+  will-change:transform;
+}
+.genInv .genInvSlot>.genInvSlotArtwork :is(img,model-viewer,canvas){
+  width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;pointer-events:none!important;
+}
+.genInv .genInvSlot>.genInvSlotQty{
+  position:absolute!important;right:3%!important;bottom:2%!important;
+  width:auto!important;height:auto!important;padding:0 2%!important;
+  max-width:98%!important;background:#100d0bcc!important;
+  transform:none!important;pointer-events:none!important;
+}
+.genInv .genInvImageWrap[data-preview-mode="material"]{
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate;
+}
+.genInv .genInvImageWrap[data-preview-mode="material"] img.genInvMaterialHero{
+  display:block!important;
+  width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+  margin:auto!important;
+  transform:translate(var(--gen-hero-offset-x,0%),var(--gen-hero-offset-y,0%))
+    scale(var(--gen-hero-zoom,1))!important;
+  transform-origin:center center!important;
+  filter:drop-shadow(0 9px 15px #000b)!important;
+  pointer-events:none!important;
+}
+@media(hover:none),(prefers-reduced-motion:reduce){
+  .genInv .genInvSlot>.genInvSlotArtwork{
+    transform:none!important;transition:none!important;will-change:auto!important;
+  }
+}
+
+/* V014.024 experimental | GLB real, art ORA original intact. */
+.genInv .genInvImageWrap[data-preview-mode="material"] model-viewer.genInvMaterialHeroModel{
+  display:block!important;
+  width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+  min-height:0!important;
+  background:transparent!important;
+  opacity:1!important;
+  touch-action:pan-y!important;
+}
+.genInv .genInvSlot>.genInvSlotArtwork model-viewer.genInvMaterialSlotModel{
+  display:block!important;
+  width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+  background:transparent!important;
+  pointer-events:none!important;
+}
+.genInv .genInvSlot>.genInvSlotArtwork:has(model-viewer.genInvMaterialSlotModel){
+  transform:none!important;
+}

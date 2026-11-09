@@ -1,0 +1,56 @@
+/* Mercenary concept V001 · isolated from the approved main inventory */
+#modalLayer:has(.mercConceptModal){padding:1.2vh 1.2vw}
+#modalLayer .mercConceptModal{width:min(97vw,1600px,173vh);max-width:unset;max-height:97vh;padding:0!important;background:transparent;border:0;border-radius:0;overflow:hidden}
+.mercConcept{width:100%;aspect-ratio:16/9;background:linear-gradient(#11100ed9,#0a0908e9),radial-gradient(circle at 50% 50%,#5a3b1e,#090908);font-family:Georgia,"Times New Roman",serif;color:#f3dfb8;overflow:hidden;container-type:inline-size;border:2px ridge #bd8540;box-shadow:inset 0 0 0 3px #281708,0 12px 55px #000c;position:relative}
+.mercConcept *{box-sizing:border-box}
+.mercConcept button{font-family:inherit;border-radius:2px;font-weight:500;letter-spacing:normal;cursor:pointer}
+.mercConcept button:disabled{opacity:.47;cursor:default}
+.mcBoard{width:100%;height:100%}
+.mcTitle{height:13%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:2px solid #7d592c;background:linear-gradient(90deg,#0c0a08,#26180f,#0c0a08)}
+.mcTitle div{font-size:1.2cqw;letter-spacing:.4em;color:#d3b17a}.mcTitle h1{font-weight:400;font-size:2.9cqw;line-height:1.2;letter-spacing:.1em;margin:0!important;color:#f4d9a7;text-shadow:0 1px 6px #b9813b}
+.mcColumns{height:87%;display:grid;grid-template-columns:27% 40% 31%;gap:1%;padding:1%}
+.mcPanel{min-width:0;height:100%;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(145deg,#24180fac,#0d0b09ed);border:2px ridge #ac7a3d;box-shadow:inset 0 0 0 2px #30210e,inset 0 0 18px #000a}
+.mcLeft,.mcRight{padding:2.2%}
+.mcHeading{height:6%;font-size:1.58cqw;text-align:center;color:#e9c996;border-bottom:1px solid #9c6e3a;white-space:nowrap;line-height:1.7}
+.mcSubhead{text-align:center;margin:.8cqw 0;font-size:1.35cqw;color:#dfbd85;border-bottom:1px solid #6b4927;padding:.28cqw}
+.mcFamilies{display:grid;gap:.5cqw}
+.mcFamilies button{background:linear-gradient(#342315,#14100c);border:1px solid #8a5c30;color:#d1b28b;text-align:left;font-size:1.35cqw;padding:.7cqw 1.2cqw}
+.mcFamilies button.active{background:linear-gradient(#a8793e,#4d2c16);border-color:#f2be66;box-shadow:inset 0 0 15px #ffb65c52;color:#fff1c9}
+.mcInventoryGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:.55cqw;flex:1;min-height:0;padding:.2cqw;overflow:hidden}
+.mcInventorySlot,.mcEmptySlot{min-width:0;min-height:0;padding:.2cqw!important;background:linear-gradient(145deg,#332519,#0b0a08)!important;border:1px solid #91602f!important;box-shadow:inset 0 0 4px #0a0604;display:grid;place-items:center;color:#866137}
+.mcInventorySlot.selected{border:2px solid #e4b164!important;box-shadow:0 0 12px #eeb75c81,inset 0 0 8px #f5bd5073}.mcInventorySlot img{width:80%;height:80%;object-fit:contain}
+.mcInvFooter{padding:.6cqw 0;text-align:center;font-size:1cqw;color:#a78b63;white-space:nowrap}
+.mcCenter{padding:.8cqw;position:relative;background:radial-gradient(ellipse at 50% 50%,#55412c50,transparent 72%),#0b0a08}
+.mcMercNav{height:8%;display:flex;align-items:center;justify-content:space-between;padding:0 .8cqw;border-bottom:1px solid #76522b}
+.mcMercName{font-size:1.7cqw}.mcMercIDs{display:flex;gap:.5cqw}.mcMercIDs button{background:#2e2115;border:1px solid #8c6237;color:#c2a57b;padding:.45cqw .85cqw;font-size:1.35cqw}.mcMercIDs button.on{background:linear-gradient(#9e713d,#4c301b);color:#ffe0a2;border-color:#ecb569}
+.mcMercField{display:grid;grid-template-columns:21% 58% 21%;gap:0;min-height:0;flex:1}
+.mcSlotsLeft,.mcSlotsRight{display:flex;flex-direction:column;justify-content:space-around;gap:.1cqw;align-items:center;min-height:0}
+.mcSlot{aspect-ratio:1;width:78%;padding:.1cqw!important;border:1px ridge #b18549!important;background:radial-gradient(circle,#32291d,#090807)!important;box-shadow:inset 0 0 3px #000,0 0 6px #0009;position:relative;display:grid;place-items:center}
+.mcSlot.isActive{border:2px solid #e2b367!important;box-shadow:0 0 9px #c99b446d}
+.mcSlot.isLocked{opacity:.65}
+.mcGlyph{font-size:2.2cqw;color:#d1b080}.mcGlyph img{width:70%;height:70%;object-fit:contain}
+.mcSlotLabel{position:absolute;bottom:0;width:100%;background:#130e0aba;color:#d3ba91;font: .77cqw system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcHero{min-height:0;position:relative}.mcHero model-viewer{width:100%;height:100%;background:transparent;--progress-bar-color:transparent}.mcNeck{position:absolute;top:1%;left:35%;width:30%;z-index:2;pointer-events:none}.mcNeck .mcSlot{width:64%;margin:auto}
+.mcModelNote{position:absolute;bottom:1%;left:0;right:0;text-align:center;color:#9a8565;font: .87cqw system-ui;pointer-events:none}
+.mcFooterButtons{display:grid;grid-template-columns:1fr 1fr;gap:.4cqw;min-height:12%;align-content:center}
+.mcFooterButtons button,.mcRightActions button{background:linear-gradient(#604024,#24160d);border:1px solid #b7864c;color:#f0c992;padding:.6cqw .3cqw;font-size:1.08cqw;min-width:0}
+.mcFooterButtons button:last-child{grid-column:1/-1}
+.mcDuel{height:23%;display:grid;grid-template-columns:1fr .14fr 1fr;gap:.4cqw;align-items:stretch}
+.mcDuel>div{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #6d4c2a;padding:.2cqw;min-width:0;background:#130f0b}
+.mcDuel>div span{font-size:1.12cqw;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mcDuel>div small{font:.9cqw system-ui;color:#b9a07e}.mcDuel>b{align-self:center;font-size:2.3cqw;color:#e0b16b}
+.mcItemImg{height:4cqw;width:4cqw;border:1px solid #946c3f;background:#25170d;display:grid;place-items:center}.mcItemImg img{width:95%;height:95%;object-fit:contain}
+.mcCompareHead{display:grid;grid-template-columns:56% 21% 23%;font:1.05cqw system-ui;color:#d3b482;align-items:center;text-align:center;border-bottom:1px solid #946a38}
+.mcChannels{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#bc8e48 #20160f;padding:.5cqw 0}
+.mcChannel{display:grid;grid-template-columns:9% 49% 20% 22%;align-items:center;gap:0;margin-bottom:.35cqw;min-height:4cqw;background:linear-gradient(#18120c,#0c0907);border-bottom:1px solid #5f4529}
+.mcChannelIcon{border:2px ridge #ba904c;color:var(--cc);display:grid;place-items:center;border-radius:50%;aspect-ratio:1;font-size:1.75cqw;text-shadow:0 0 6px var(--cc)}
+.mcChannelArt{height:2.9cqw;border:1px solid #916e43;background:linear-gradient(120deg,#16100d,var(--cc),#21150f);box-shadow:inset 0 0 5px #000a;display:flex;align-items:center;padding:0 .35cqw;overflow:hidden;position:relative}
+.mcChannelArt::before{content:"";inset:3px;position:absolute;background:repeating-linear-gradient(135deg,#ffffff12 0 2px,transparent 2px 10px);pointer-events:none}
+.mcChannelArt em{z-index:1;font-style:normal;text-shadow:0 1px 4px #000;color:#f8e9c8;font-size:1.05cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcChannelNum{text-align:center;font-size:1.34cqw;color:#ecddbc;white-space:nowrap}.mcChannelNum.increase{color:#91d876}.mcChannelNum.decrease{color:#e67c6d}.mcChannelNum.same{color:#e3c37c}
+.mcEmptyMessage{font-size:1.12cqw!important;color:#b9a184!important}
+.mcRightActions{display:grid;grid-template-columns:1fr 1.2fr;gap:.5cqw;padding:.5cqw 0}.mcRightActions .mcPrimary{background:linear-gradient(#ae7a3f,#6c3d1b);box-shadow:inset 0 0 12px #e6a14344;border-color:#f1c077;color:#ffe7b5}
+.mcOverlay{position:absolute;inset:0;background:#000c;display:grid;place-items:center;z-index:5}
+.mcOverlay section{width:65%;max-height:80%;overflow:auto;border:2px ridge #c39751;background:linear-gradient(#2c1c0e,#100c09);padding:3cqw;box-shadow:0 0 40px #000}
+.mcOverlay h2{color:#f0ce93;font-weight:400;font-size:2.1cqw}.mcOverlay p{color:#cdb58e;font-size:1.2cqw}.mcOverlay button{background:#604022;color:#ffe2a9;border:1px solid #b68745;padding:.8cqw 2cqw}
+.mcSheetRows>div{display:flex;justify-content:space-between;border-bottom:1px solid #61492c;padding:.5cqw;font-size:1.2cqw}
+@media(max-aspect-ratio:13/9){#modalLayer:has(.mercConceptModal){padding:0}.mercConceptModal{max-height:100vh!important}}

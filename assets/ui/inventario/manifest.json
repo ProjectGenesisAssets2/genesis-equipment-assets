@@ -1,0 +1,13 @@
+{
+  "title": "Inventario 1:1 sobre base limpia aprobada",
+  "source_approved_library": "/Project Genesis/Art/03_UI/APROBADOS/Jugador/Inventario/INVENTARIO_BASE_LIMPIA_APROBADA_16x9.png",
+  "image": "assets/ui/inventario/INVENTARIO_BASE_LIMPIA_APROBADA_16x9.png",
+  "size": [
+    1672,
+    941
+  ],
+  "original_sha256": "d3d283d61abc81589f910e7f87d8683e8d1f631c13478e3dc5916bab223c22e9",
+  "original_git_blob_sha": "c67c934db732f6f9663ffe47a06e1cd440682f44",
+  "data": "LIVE: ctx.inventory + ctx.getItems()",
+  "scope": "experimental branch only; approved art unchanged; pending in-game visual approval"
+}
