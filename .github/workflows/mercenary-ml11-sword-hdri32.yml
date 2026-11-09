@@ -1,0 +1,83 @@
+name: ML11 — authentic V12B sword Cycles HDRI 32bpc review
+on:
+  push:
+    branches: [experiment/mercenary-ml11-sword-v12b-cycles32-20261109]
+    paths:
+      - '.github/workflows/mercenary-ml11-sword-hdri32.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-approved-source-experimental:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover ORIGINAL 2150-triangle V03/V175 source temporarily, validate SHA
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Download exact Poly Haven Studio Small 09 4K FLOAT32 EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Blender 4.5.13 LTS exact
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender-4.5.13.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.13.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-blender
+          tar -xJf /tmp/blender-4.5.13.tar.xz -C /tmp/genesis-blender --strip-components=1
+          /tmp/genesis-blender/blender --version | grep 'Blender 4.5.13'
+      - name: Real V03/V175/V12B J-roughness Cycles hero and blade detail (never concept)
+        timeout-minutes: 32
+        run: |
+          set -euo pipefail
+          mkdir -p previews/mercenary-ml11-sword-v12b-cycles32
+          /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v12_v175_j_roughness.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir "$GITHUB_WORKSPACE/previews/mercenary-ml11-sword-v12b-cycles32" --samples 96
+      - name: Verify original sword and exact 32bpc environment and real rendered PNG
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,struct,pathlib
+          out=pathlib.Path('previews/mercenary-ml11-sword-v12b-cycles32')
+          audit=json.loads((out/'v12_surface_audit.json').read_text())
+          base=json.loads((out/'render_audit.json').read_text())
+          assert audit['source_sha256']==base['source_sha256']=='e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b'
+          assert audit['hdri_sha256']==base['hdri_sha256']=='bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558'
+          assert audit['blender'].startswith('4.5.13') and audit['renderer']=='Cycles'
+          assert base['hdri_image_depth_bpp']==96 and audit['hdri_rgb_bits_per_channel']==32
+          assert base['geometry_triangles']==audit['triangles']==2150
+          assert audit['V10_color_socket_unchanged'] and not audit['source_glb_modified']
+          for name in ['V12_V175_Color_J_Rugosidad034_Hero.png','V12_V175_Color_J_Rugosidad042_Detalle_Filo.png']:
+            p=out/name
+            assert p.is_file() and p.stat().st_size>100000
+            b=p.read_bytes()
+            assert b[:8]==bytes.fromhex('89504e470d0a1a0a')
+            assert struct.unpack_from('>II',b,16)==(1200,1500)
+          (out/'ml11_verified.json').write_text(json.dumps({
+            'status':'real_cycles_render_created_not_user_approved',
+            'original_model_sha256':audit['source_sha256'],
+            'hdri_sha256':audit['hdri_sha256'],
+            'hdri_rgb_bits_per_channel':32,'renderer':'Cycles',
+            'blender':audit['blender'],'source_glb_unchanged':True,
+            'hero':'V12_V175_Color_J_Rugosidad034_Hero.png',
+            'detail':'V12_V175_Color_J_Rugosidad042_Detalle_Filo.png'
+          },indent=2))
+          print('ML11_RENDER_V12B_ACTUAL_GLB_HDRI32_VERIFIED')
+          PY
+      - name: Upload PNG render output only, NEVER licensed original GLB or EXR
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-ml11-original-v12b-cycles-hdri32-review
+          path: previews/mercenary-ml11-sword-v12b-cycles32/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Remove temporary original model, HDRI and extract
+        if: always()
+        run: rm -f /tmp/genesis-original-v03.glb /tmp/studio_small_09_4k.exr
