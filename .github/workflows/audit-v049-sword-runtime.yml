@@ -1,0 +1,18 @@
+name: Genesis V12B | Inspect runtime sword geometry in V049 without export
+on:
+  push:
+    branches:
+      - experiment/mercenary-v050-ui-4t-shield-fit-20261109
+    paths:
+      - scripts/mercenary/audit_v049_sword_runtime_nodes.py
+      - '.github/workflows/audit-v049-sword-runtime.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Identify real approved sword nodes in compound GLB
+        run: python3 scripts/mercenary/audit_v049_sword_runtime_nodes.py
