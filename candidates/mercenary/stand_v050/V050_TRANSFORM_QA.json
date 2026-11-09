@@ -1,0 +1,23 @@
+{
+  "status": "V050_EXPERIMENTAL_NOT_USER_APPROVED",
+  "source_sha256": "e2466851abcdb0c925dcc17296c05d2aa9ea555500e21cc8d54c3a09e6199dd0",
+  "output_sha256": "e0f38c9d08bcb36396acbf824efae1fb2d798b9bcea1281b315332c8bc7b5ff2",
+  "source_bytes": 27133964,
+  "output_bytes": 27133936,
+  "modified_node_name": "GENESIS_V048_APPROVED_SHIELD_V015_IN_LEFT_HAND_STATIC",
+  "shield_scale_factor": 0.76,
+  "old_scale": [
+    0.9999897480010986,
+    0.9999897480010986,
+    0.9999897480010986
+  ],
+  "new_scale": [
+    0.7599922,
+    0.7599922,
+    0.7599922
+  ],
+  "geometry_material_binary_chunks_preserved": true,
+  "original_v049_untouched": true,
+  "animation_added": false,
+  "in_game_qa": false
+}
