@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+import json,struct,pathlib
+p=pathlib.Path("candidates/mercenary/stand_v049/GENESIS_MERCENARY_V049_SWORD_V12B_SHIELD_V015_WEB.glb")
+d=p.read_bytes(); assert d[:4]==b'glTF'; n,ty=struct.unpack_from("<I4s",d,12);assert ty==b'JSON';g=json.loads(d[20:20+n])
+print('GLB_GEOMETRY_AUDIT',json.dumps({'bytes':len(d),'nodes':len(g.get('nodes',[])),'meshes':len(g.get('meshes',[])),'materials':len(g.get('materials',[])),'images':len(g.get('images',[])),'scenes':g.get('scenes'),'node_summary':[{'id':i,'name':x.get('name'),'mesh':x.get('mesh'),'skin':x.get('skin'),'children':x.get('children'),'translation':x.get('translation'),'scale':x.get('scale'),'rotation':x.get('rotation')} for i,x in enumerate(g.get('nodes',[])) if x.get('mesh') is not None or ('sword' in x.get('name','').lower()) or ('v12b' in x.get('name','').lower())],'mesh_summary':[{'id':i,'name':x.get('name'),'primitives':len(x['primitives']),'material_ids':[z.get('material') for z in x['primitives']]} for i,x in enumerate(g['meshes'])],'material_names':[x.get('name') for x in g['materials']]},ensure_ascii=False))
