@@ -1,0 +1,73 @@
+name: Experimental V049 Cycles32 transparency poster (no mesh edits)
+on:
+  push:
+    branches: [experiment/mercenary-web-display-v049-20261107]
+    paths: ['.github/workflows/mercenary-v049-cycles32-alpha-poster.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  poster:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/mercenary-web-display-v049-20261107
+      - name: Download official V049 Blender 4.5.13 LTS HDRI EXR32 Cycles render
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 180 -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            'https://api.github.com/repos/ProjectGenesisAssets2/genesis-equipment-assets/actions/artifacts/13601738487/zip' \
+            -o /tmp/v049_official_cycles.zip
+          mkdir -p /tmp/v049
+          unzip -oq /tmp/v049_official_cycles.zip -d /tmp/v049
+          test -s /tmp/v049/V049_02_REAL_GENESIS_MERCENARY_SWORD_SHIELD_THREE_QUARTER.png
+      - name: Create real-render transparent preview only, preserve V049 source
+        run: |
+          set -euo pipefail
+          python3 -m pip install -q --break-system-packages pillow numpy
+          mkdir -p candidates/mercenary/stand_v049
+          python3 - <<'PY'
+          import numpy as np
+          from PIL import Image, ImageFilter
+          from pathlib import Path
+          original=Image.open('/tmp/v049/V049_02_REAL_GENESIS_MERCENARY_SWORD_SHIELD_THREE_QUARTER.png').convert('RGB')
+          data=np.asarray(original).astype(np.float32)
+          h,w,_=data.shape
+          bg=(np.median(data[:,6:70,:],axis=1)+np.median(data[:,w-70:w-6,:],axis=1))*.5
+          bg=np.broadcast_to(bg[:,None,:],data.shape)
+          err=np.linalg.norm(data-bg,axis=2)
+          chroma=data.max(axis=2)-data.min(axis=2)
+          alpha=np.maximum(np.clip((err-24)/42,0,1),np.clip((chroma-20)/35,0,1))
+          Y,X=np.ogrid[:h,:w]
+          shield=((X-524)/126)**2+((Y-506)/129)**2<1
+          alpha=np.where(shield,np.maximum(alpha,.95),alpha)
+          alpha=np.where((Y>=445)&(chroma<24)&(~shield),0,alpha)
+          mask=Image.fromarray((np.clip(alpha,0,1)*255).astype('uint8'),'L').filter(ImageFilter.GaussianBlur(.8))
+          result=original.convert('RGBA');result.putalpha(mask)
+          path=Path('candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png')
+          result.save(path,optimize=True)
+          assert path.stat().st_size>150000
+          print('REAL_V049_CYCLES32_POSTER_ALPHA',path,path.stat().st_size,original.size)
+          PY
+      - name: Commit only experiment screenshot derivative (not approval)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png
+          if ! git diff --staged --quiet; then
+            git commit -m "experiment(v049): transparent preview derived from real Blender Cycles32 original; unapproved [skip ci]"
+            git push origin HEAD:experiment/mercenary-web-display-v049-20261107
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v049-cycles32-alpha-poster
+          path: candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png
+          retention-days: 10
