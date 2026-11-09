@@ -1,0 +1,68 @@
+name: Genesis V12B standalone GLB persistent repository export
+on:
+  push:
+    branches:
+      - experiment/v12b-standalone-glb-export-20261109
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify approved source scripts
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fab_sword/hydrate_git_blobs_v03.py scripts/fab_sword/export_v12b_pbr_for_mercenary_v001.py scripts/fab_sword/render_v12_v175_j_roughness.py scripts/fab_sword/render_v03_v175_hdri32_master_v10.py scripts/fab_sword/render_v03_real_hdri32.py
+      - name: Rehydrate verified original V03 sword
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Download approved 32bit EXR HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 300 https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz -o /tmp/blender.tar.xz
+          mkdir -p /tmp/genesis-blender
+          tar -xJf /tmp/blender.tar.xz -C /tmp/genesis-blender --strip-components=1
+          /tmp/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Export standalone V12B without changing approved source
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/genesis-v12b
+          /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/export_v12b_pbr_for_mercenary_v001.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/genesis-v12b --samples 16
+          test -s /tmp/genesis-v12b/Genesis_Sword_Iron_V03_V175_V12B_PBR_WebGL_CANDIDATE.glb
+      - name: Commit GLB to persistent experimental asset directory (no Actions artifact)
+        run: |
+          set -euo pipefail
+          mkdir -p assets/equipment/experimental/espada_v03_v175_v12b
+          cp /tmp/genesis-v12b/Genesis_Sword_Iron_V03_V175_V12B_PBR_WebGL_CANDIDATE.glb assets/equipment/experimental/espada_v03_v175_v12b/
+          cp /tmp/genesis-v12b/V12B_web_export_report.json assets/equipment/experimental/espada_v03_v175_v12b/
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,struct
+          p=Path('assets/equipment/experimental/espada_v03_v175_v12b/Genesis_Sword_Iron_V03_V175_V12B_PBR_WebGL_CANDIDATE.glb')
+          b=p.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<I',b,4)[0]==2 and struct.unpack_from('<I',b,8)[0]==len(b)
+          n,t=struct.unpack_from('<I4s',b,12)
+          assert t==b'JSON'
+          j=json.loads(b[20:20+n])
+          assert j['meshes'] and j['materials'] and j['images']
+          print('GLB_VERIFIED',len(b),hashlib.sha256(b).hexdigest(),len(j['meshes']),len(j['materials']))
+          PY
+          git config user.name 'genesis-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/equipment/experimental/espada_v03_v175_v12b
+          git commit -m 'asset(experimental): persist genuine standalone V175 V12B sword GLB'
+          git push origin HEAD:experiment/v12b-standalone-glb-export-20261109
