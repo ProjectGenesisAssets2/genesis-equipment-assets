@@ -54,13 +54,25 @@ jobs:
           result.save(path,optimize=True)
           assert path.stat().st_size>150000
           print('REAL_V049_CYCLES32_POSTER_ALPHA',path,path.stat().st_size,original.size)
+          # Crop genuine Cycles closeup of the original V015 shield, not an illustration.
+          shield_source=Image.open('/tmp/v049/V049_03_REAL_V015_FORGED_IRON_SHIELD_DETAIL.png').convert('RGB')
+          shield_rgba=shield_source.crop((134,177,672,726)).convert('RGBA')
+          sw,sh=shield_rgba.size
+          yy,xx=np.ogrid[:sh,:sw]
+          d=((xx-((409-134))) / 259.)**2+((yy-(447-177))/264.)**2
+          smask=Image.fromarray(np.clip((1.014-d)*850,0,255).astype('uint8'),'L').filter(ImageFilter.GaussianBlur(1.2))
+          shield_rgba.putalpha(smask)
+          spath=Path('candidates/mercenary/stand_v049/V015_REAL_CYCLES32_SHIELD_PREVIEW.png')
+          shield_rgba.save(spath,optimize=True)
+          assert spath.stat().st_size>80000
+          print('REAL_V015_CYCLES32_SHIELD_PREVIEW',spath,spath.stat().st_size)
           PY
       - name: Commit only experiment screenshot derivative (not approval)
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png
+          git add candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png candidates/mercenary/stand_v049/V015_REAL_CYCLES32_SHIELD_PREVIEW.png
           if ! git diff --staged --quiet; then
             git commit -m "experiment(v049): transparent preview derived from real Blender Cycles32 original; unapproved [skip ci]"
             git push origin HEAD:experiment/mercenary-web-display-v049-20261107
@@ -69,5 +81,7 @@ jobs:
         if: always()
         with:
           name: v049-cycles32-alpha-poster
-          path: candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png
+          path: |
+            candidates/mercenary/stand_v049/V049_REAL_CYCLES32_APPROVED_GEAR_PREVIEW_ALPHA.png
+            candidates/mercenary/stand_v049/V015_REAL_CYCLES32_SHIELD_PREVIEW.png
           retention-days: 10
