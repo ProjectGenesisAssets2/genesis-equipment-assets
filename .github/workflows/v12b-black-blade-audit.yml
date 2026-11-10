@@ -1,4 +1,5 @@
 name: V12B black blade GLB material audit
+# Recheck corrected GLB binary chunk parser.
 on:
   push:
     branches: [experiment/v12b-black-blade-diagnostic-20261110]
