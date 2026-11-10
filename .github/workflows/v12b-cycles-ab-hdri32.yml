@@ -1,4 +1,5 @@
 name: V12B Cycles A B approved HDRI32
+# Trigger render after initial workflow registration.
 on:
   push:
     branches: [experiment/v12b-black-blade-diagnostic-20261110]
