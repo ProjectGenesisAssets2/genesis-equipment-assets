@@ -1,0 +1,29 @@
+name: V12B black blade GLB material audit
+on:
+  push:
+    branches: [experiment/v12b-black-blade-diagnostic-20261110]
+    paths: ['.github/workflows/v12b-black-blade-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/v12b-black-blade-diagnostic-20261110
+          persist-credentials: true
+      - name: Inspect exact GLB PBR textures and material factors
+        run: |
+          python3 -m pip install --user Pillow
+          python3 scripts/fab_sword/audit_v12b_black_blade.py
+      - name: Preserve inspection evidence in experimental branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add diagnostics/V12B_BLACK_BLADE_AUDIT_20261110.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'diagnostic(v12b): measured GLB PBR material and texture evidence'
+          git push origin HEAD:experiment/v12b-black-blade-diagnostic-20261110
