@@ -1,0 +1,27 @@
+{
+  "source_glb_sha256": "2c3e2dd8761ad337dd1d0c63ecab2fab68a8698d072dbeb8594b257cb1cdecc3",
+  "hdri_sha256": "bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558",
+  "comparison": "Same GLB/camera/Cycles; neutral dark environment vs approved EXR HDRI32; not a WebGL rendering test",
+  "renders": [
+    {
+      "file": "A_NEUTRAL_LOW_REFLECTION.png",
+      "hdri_32bit": false,
+      "camera": [
+        3.35060453414917,
+        -4.591568946838379,
+        2.233736276626587
+      ],
+      "cycles_samples": 40
+    },
+    {
+      "file": "B_APPROVED_EXR_HDRI32.png",
+      "hdri_32bit": true,
+      "camera": [
+        3.35060453414917,
+        -4.591568946838379,
+        2.233736276626587
+      ],
+      "cycles_samples": 40
+    }
+  ]
+}
