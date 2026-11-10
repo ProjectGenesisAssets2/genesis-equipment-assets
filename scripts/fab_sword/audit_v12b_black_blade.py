@@ -11,7 +11,7 @@ while off<len(b):
     length,typ=struct.unpack_from('<I4s',b,off);off+=8
     chunks[typ]=b[off:off+length];off+=length
 g=json.loads(chunks[b'JSON'])
-bin=chunks.get(b'BIN\\x00',b'')
+bin=chunks.get(bytes([66,73,78,0]),b'')
 report={'asset':str(p),'sha256':hashlib.sha256(b).hexdigest(),'size_bytes':len(b),'materials':[],'textures':[],'meshes':len(g.get('meshes',[])),'extensionsUsed':g.get('extensionsUsed',[])}
 for i,m in enumerate(g.get('materials',[])):
     mr=m.get('pbrMetallicRoughness',{})
@@ -38,5 +38,5 @@ report['flags']={
 }
 Path('diagnostics').mkdir(exist_ok=True)
 out=Path('diagnostics/V12B_BLACK_BLADE_AUDIT_20261110.json')
-out.write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\\n')
+out.write_text(json.dumps(report,indent=2,ensure_ascii=False)+chr(10))
 print('V12B_GLTF_AUDIT',json.dumps(report,ensure_ascii=False))
