@@ -1,0 +1,42 @@
+name: V12B Cycles A B approved HDRI32
+on:
+  push:
+    branches: [experiment/v12b-black-blade-diagnostic-20261110]
+    paths: ['.github/workflows/v12b-cycles-ab-hdri32.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/v12b-black-blade-diagnostic-20261110
+      - name: Download and verify approved 32-bit EXR HDRI
+        run: |
+          curl -fSL --retry 3 --max-time 300 https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          curl -fSL --retry 3 --max-time 300 https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz -o /tmp/blender.tar.xz
+          mkdir -p /tmp/blender
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender --strip-components=1
+          /tmp/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render exact V12B GLB with neutral and approved EXR environment
+        run: |
+          /tmp/blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/fab_sword/render_v12b_hdri_ab.py -- --input assets/equipment/experimental/espada_v03_v175_v12b/Genesis_Sword_Iron_V03_V175_V12B_PBR_WebGL_CANDIDATE.glb --hdri /tmp/studio_small_09_4k.exr --out /tmp/v12b-ab
+          test -s /tmp/v12b-ab/A_NEUTRAL_LOW_REFLECTION.png
+          test -s /tmp/v12b-ab/B_APPROVED_EXR_HDRI32.png
+      - name: Save comparison previews on isolated branch
+        run: |
+          mkdir -p public-previews/v12b-black-blade-ab-20261110
+          cp /tmp/v12b-ab/*.png /tmp/v12b-ab/report.json public-previews/v12b-black-blade-ab-20261110/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public-previews/v12b-black-blade-ab-20261110/
+          git diff --cached --quiet && exit 0
+          git commit -m 'render(v12b): exact GLB Cycles A B HDRI32 evidence'
+          git pull --rebase origin experiment/v12b-black-blade-diagnostic-20261110
+          git push origin HEAD:experiment/v12b-black-blade-diagnostic-20261110
