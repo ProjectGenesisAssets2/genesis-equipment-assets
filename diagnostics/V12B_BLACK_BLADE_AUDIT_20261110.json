@@ -1,0 +1,257 @@
+{
+  "asset": "assets/equipment/experimental/espada_v03_v175_v12b/Genesis_Sword_Iron_V03_V175_V12B_PBR_WebGL_CANDIDATE.glb",
+  "sha256": "2c3e2dd8761ad337dd1d0c63ecab2fab68a8698d072dbeb8594b257cb1cdecc3",
+  "size_bytes": 13862104,
+  "materials": [
+    {
+      "index": 0,
+      "name": "DefaultMaterial",
+      "doubleSided": true,
+      "alphaMode": "OPAQUE",
+      "baseColorFactor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallicFactor": 1,
+      "roughnessFactor": 1,
+      "baseColorTexture": {
+        "index": 1
+      },
+      "metallicRoughnessTexture": {
+        "index": 2
+      },
+      "normalTexture": {
+        "index": 0
+      },
+      "occlusionTexture": null,
+      "emissiveFactor": null
+    },
+    {
+      "index": 1,
+      "name": "Genesis_Iron_Blade_V175_Approved_Palette_V03_EXPERIMENTAL",
+      "doubleSided": true,
+      "alphaMode": "OPAQUE",
+      "baseColorFactor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallicFactor": 0.9800000190734863,
+      "roughnessFactor": 1,
+      "baseColorTexture": {
+        "index": 5
+      },
+      "metallicRoughnessTexture": {
+        "index": 6
+      },
+      "normalTexture": {
+        "index": 3
+      },
+      "occlusionTexture": {
+        "index": 4,
+        "strength": 0.6000000238418579
+      },
+      "emissiveFactor": null
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "Image_2",
+      "mimeType": "image/png",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGB",
+      "rgb_mean": [
+        127.29,
+        127.61,
+        248.31
+      ],
+      "rgb_min": [
+        54,
+        19,
+        167
+      ],
+      "rgb_max": [
+        190,
+        234,
+        255
+      ],
+      "bytes": 4019854,
+      "sha256": "dc05e7103ff659eb9043c238db9931fbe27f9c80123350d3cb20afb71ea19c13"
+    },
+    {
+      "index": 1,
+      "name": "Image_0",
+      "mimeType": "image/jpeg",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGB",
+      "rgb_mean": [
+        156.43,
+        136.52,
+        98.83
+      ],
+      "rgb_min": [
+        71,
+        50,
+        37
+      ],
+      "rgb_max": [
+        248,
+        229,
+        153
+      ],
+      "bytes": 1452531,
+      "sha256": "daa922f5839281d63007e5dcfc6ae7cac1c97abf311d05a495fb8e1a81f19df4"
+    },
+    {
+      "index": 2,
+      "name": "Image_1-Genesis_V175_V12B_BAKED_ROUGHNESS_1536",
+      "mimeType": "image/png",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGB",
+      "rgb_mean": [
+        255.0,
+        55.19,
+        224.28
+      ],
+      "rgb_min": [
+        255,
+        0,
+        0
+      ],
+      "rgb_max": [
+        255,
+        216,
+        255
+      ],
+      "bytes": 1102521,
+      "sha256": "5f97d363a521ec968e6debfdf2e8a15249e3b77e22181da8765fb44c573249ed"
+    },
+    {
+      "index": 3,
+      "name": "Genesis_V175_Hierro_ORM_2K",
+      "mimeType": "image/png",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGB",
+      "rgb_mean": [
+        248.47,
+        181.12,
+        207.42
+      ],
+      "rgb_min": [
+        228,
+        143,
+        171
+      ],
+      "rgb_max": [
+        255,
+        232,
+        220
+      ],
+      "bytes": 4204746,
+      "sha256": "8cd1fd6c326732bb199bd52c54e6b25bb4a1e4022bc00ee69cf9d0489d55fe1b"
+    },
+    {
+      "index": 4,
+      "name": "Genesis_V175_APPROVED_PALETTE_BAKED_V03",
+      "mimeType": "image/png",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGB",
+      "rgb_mean": [
+        90.79,
+        91.13,
+        93.59
+      ],
+      "rgb_min": [
+        62,
+        65,
+        69
+      ],
+      "rgb_max": [
+        115,
+        107,
+        105
+      ],
+      "bytes": 2456032,
+      "sha256": "a3f9f83c3fd8dc6c88fa8aaa8a4c796c0e802e8905d7a6b8850a68d75cf8f314"
+    },
+    {
+      "index": 5,
+      "name": "Genesis_V175_V12B_Roughness_1536",
+      "mimeType": "image/png",
+      "width": 1536,
+      "height": 1536,
+      "mode": "RGB",
+      "rgb_mean": [
+        255.0,
+        55.19,
+        255.0
+      ],
+      "rgb_min": [
+        255,
+        0,
+        255
+      ],
+      "rgb_max": [
+        255,
+        216,
+        255
+      ],
+      "bytes": 565171,
+      "sha256": "b9c3cd24d13f11f8d078478791095f1e91826c898ab0ab8c061819ee962480f7"
+    }
+  ],
+  "meshes": 1,
+  "extensionsUsed": [],
+  "textureMappings": [
+    {
+      "index": 0,
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "index": 1,
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "index": 2,
+      "source": 2,
+      "sampler": 0
+    },
+    {
+      "index": 3,
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "index": 4,
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "index": 5,
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "index": 6,
+      "source": 5,
+      "sampler": 0
+    }
+  ],
+  "flags": {
+    "blade_near_full_metallic": true,
+    "blade_has_base_color_texture": true,
+    "no_hdr_environment_embedded": true,
+    "gltf_geometry_valid": true
+  }
+}
