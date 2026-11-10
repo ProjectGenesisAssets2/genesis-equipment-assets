@@ -23,14 +23,12 @@ reports=[]
 for name,use_hdri in [('A_NEUTRAL_LOW_REFLECTION',False),('B_APPROVED_EXR_HDRI32',True)]:
     if use_hdri:
         scene.world.node_tree.links.new(env.outputs['Color'],bg.inputs['Color']);bg.inputs['Strength'].default_value=0.9
-        scene.view_settings.view_settings if False else None
-        scene.view_settings.look='Medium High Contrast'
-        scene.view_settings.view_settings if False else None
+        scene.view_settings.look='AgX - Medium High Contrast'
         scene.view_settings.exposure=0.5
     else:
         if bg.inputs['Color'].is_linked:scene.world.node_tree.links.remove(bg.inputs['Color'].links[0])
         bg.inputs['Color'].default_value=(0.12,0.12,0.12,1);bg.inputs['Strength'].default_value=1
-        scene.view_settings.look='Medium High Contrast';scene.view_settings.exposure=0.5
+        scene.view_settings.look='AgX - Medium High Contrast';scene.view_settings.exposure=0.5
     scene.render.filepath=str(out/(name+'.png'));bpy.ops.render.render(write_still=True)
     reports.append({'file':name+'.png','hdri_32bit':use_hdri,'camera':list(cam.location),'cycles_samples':scene.cycles.samples})
 (out/'report.json').write_text(json.dumps({'source_glb_sha256':hashlib.sha256(glb.read_bytes()).hexdigest(),'hdri_sha256':hashlib.sha256(hdri.read_bytes()).hexdigest(),'comparison':'Same GLB/camera/Cycles; neutral dark environment vs approved EXR HDRI32; not a WebGL rendering test','renders':reports},indent=2))
