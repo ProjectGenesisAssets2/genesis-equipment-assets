@@ -1,0 +1,73 @@
+name: Genesis Anuario - real sword V175 V12B Cycles HDRI32
+on:
+  push:
+    branches:
+      - experiment/anuario-espada-v175-v12b-hdri32-20261116
+    paths:
+      - 'scripts/anuario/render_espada_v175_v12b_anuario.py'
+      - '.github/workflows/anuario-espada-v175-v12b-hdri32-20261116.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original 3D pipeline scripts
+        run: |
+          python3 -m py_compile scripts/anuario/render_espada_v175_v12b_anuario.py scripts/fab_sword/render_v12_v175_j_roughness.py scripts/fab_sword/render_v03_v175_hdri32_master_v10.py scripts/fab_sword/render_v03_real_hdri32.py
+      - name: Rehydrate untouched original 21MB V03 V175 sword
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Download and hash-verify real 4K RGB float32 EXR HDRI
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 260 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install authentic Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --connect-timeout 25 --max-time 260 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          test "$(stat -c %s /tmp/blender.tar.xz)" -gt 300000000
+          mkdir -p /tmp/genesis-blender
+          tar -xJf /tmp/blender.tar.xz -C /tmp/genesis-blender --strip-components=1
+          /tmp/genesis-blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Genuine Cycles 96-sample render using original V175 V12B PBR and 32-bit HDRI
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/anuario-v175
+          /tmp/genesis-blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/anuario/render_espada_v175_v12b_anuario.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --output-dir /tmp/anuario-v175 --samples 96
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("/tmp/anuario-v175")
+          j=json.loads((p/"PG_Anuario_Render_Audit.json").read_text())
+          assert j["render_type"]=="REAL_BLENDER_CYCLES_NOT_GENERATIVE"
+          assert j["hdri_bits_per_channel"]==32
+          assert j["engine"]=="CYCLES" and j["samples"]==96
+          assert len(j["images"])==3
+          for x in j["images"]:
+            assert (p/x["path"]).stat().st_size==x["size"]
+          print("GENESIS_3_REAL_RENDER_IMAGES_VALIDATED",[(x["path"],x["size"]) for x in j["images"]])
+          PY
+      - name: Upload review images, not model/EXR
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: genesis-anuario-espada-v175-v12b-cycles-hdri32-real
+          path: |
+            /tmp/anuario-v175/V12_V175_Color_J_Rugosidad034_Hero.png
+            /tmp/anuario-v175/PG_Espada_V03_V175_V12B_HDRI32_TresCuartos.png
+            /tmp/anuario-v175/PG_Espada_V03_V175_V12B_HDRI32_Detalle_Filo.png
+            /tmp/anuario-v175/PG_Anuario_Render_Audit.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Clear temporary original sword and HDRI
+        if: always()
+        run: rm -f /tmp/genesis-original-v03.glb /tmp/studio_small_09_4k.exr
