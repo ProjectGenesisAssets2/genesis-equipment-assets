@@ -8,10 +8,16 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"fab_sword"))
 import render_v12_v175_j_roughness as v12
 # v12.main authentic pipeline: hash-checks GLB/EXR, configures actual sword
 # and renders the V12B roughness .34 hero view with 32-bpc HDRI.
-v12.main()
 argv=sys.argv[sys.argv.index('--')+1:]
 out=Path(argv[argv.index('--output-dir')+1])
 ldr_path=Path(argv[argv.index('--ldr')+1])
+# Run legacy V12 script with only its supported args. Wrapper-only --ldr
+# is stripped temporarily so Blender's original argparse remains unchanged.
+previous_argv=sys.argv[:]
+i=sys.argv.index('--ldr')
+del sys.argv[i:i+2]
+v12.main()
+sys.argv=previous_argv
 b=ldr_path.read_bytes()
 assert b[:8]==b'\x89PNG\r\n\x1a\n'
 assert (b[24],b[25])==(8,2),f"Expected 8 bit RGB PNG, got {b[24:26]}"
