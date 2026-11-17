@@ -1,0 +1,75 @@
+name: Anuario - actual V175 sword Cycles LDR8 vs HDRI32 comparison
+on:
+  push:
+    branches: [experiment/anuario-espada-v175-ldr8-vs-hdri32-20261117]
+    paths:
+      - 'scripts/anuario/render_comparacion_v175_ldr8_hdri32_v01.py'
+      - '.github/workflows/anuario-espada-v175-ldr8-hdri32-20261117.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-comparison:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Python scripts compile
+        run: |
+          python3 -m py_compile scripts/anuario/render_comparacion_v175_ldr8_hdri32_v01.py scripts/fab_sword/render_v12_v175_j_roughness.py
+      - name: Rehydrate exact original V03 V175 GLB
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fab_sword/hydrate_git_blobs_v03.py --manifest render-input/v03-blob-manifest.json --output /tmp/genesis-original-v03.glb
+          echo 'e2228f078b2572768416c48c0e63c2d908f214e2c0625a2ab754c877a099112b  /tmp/genesis-original-v03.glb' | sha256sum -c
+      - name: Download verified original 32-bpc EXR
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
+          echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Construct actual eight-bit LDR environment from same original HDRI
+        run: |
+          set -euo pipefail
+          ffmpeg -y -hide_banner -loglevel error -i /tmp/studio_small_09_4k.exr -vf scale=4096:2048:flags=lanczos -frames:v 1 -pix_fmt rgb24 -update 1 /tmp/studio_small_09_LDR8.png
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+          p=Path('/tmp/studio_small_09_LDR8.png')
+          a=p.read_bytes()
+          assert a[:8]==b'\x89PNG\r\n\x1a\n'
+          assert struct.unpack_from('>II',a,16)==(4096,2048)
+          assert a[24]==8 and a[25]==2, (a[24],a[25])
+          print('REAL_8BIT_LDR_ENVIRONMENT',len(a),a[24],a[25])
+          PY
+      - name: Install Blender 4.5.13 LTS
+        run: |
+          set -euo pipefail
+          curl -fSL --retry 3 --max-time 240 'https://download.blender.org/release/Blender4.5/blender-4.5.13-linux-x64.tar.xz' -o /tmp/blender.tar.xz
+          test "$(stat -c %s /tmp/blender.tar.xz)" -gt 300000000
+          mkdir -p /tmp/blender
+          tar -xJf /tmp/blender.tar.xz -C /tmp/blender --strip-components=1
+          /tmp/blender/blender --version | grep -F 'Blender 4.5.13'
+      - name: Render identical genuine V175 V12B scene under each environment
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/anuario-comp
+          /tmp/blender/blender -b -t 4 --factory-startup --python-exit-code 1 --python scripts/anuario/render_comparacion_v175_ldr8_hdri32_v01.py -- --input /tmp/genesis-original-v03.glb --hdri /tmp/studio_small_09_4k.exr --ldr /tmp/studio_small_09_LDR8.png --output-dir /tmp/anuario-comp --samples 96
+          test -s /tmp/anuario-comp/PG_Espada_V175_V12B_LDR8_Hero.png
+          test -s /tmp/anuario-comp/V12_V175_Color_J_Rugosidad034_Hero.png
+          test -s /tmp/anuario-comp/PG_Anuario_LDR8_HDRI32_Compare_Audit.json
+      - name: Upload images, no model or environment
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-sword-real-v175-v12b-ldr8-vs-hdri32
+          path: |
+            /tmp/anuario-comp/PG_Espada_V175_V12B_LDR8_Hero.png
+            /tmp/anuario-comp/V12_V175_Color_J_Rugosidad034_Hero.png
+            /tmp/anuario-comp/PG_Anuario_LDR8_HDRI32_Compare_Audit.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Remove temporary source and HDRI
+        if: always()
+        run: rm -f /tmp/genesis-original-v03.glb /tmp/studio_small_09_4k.exr /tmp/studio_small_09_LDR8.png
