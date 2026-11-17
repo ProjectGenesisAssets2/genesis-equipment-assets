@@ -29,6 +29,10 @@ jobs:
           set -euo pipefail
           curl -fSL --retry 3 --max-time 240 'https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/studio_small_09_4k.exr' -o /tmp/studio_small_09_4k.exr
           echo 'bbb83755cf731a87373bdd25e28b4a74f58c8c8a02bf348e960635265ffda558  /tmp/studio_small_09_4k.exr' | sha256sum -c
+      - name: Install ffmpeg for genuine RGB8 LDR environment conversion
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
       - name: Construct actual eight-bit LDR environment from same original HDRI
         run: |
           set -euo pipefail
